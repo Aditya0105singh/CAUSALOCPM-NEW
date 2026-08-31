@@ -8,17 +8,20 @@ import { CountUp, FadeIn } from "@/components/motion";
 
 /**
  * "Why should a judge trust these numbers?" — the defensible framing.
- * Leads with EFFECT recovery (near-exact vs a known planted truth), then
- * explains why DAG recall is 0.89 and precision 1.00 without hand-waving.
+ * Leads with EFFECT recovery (close to a known planted truth), then explains the
+ * honest F1 ~0.89: one nonlinear edge Fisher-Z can't see, one spurious edge the
+ * conservative bootstrap occasionally lets through. No metric is claimed at 1.0.
  */
 export function ValidationExplainer({ f }: { f: CausalFixture }) {
-  const [ablation, setAblation] = useState<"pc" | "dk">("dk");
+  const [ablation, setAblation] = useState<"pc" | "dk">("pc");
   const t = f.effects[0];
   const errAbs = Math.abs(t.effectDays - t.groundTruthDays);
   const m = f.discoveryMetrics;
   const pc = { precision: m.precision, recall: m.recall, f1: m.f1 };
-  const dk = { precision: 1.0, recall: 1.0, f1: 1.0 };
-  const shown = ablation === "pc" ? pc : dk;
+  // "+ domain knowledge" is expert-corrected structure, not a discovery score —
+  // we deliberately do NOT show 1.00/1.00/1.00 as if the algorithm earned it.
+  const dkEdges = `${m.truePositives + m.falseNegatives}/${m.truePositives + m.falseNegatives}`;
+  const shown = pc;
 
   return (
     <Card className="border-forest/20">
@@ -73,15 +76,15 @@ export function ValidationExplainer({ f }: { f: CausalFixture }) {
       <div className="mt-4 rounded-xl border border-line bg-paper-2/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-[13px] font-semibold text-ink">
-            <ScanSearch size={14} className="text-forest" /> DAG discovery — {f.discoveryMetrics.truePositives} of{" "}
-            {f.scenario.causalLinks} edges found autonomously
+            <ScanSearch size={14} className="text-forest" /> DAG discovery — {m.truePositives} of {f.scenario.causalLinks}{" "}
+            edges found, {m.falsePositives} spurious
           </div>
           <div className="flex overflow-hidden rounded-lg border border-line text-[11px]">
             <button
               onClick={() => setAblation("pc")}
               className={clsx("px-2.5 py-1 transition-colors", ablation === "pc" ? "bg-forest text-white" : "bg-card text-muted hover:text-ink")}
             >
-              PC only
+              Autonomous PC
             </button>
             <button
               onClick={() => setAblation("dk")}
@@ -92,41 +95,49 @@ export function ValidationExplainer({ f }: { f: CausalFixture }) {
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-3">
-          {[
-            { k: "Precision", v: shown.precision },
-            { k: "Recall", v: shown.recall },
-            { k: "F1", v: shown.f1 },
-          ].map((s) => (
-            <div key={s.k} className="rounded-lg bg-card p-2.5 text-center">
-              <div className="font-display text-xl text-ink">
-                <CountUp value={s.v} decimals={2} duration={0.6} />
-              </div>
-              <div className="text-[10px] uppercase tracking-wide text-muted">{s.k}</div>
+        {ablation === "pc" ? (
+          <>
+            <div className="mt-3 grid grid-cols-3 gap-3">
+              {[
+                { k: "Precision", v: shown.precision },
+                { k: "Recall", v: shown.recall },
+                { k: "F1", v: shown.f1 },
+              ].map((s) => (
+                <div key={s.k} className="rounded-lg bg-card p-2.5 text-center">
+                  <div className="font-display text-xl text-ink">
+                    <CountUp value={s.v} decimals={2} duration={0.6} />
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted">{s.k}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
-          {ablation === "pc" ? (
-            <>
-              <b>Recall 0.89, not 1.0 — on purpose.</b> The one missing edge is{" "}
-              <code className="rounded bg-card px-1">{f.scenario.confounderLabel} → {f.scenario.treatmentLabel}</code>, a{" "}
-              <b>nonlinear (sigmoid) confounding link</b>. Constraint-based discovery uses Fisher-Z tests, which check for{" "}
-              <i>linear</i> conditional independence — so this edge is structurally invisible to autonomous PC no matter
-              how much data you feed it. <b>Precision 1.00</b> because the bootstrap (20 resamples, 60% agreement
-              threshold) is deliberately conservative: it admits zero edges that weren&apos;t planted, trading recall for
-              trustworthiness.
-            </>
-          ) : (
-            <>
-              Domain knowledge asserts the single edge Fisher-Z cannot see — a known-true relationship, not an invented
-              one. The result is a valid 9/9 DAG. We report this as <b>DAG validity by construction</b>, never as a
-              discovery score (that would be circular). Zero spurious edges were removed because the conservative
-              bootstrap never added any.
-            </>
-          )}
-        </p>
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
+              <b>F1 {shown.f1.toFixed(2)} — comparable to published PC-algorithm benchmarks, and honest.</b> Bootstrapped
+              PC found {m.truePositives} of {f.scenario.causalLinks} planted edges. The <b>1 missing</b> edge is{" "}
+              <code className="rounded bg-card px-1">
+                {f.scenario.confounderLabel} → {f.scenario.treatmentLabel}
+              </code>
+              , a <b>nonlinear (sigmoid) confounding link</b>: Fisher-Z tests only detect <i>linear</i> conditional
+              independence, so this edge is structurally invisible to the algorithm no matter how much data you feed it.
+              The <b>1 spurious</b> edge is a weak marginal correlation that occasionally cleared the conservative 60%
+              bootstrap threshold.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <DkChip label={`+${m.falseNegatives} edge recovered`} tone="ok" />
+              <DkChip label={`−${m.falsePositives} spurious pruned`} tone="ok" />
+              <DkChip label={`${dkEdges} valid DAG`} tone="neutral" />
+            </div>
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
+              Domain knowledge does two jobs: it <b>asserts</b> the one known-true edge Fisher-Z can&apos;t see (not an
+              invented relationship), and it <b>removes</b> the spurious edge that violates a hard process constraint. The
+              result is an actionable DAG. We report this as <b>expert-corrected structure</b> — never as a discovery
+              score, because measuring recovery of edges you just hand-added would be circular.
+            </p>
+          </>
+        )}
       </div>
 
       <div className="mt-3 flex items-start gap-2 text-[11px] text-muted">
@@ -137,6 +148,19 @@ export function ValidationExplainer({ f }: { f: CausalFixture }) {
         </span>
       </div>
     </Card>
+  );
+}
+
+function DkChip({ label, tone }: { label: string; tone: "ok" | "neutral" }) {
+  return (
+    <span
+      className={clsx(
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium",
+        tone === "ok" ? "bg-sage text-forest-deep" : "bg-paper-2 text-ink-soft",
+      )}
+    >
+      {label}
+    </span>
   );
 }
 

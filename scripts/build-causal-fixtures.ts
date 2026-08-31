@@ -27,28 +27,43 @@ function build(spec: DomainSpec) {
   // ── causal graph ────────────────────────────────────────────────────────
   const nodes = spec.nodes.map((n) => ({ id: n.id, label: n.label, role: n.role, x: n.x, y: n.y }));
   const maxCoef = Math.max(...spec.edges.map((e) => Math.abs(e.coef)));
-  const edges = spec.edges.map((e) => {
-    const w = Math.abs(e.coef) / maxCoef;
-    return {
+  const edges = [
+    ...spec.edges.map((e) => {
+      const w = Math.abs(e.coef) / maxCoef;
+      return {
+        source: e.source,
+        target: e.target,
+        coef: e.coef,
+        strength: (w > 0.6 ? "strong" : w > 0.25 ? "moderate" : "weak") as "strong" | "moderate" | "weak",
+        discovered: e.discovered,
+        bootstrapFreq: e.bootstrapFreq,
+        pruned: false,
+      };
+    }),
+    // spurious edges autonomous PC retained, then domain knowledge removed
+    ...spec.spuriousEdges.map((e) => ({
       source: e.source,
       target: e.target,
-      coef: e.coef,
-      strength: (w > 0.6 ? "strong" : w > 0.25 ? "moderate" : "weak") as "strong" | "moderate" | "weak",
-      discovered: e.discovered,
+      coef: 0,
+      strength: "weak" as const,
+      discovered: true,
       bootstrapFreq: e.bootstrapFreq,
-    };
-  });
+      pruned: true,
+    })),
+  ];
 
   const treatmentNode = spec.nodes.find((n) => n.role === "treatment")!;
   const outcomeNode = spec.nodes.find((n) => n.role === "outcome")!;
 
-  // ── discovery metrics (pre-domain-knowledge, autonomous PC) ────────────
+  // ── discovery metrics (pre-domain-knowledge, autonomous bootstrapped PC) ──
+  // TP = planted edges PC found · FN = planted edges PC missed (nonlinear /
+  // sub-threshold) · FP = spurious edges PC wrongly retained above threshold.
   const plantedCount = spec.edges.length;
-  const discoveredAutonomously = spec.edges.filter((e) => e.discovered).length;
-  const falsePositives = 0;
-  const falseNegatives = plantedCount - discoveredAutonomously;
-  const precision = round(discoveredAutonomously / (discoveredAutonomously + falsePositives), 2);
-  const recall = round(discoveredAutonomously / plantedCount, 2);
+  const truePositives = spec.edges.filter((e) => e.discovered).length;
+  const falseNegatives = plantedCount - truePositives;
+  const falsePositives = spec.spuriousEdges.length;
+  const precision = round(truePositives / (truePositives + falsePositives), 2);
+  const recall = round(truePositives / plantedCount, 2);
   const f1 = round((2 * precision * recall) / (precision + recall), 2);
   const stability = 0.86;
   const reliabilityPct = 86;
@@ -56,7 +71,8 @@ function build(spec: DomainSpec) {
   const edgeStability = edges.map((e) => ({
     edge: `${label(e.source)} → ${label(e.target)}`,
     frequency: e.bootstrapFreq,
-    discovered: e.discovered,
+    discovered: e.discovered && !e.pruned,
+    pruned: e.pruned,
   }));
 
   // ── naive vs Double ML ───────────────────────────────────────────────
@@ -214,16 +230,23 @@ function build(spec: DomainSpec) {
     strongestRelationship: { from: spec.strongestRel.from, to: spec.strongestRel.to, coefficient: spec.strongestRel.coef },
   };
 
+  const effectErrorPct = round((Math.abs(spec.dmlEffect - spec.trueEffect) / spec.trueEffect) * 100, 1);
+  const signTotal = plantedCount;
+  const signCertain = signTotal - spec.signUncertainEdges.length;
   const pipelinePerf = {
-    postPrecision: 1.0,
+    prePrecision: precision,
     preRecall: recall,
-    postRecall: 1.0,
-    signConsistency: 1.0,
-    avgModelR2: spec.id === "manufacturing" ? 0.897 : 0.881,
-    coeffAccuracy: spec.id === "manufacturing" ? 0.936 : 0.921,
-    recallGainPct: round((1 - recall) * 100, 1),
+    preF1: f1,
+    effectErrorPct,
+    confoundingRemovedPct: naiveEffect.biasPct,
+    bootstrapStability: stability,
+    eValue: spec.sensitivity.eValue,
+    avgModelR2: spec.avgModelR2,
+    avgCoefErrorPct: spec.avgCoefErrorPct,
+    signCertain,
+    signTotal,
     missingEdgesRecovered: falseNegatives,
-    spuriousRemoved: 0,
+    spuriousRemoved: falsePositives,
     validatedLinks: plantedCount,
   };
 
@@ -240,7 +263,7 @@ function build(spec: DomainSpec) {
     baselineDays: baseline,
     targetDays,
     primaryChain: spec.chain,
-    signConsistency: `${plantedCount}/${plantedCount} sign-correct`,
+    signConsistency: `${signCertain}/${signTotal} coefficients sign-certain`,
     methodology: spec.methodology,
     actions: recommendedActions.map((a, i) => ({
       rank: i + 1,
@@ -258,10 +281,23 @@ function build(spec: DomainSpec) {
         : "Medium — clinical staffing agreements required",
   };
 
-  const crossDomain = [
-    { domain: "Manufacturing", precision: 1.0, recall: 0.89, f1: 0.94, naive: DOMAINS.manufacturing.naiveEffect, causal: DOMAINS.manufacturing.dmlEffect, eValue: DOMAINS.manufacturing.sensitivity.eValue },
-    { domain: "Healthcare", precision: 1.0, recall: 0.89, f1: 0.94, naive: DOMAINS.healthcare.naiveEffect, causal: DOMAINS.healthcare.dmlEffect, eValue: DOMAINS.healthcare.sensitivity.eValue },
-  ];
+  const cd = (s: DomainSpec) => {
+    const tp = s.edges.filter((e) => e.discovered).length;
+    const fp = s.spuriousEdges.length;
+    const p = round(tp / (tp + fp), 2);
+    const r = round(tp / s.edges.length, 2);
+    return {
+      domain: s.domainLabel,
+      precision: p,
+      recall: r,
+      f1: round((2 * p * r) / (p + r), 2),
+      naive: s.naiveEffect,
+      causal: s.dmlEffect,
+      planted: s.trueEffect,
+      eValue: s.sensitivity.eValue,
+    };
+  };
+  const crossDomain = [cd(DOMAINS.manufacturing), cd(DOMAINS.healthcare)];
 
   // ── cases ──────────────────────────────────────────────────────────
   const contribDrivers = effects.slice(0, 4);
@@ -400,8 +436,8 @@ function build(spec: DomainSpec) {
           : "Specialist assignment is the dominant causal driver of length of stay — statistically validated, not just correlated.",
       confidence: "HIGH CONFIDENCE" as const,
       bullets: [
-        `Recovered causal effect: ${spec.dmlEffect} ${unit} via Double ML — the naive estimate ran ${naiveEffect.biasPct}% high on confounding from ${spec.confounderLabel}`,
-        `Discovery precision ${precision.toFixed(2)}, recall ${recall.toFixed(2)} across ${20} bootstrap reruns (F1 ${f1.toFixed(2)}); domain knowledge recovered the ${falseNegatives} nonlinear edge autonomous PC missed`,
+        `Recovered causal effect: ${spec.dmlEffect} ${unit} via Double ML vs a planted ground truth of ${spec.trueEffect} (error ${effectErrorPct}%). A naive dashboard would have said ${naiveEffect.naiveDays}.`,
+        `Autonomous discovery F1 ${f1.toFixed(2)} — ${truePositives} of ${plantedCount} planted edges found, ${falsePositives} spurious retained; domain knowledge then adds the ${falseNegatives} nonlinear edge Fisher-Z cannot detect and prunes the ${falsePositives} spurious one`,
         `Recommended action: ${recommendedActions[0].title} → ~$${Math.round(recommendedActions[0].annualSavings / 1000)}K/yr expected savings, payback ${report.roiPayback}`,
         `E-value ${spec.sensitivity.eValue} — an unmeasured confounder would need that strength on both treatment and outcome to nullify the effect`,
       ],
@@ -419,7 +455,7 @@ function build(spec: DomainSpec) {
       stability,
       bootstrapRuns: 20,
       shd: falsePositives + falseNegatives,
-      truePositives: discoveredAutonomously,
+      truePositives,
       falsePositives,
       falseNegatives,
       edgeStability,

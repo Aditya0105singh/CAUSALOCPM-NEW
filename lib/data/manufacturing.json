@@ -35,8 +35,8 @@
     "headline": "Supplier A dependency is the dominant causal driver of shipment delay — statistically validated, not just correlated.",
     "confidence": "HIGH CONFIDENCE",
     "bullets": [
-      "Recovered causal effect: 6.65 days via Double ML — the naive estimate ran 21.8% high on confounding from Order Complexity",
-      "Discovery precision 1.00, recall 0.89 across 20 bootstrap reruns (F1 0.94); domain knowledge recovered the 1 nonlinear edge autonomous PC missed",
+      "Recovered causal effect: 6.6 days via Double ML vs a planted ground truth of 6.66 (error 0.9%). A naive dashboard would have said 7.84.",
+      "Autonomous discovery F1 0.89 — 8 of 9 planted edges found, 1 spurious retained; domain knowledge then adds the 1 nonlinear edge Fisher-Z cannot detect and prunes the 1 spurious one",
       "Recommended action: Shift ~25% procurement from Supplier A to Supplier B → ~$479K/yr expected savings, payback 3.2 months",
       "E-value 4.7 — an unmeasured confounder would need that strength on both treatment and outcome to nullify the effect"
     ],
@@ -58,73 +58,92 @@
     "reliabilityPct": 86
   },
   "discoveryMetrics": {
-    "precision": 1,
+    "precision": 0.89,
     "recall": 0.89,
-    "f1": 0.94,
+    "f1": 0.89,
     "stability": 0.86,
     "bootstrapRuns": 20,
-    "shd": 1,
+    "shd": 2,
     "truePositives": 8,
-    "falsePositives": 0,
+    "falsePositives": 1,
     "falseNegatives": 1,
     "edgeStability": [
       {
         "edge": "Order Complexity → Supplier A Dependency",
         "frequency": 0.34,
-        "discovered": false
+        "discovered": false,
+        "pruned": false
       },
       {
         "edge": "Order Complexity → Machine Queue Length",
         "frequency": 0.92,
-        "discovered": true
+        "discovered": true,
+        "pruned": false
       },
       {
         "edge": "Order Complexity → Shipment Delay",
         "frequency": 0.71,
-        "discovered": true
+        "discovered": true,
+        "pruned": false
       },
       {
         "edge": "Supplier A Dependency → Material Lead Time",
         "frequency": 0.99,
-        "discovered": true
+        "discovered": true,
+        "pruned": false
       },
       {
         "edge": "Material Lead Time → Shipment Delay",
         "frequency": 0.97,
-        "discovered": true
+        "discovered": true,
+        "pruned": false
       },
       {
         "edge": "Machine Queue Length → Approval Duration",
         "frequency": 0.88,
-        "discovered": true
+        "discovered": true,
+        "pruned": false
       },
       {
         "edge": "Export Flag → Approval Duration",
         "frequency": 0.83,
-        "discovered": true
+        "discovered": true,
+        "pruned": false
       },
       {
         "edge": "Approval Duration → Shipment Delay",
         "frequency": 0.79,
-        "discovered": true
+        "discovered": true,
+        "pruned": false
       },
       {
         "edge": "Express Carrier → Shipment Delay",
-        "frequency": 0.7,
-        "discovered": true
+        "frequency": 0.64,
+        "discovered": true,
+        "pruned": false
+      },
+      {
+        "edge": "Export Flag → Shipment Delay",
+        "frequency": 0.63,
+        "discovered": false,
+        "pruned": true
       }
     ]
   },
   "pipelinePerf": {
-    "postPrecision": 1,
+    "prePrecision": 0.89,
     "preRecall": 0.89,
-    "postRecall": 1,
-    "signConsistency": 1,
-    "avgModelR2": 0.897,
-    "coeffAccuracy": 0.936,
-    "recallGainPct": 11,
+    "preF1": 0.89,
+    "effectErrorPct": 0.9,
+    "confoundingRemovedPct": 18.8,
+    "bootstrapStability": 0.86,
+    "eValue": 4.7,
+    "avgModelR2": 0.83,
+    "avgCoefErrorPct": 8.7,
+    "signCertain": 8,
+    "signTotal": 9,
     "missingEdgesRecovered": 1,
-    "spuriousRemoved": 0,
+    "spuriousRemoved": 1,
     "validatedLinks": 9
   },
   "data": {
@@ -474,7 +493,8 @@
         "coef": 0.7,
         "strength": "weak",
         "discovered": false,
-        "bootstrapFreq": 0.34
+        "bootstrapFreq": 0.34,
+        "pruned": false
       },
       {
         "source": "order_complexity",
@@ -482,7 +502,8 @@
         "coef": 0.8,
         "strength": "weak",
         "discovered": true,
-        "bootstrapFreq": 0.92
+        "bootstrapFreq": 0.92,
+        "pruned": false
       },
       {
         "source": "order_complexity",
@@ -490,7 +511,8 @@
         "coef": 0.2,
         "strength": "weak",
         "discovered": true,
-        "bootstrapFreq": 0.71
+        "bootstrapFreq": 0.71,
+        "pruned": false
       },
       {
         "source": "supplier_a",
@@ -498,7 +520,8 @@
         "coef": 7.4,
         "strength": "strong",
         "discovered": true,
-        "bootstrapFreq": 0.99
+        "bootstrapFreq": 0.99,
+        "pruned": false
       },
       {
         "source": "material_lead_time",
@@ -506,7 +529,8 @@
         "coef": 0.9,
         "strength": "weak",
         "discovered": true,
-        "bootstrapFreq": 0.97
+        "bootstrapFreq": 0.97,
+        "pruned": false
       },
       {
         "source": "machine_queue_length",
@@ -514,7 +538,8 @@
         "coef": 1.3,
         "strength": "weak",
         "discovered": true,
-        "bootstrapFreq": 0.88
+        "bootstrapFreq": 0.88,
+        "pruned": false
       },
       {
         "source": "export_flag",
@@ -522,7 +547,8 @@
         "coef": 2,
         "strength": "moderate",
         "discovered": true,
-        "bootstrapFreq": 0.83
+        "bootstrapFreq": 0.83,
+        "pruned": false
       },
       {
         "source": "approval_duration",
@@ -530,7 +556,8 @@
         "coef": 0.35,
         "strength": "weak",
         "discovered": true,
-        "bootstrapFreq": 0.79
+        "bootstrapFreq": 0.79,
+        "pruned": false
       },
       {
         "source": "carrier_express",
@@ -538,7 +565,17 @@
         "coef": -0.6,
         "strength": "weak",
         "discovered": true,
-        "bootstrapFreq": 0.7
+        "bootstrapFreq": 0.64,
+        "pruned": false
+      },
+      {
+        "source": "export_flag",
+        "target": "shipment_delay",
+        "coef": 0,
+        "strength": "weak",
+        "discovered": true,
+        "bootstrapFreq": 0.63,
+        "pruned": true
       }
     ]
   },
@@ -546,11 +583,11 @@
     {
       "driver": "supplier_a",
       "label": "Supplier A Dependency",
-      "effectDays": 6.65,
-      "ciLow": 6.44,
-      "ciHigh": 6.86,
+      "effectDays": 6.6,
+      "ciLow": 6.31,
+      "ciHigh": 6.89,
       "groundTruthDays": 6.66,
-      "naiveDays": 8.1,
+      "naiveDays": 7.84,
       "method": "Double ML + backdoor adjustment (mediated path)"
     },
     {
@@ -595,12 +632,12 @@
     }
   ],
   "naiveEffect": {
-    "naiveDays": 8.1,
-    "causalDays": 6.65,
-    "biasDays": 1.45,
-    "biasPct": 21.8,
-    "ciLow": 6.44,
-    "ciHigh": 6.86,
+    "naiveDays": 7.84,
+    "causalDays": 6.6,
+    "biasDays": 1.24,
+    "biasPct": 18.8,
+    "ciLow": 6.31,
+    "ciHigh": 6.89,
     "method": "Double ML · cross-fitted gradient boosting · sandwich SEs"
   },
   "coefficients": [
@@ -682,7 +719,7 @@
     "randomCauseEstimate": 6.63,
     "randomCauseStable": true,
     "eValue": 4.7,
-    "reportedEstimate": 6.65,
+    "reportedEstimate": 6.6,
     "strengths": [
       0.05,
       0.1,
@@ -726,7 +763,7 @@
   "topDrivers": [
     {
       "label": "Supplier A Dependency",
-      "impactDays": 6.65
+      "impactDays": 6.6
     },
     {
       "label": "Material Lead Time",
@@ -960,9 +997,9 @@
     "date": "August 31, 2026",
     "casesAnalysed": 15000,
     "groundTruthEffect": 6.66,
-    "dmlEffect": 6.65,
-    "confoundingRemoved": 1.45,
-    "naiveDays": 8.1,
+    "dmlEffect": 6.6,
+    "confoundingRemoved": 1.24,
+    "naiveDays": 7.84,
     "achievableReductionPct": 20.5,
     "baselineDays": 8.2,
     "targetDays": 6.52,
@@ -972,7 +1009,7 @@
       "Material Lead Time",
       "Shipment Delay"
     ],
-    "signConsistency": "9/9 sign-correct",
+    "signConsistency": "8/9 coefficients sign-certain",
     "methodology": [
       {
         "phase": "Causal Discovery",
@@ -1028,20 +1065,22 @@
   "crossDomain": [
     {
       "domain": "Manufacturing",
-      "precision": 1,
+      "precision": 0.89,
       "recall": 0.89,
-      "f1": 0.94,
-      "naive": 8.1,
-      "causal": 6.65,
+      "f1": 0.89,
+      "naive": 7.84,
+      "causal": 6.6,
+      "planted": 6.66,
       "eValue": 4.7
     },
     {
       "domain": "Healthcare",
-      "precision": 1,
+      "precision": 0.89,
       "recall": 0.89,
-      "f1": 0.94,
-      "naive": 6.2,
-      "causal": 5.27,
+      "f1": 0.89,
+      "naive": 6.01,
+      "causal": 5.2,
+      "planted": 5.27,
       "eValue": 3.9
     }
   ],
@@ -1182,7 +1221,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.63,
+          "contributionDays": 5.58,
           "kind": "controllable"
         },
         {
@@ -1208,7 +1247,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 88,
-      "controllableDays": 8.45,
+      "controllableDays": 8.4,
       "structuralDays": 0.6,
       "complexityScore": 9,
       "treated": true,
@@ -1227,7 +1266,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 4.71,
+          "contributionDays": 4.67,
           "kind": "controllable"
         },
         {
@@ -1253,7 +1292,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 45,
-      "controllableDays": 8.97,
+      "controllableDays": 8.93,
       "structuralDays": 0.83,
       "complexityScore": 5,
       "treated": false,
@@ -1266,13 +1305,13 @@
       "category": "Raw Metal",
       "value": 11707,
       "actualDelayDays": 11.5,
-      "predictedDelayDays": 17,
+      "predictedDelayDays": 16.9,
       "counterfactualDelayDays": 7.7,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.45,
+          "contributionDays": 5.41,
           "kind": "controllable"
         },
         {
@@ -1298,7 +1337,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 83,
-      "controllableDays": 8.78,
+      "controllableDays": 8.74,
       "structuralDays": 1.1,
       "complexityScore": 5,
       "treated": true,
@@ -1311,13 +1350,13 @@
       "category": "Assemblies",
       "value": 40336,
       "actualDelayDays": 11.7,
-      "predictedDelayDays": 19.7,
+      "predictedDelayDays": 19.6,
       "counterfactualDelayDays": 7.3,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 6.28,
+          "contributionDays": 6.23,
           "kind": "controllable"
         },
         {
@@ -1343,7 +1382,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 90,
-      "controllableDays": 11.42,
+      "controllableDays": 11.37,
       "structuralDays": 0.42,
       "complexityScore": 10,
       "treated": true,
@@ -1357,12 +1396,12 @@
       "value": 46247,
       "actualDelayDays": 10.5,
       "predictedDelayDays": 15.3,
-      "counterfactualDelayDays": 8.2,
+      "counterfactualDelayDays": 8.3,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 3.23,
+          "contributionDays": 3.21,
           "kind": "controllable"
         },
         {
@@ -1388,7 +1427,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 65,
-      "controllableDays": 6.23,
+      "controllableDays": 6.21,
       "structuralDays": 1.01,
       "complexityScore": 10,
       "treated": false,
@@ -1401,13 +1440,13 @@
       "category": "Assemblies",
       "value": 62481,
       "actualDelayDays": 7.1,
-      "predictedDelayDays": -5.8,
-      "counterfactualDelayDays": 2.3,
+      "predictedDelayDays": -5.7,
+      "counterfactualDelayDays": 2.4,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -6.83,
+          "contributionDays": -6.78,
           "kind": "controllable"
         },
         {
@@ -1433,7 +1472,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 20,
-      "controllableDays": -12.2,
+      "controllableDays": -12.15,
       "structuralDays": -1.02,
       "complexityScore": 2,
       "treated": false,
@@ -1452,7 +1491,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 6.6,
+          "contributionDays": 6.55,
           "kind": "controllable"
         },
         {
@@ -1478,7 +1517,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 55,
-      "controllableDays": 12.03,
+      "controllableDays": 11.98,
       "structuralDays": 0.8,
       "complexityScore": 9,
       "treated": true,
@@ -1491,13 +1530,13 @@
       "category": "Electronics",
       "value": 28571,
       "actualDelayDays": 9,
-      "predictedDelayDays": 18,
+      "predictedDelayDays": 17.9,
       "counterfactualDelayDays": 5.5,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.01,
+          "contributionDays": 4.97,
           "kind": "controllable"
         },
         {
@@ -1523,7 +1562,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 53,
-      "controllableDays": 9.72,
+      "controllableDays": 9.68,
       "structuralDays": 0.54,
       "complexityScore": 1,
       "treated": true,
@@ -1542,7 +1581,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -8.28,
+          "contributionDays": -8.22,
           "kind": "controllable"
         },
         {
@@ -1568,7 +1607,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 5,
-      "controllableDays": -11.99,
+      "controllableDays": -11.93,
       "structuralDays": -1.37,
       "complexityScore": 4,
       "treated": true,
@@ -1587,7 +1626,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -7.75,
+          "contributionDays": -7.69,
           "kind": "controllable"
         },
         {
@@ -1613,7 +1652,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 30,
-      "controllableDays": -11.82,
+      "controllableDays": -11.76,
       "structuralDays": -1.06,
       "complexityScore": 9,
       "treated": true,
@@ -1626,13 +1665,13 @@
       "category": "Electronics",
       "value": 31660,
       "actualDelayDays": 11.1,
-      "predictedDelayDays": 22.3,
-      "counterfactualDelayDays": 3.8,
+      "predictedDelayDays": 22.2,
+      "counterfactualDelayDays": 3.9,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 10.42,
+          "contributionDays": 10.35,
           "kind": "controllable"
         },
         {
@@ -1658,7 +1697,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 80,
-      "controllableDays": 13.09,
+      "controllableDays": 13.02,
       "structuralDays": 0.91,
       "complexityScore": 9,
       "treated": true,
@@ -1677,7 +1716,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -3.13,
+          "contributionDays": -3.1,
           "kind": "controllable"
         },
         {
@@ -1703,7 +1742,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 23,
-      "controllableDays": -6.55,
+      "controllableDays": -6.52,
       "structuralDays": -0.94,
       "complexityScore": 4,
       "treated": false,
@@ -1722,7 +1761,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -4.3,
+          "contributionDays": -4.27,
           "kind": "controllable"
         },
         {
@@ -1748,7 +1787,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 25,
-      "controllableDays": -7.96,
+      "controllableDays": -7.93,
       "structuralDays": -1.35,
       "complexityScore": 10,
       "treated": true,
@@ -1761,13 +1800,13 @@
       "category": "Packaging",
       "value": 77822,
       "actualDelayDays": 11.7,
-      "predictedDelayDays": 20.4,
+      "predictedDelayDays": 20.3,
       "counterfactualDelayDays": 6.4,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 7.63,
+          "contributionDays": 7.57,
           "kind": "controllable"
         },
         {
@@ -1793,7 +1832,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 93,
-      "controllableDays": 11.09,
+      "controllableDays": 11.03,
       "structuralDays": 0.89,
       "complexityScore": 8,
       "treated": true,
@@ -1817,7 +1856,7 @@
         },
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -2.54,
+          "contributionDays": -2.52,
           "kind": "controllable"
         },
         {
@@ -1838,7 +1877,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 15,
-      "controllableDays": -7.98,
+      "controllableDays": -7.96,
       "structuralDays": -0.38,
       "complexityScore": 6,
       "treated": true,
@@ -1857,7 +1896,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 4.32,
+          "contributionDays": 4.29,
           "kind": "controllable"
         },
         {
@@ -1883,7 +1922,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 70,
-      "controllableDays": 7.57,
+      "controllableDays": 7.54,
       "structuralDays": 0.82,
       "complexityScore": 9,
       "treated": true,
@@ -1896,13 +1935,13 @@
       "category": "Assemblies",
       "value": 2226,
       "actualDelayDays": 10.6,
-      "predictedDelayDays": 23.2,
-      "counterfactualDelayDays": 4.5,
+      "predictedDelayDays": 23.1,
+      "counterfactualDelayDays": 4.6,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 8.7,
+          "contributionDays": 8.63,
           "kind": "controllable"
         },
         {
@@ -1928,7 +1967,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 68,
-      "controllableDays": 13.71,
+      "controllableDays": 13.64,
       "structuralDays": 1.4,
       "complexityScore": 6,
       "treated": true,
@@ -1947,7 +1986,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 7.86,
+          "contributionDays": 7.8,
           "kind": "controllable"
         },
         {
@@ -1973,7 +2012,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 73,
-      "controllableDays": 10.81,
+      "controllableDays": 10.75,
       "structuralDays": 0.74,
       "complexityScore": 8,
       "treated": true,
@@ -1992,7 +2031,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 6.4,
+          "contributionDays": 6.36,
           "kind": "controllable"
         },
         {
@@ -2018,7 +2057,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 60,
-      "controllableDays": 12.02,
+      "controllableDays": 11.98,
       "structuralDays": 0.94,
       "complexityScore": 7,
       "treated": true,
@@ -2037,7 +2076,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -2.73,
+          "contributionDays": -2.71,
           "kind": "controllable"
         },
         {
@@ -2063,7 +2102,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 33,
-      "controllableDays": -5.64,
+      "controllableDays": -5.62,
       "structuralDays": -0.67,
       "complexityScore": 7,
       "treated": false,
@@ -2076,13 +2115,13 @@
       "category": "Fasteners",
       "value": 19246,
       "actualDelayDays": 4.5,
-      "predictedDelayDays": -3,
+      "predictedDelayDays": -2.9,
       "counterfactualDelayDays": 0.3,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -8.41,
+          "contributionDays": -8.34,
           "kind": "controllable"
         },
         {
@@ -2108,7 +2147,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 8,
-      "controllableDays": -10.57,
+      "controllableDays": -10.5,
       "structuralDays": -0.38,
       "complexityScore": 1,
       "treated": true,
@@ -2127,7 +2166,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -4.99,
+          "contributionDays": -4.95,
           "kind": "controllable"
         },
         {
@@ -2153,7 +2192,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 35,
-      "controllableDays": -9,
+      "controllableDays": -8.96,
       "structuralDays": -0.82,
       "complexityScore": 3,
       "treated": true,
@@ -2172,7 +2211,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -7.91,
+          "contributionDays": -7.85,
           "kind": "controllable"
         },
         {
@@ -2198,7 +2237,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 3,
-      "controllableDays": -11.95,
+      "controllableDays": -11.89,
       "structuralDays": -1.06,
       "complexityScore": 3,
       "treated": true,
@@ -2211,13 +2250,13 @@
       "category": "Assemblies",
       "value": 23289,
       "actualDelayDays": 8,
-      "predictedDelayDays": -4.5,
-      "counterfactualDelayDays": 2.9,
+      "predictedDelayDays": -4.4,
+      "counterfactualDelayDays": 3,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -7.24,
+          "contributionDays": -7.18,
           "kind": "controllable"
         },
         {
@@ -2243,7 +2282,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 38,
-      "controllableDays": -11.91,
+      "controllableDays": -11.85,
       "structuralDays": -1.12,
       "complexityScore": 10,
       "treated": false,
@@ -2262,7 +2301,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.84,
+          "contributionDays": 5.79,
           "kind": "controllable"
         },
         {
@@ -2288,7 +2327,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 48,
-      "controllableDays": 10.33,
+      "controllableDays": 10.28,
       "structuralDays": 0.82,
       "complexityScore": 3,
       "treated": true,
@@ -2307,7 +2346,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 6.06,
+          "contributionDays": 6.02,
           "kind": "controllable"
         },
         {
@@ -2333,7 +2372,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 75,
-      "controllableDays": 10.46,
+      "controllableDays": 10.42,
       "structuralDays": 0.48,
       "complexityScore": 9,
       "treated": true,
@@ -2352,7 +2391,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -3.56,
+          "contributionDays": -3.54,
           "kind": "controllable"
         },
         {
@@ -2378,7 +2417,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 10,
-      "controllableDays": -7.04,
+      "controllableDays": -7.02,
       "structuralDays": -0.68,
       "complexityScore": 10,
       "treated": false,
@@ -2402,7 +2441,7 @@
         },
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 2.7,
+          "contributionDays": 2.68,
           "kind": "controllable"
         },
         {
@@ -2423,7 +2462,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 43,
-      "controllableDays": 7.42,
+      "controllableDays": 7.4,
       "structuralDays": 1.29,
       "complexityScore": 8,
       "treated": false,
@@ -2436,13 +2475,13 @@
       "category": "Assemblies",
       "value": 28676,
       "actualDelayDays": 12.5,
-      "predictedDelayDays": 18,
+      "predictedDelayDays": 17.9,
       "counterfactualDelayDays": 8.4,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.85,
+          "contributionDays": 5.8,
           "kind": "controllable"
         },
         {
@@ -2468,7 +2507,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 98,
-      "controllableDays": 7.85,
+      "controllableDays": 7.8,
       "structuralDays": 0.97,
       "complexityScore": 6,
       "treated": true,
@@ -2487,7 +2526,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.06,
+          "contributionDays": 5.02,
           "kind": "controllable"
         },
         {
@@ -2513,7 +2552,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 85,
-      "controllableDays": 8.52,
+      "controllableDays": 8.48,
       "structuralDays": 1.44,
       "complexityScore": 10,
       "treated": true,
@@ -2532,7 +2571,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -3.27,
+          "contributionDays": -3.25,
           "kind": "controllable"
         },
         {
@@ -2558,7 +2597,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 28,
-      "controllableDays": -5.79,
+      "controllableDays": -5.77,
       "structuralDays": -0.9,
       "complexityScore": 6,
       "treated": true,
@@ -2577,7 +2616,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.57,
+          "contributionDays": 5.53,
           "kind": "controllable"
         },
         {
@@ -2603,7 +2642,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 95,
-      "controllableDays": 10.06,
+      "controllableDays": 10.02,
       "structuralDays": 0.95,
       "complexityScore": 10,
       "treated": false,
@@ -2616,13 +2655,13 @@
       "category": "Fasteners",
       "value": 53668,
       "actualDelayDays": 11,
-      "predictedDelayDays": 19.3,
+      "predictedDelayDays": 19.2,
       "counterfactualDelayDays": 6.9,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.85,
+          "contributionDays": 5.8,
           "kind": "controllable"
         },
         {
@@ -2648,7 +2687,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 78,
-      "controllableDays": 10.4,
+      "controllableDays": 10.35,
       "structuralDays": 1.06,
       "complexityScore": 10,
       "treated": true,
@@ -2661,13 +2700,13 @@
       "category": "Fasteners",
       "value": 53913,
       "actualDelayDays": 7,
-      "predictedDelayDays": -2.3,
+      "predictedDelayDays": -2.2,
       "counterfactualDelayDays": 3.1,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -5.58,
+          "contributionDays": -5.53,
           "kind": "controllable"
         },
         {
@@ -2693,7 +2732,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 18,
-      "controllableDays": -10.67,
+      "controllableDays": -10.62,
       "structuralDays": -0.52,
       "complexityScore": 7,
       "treated": true,
@@ -2706,13 +2745,13 @@
       "category": "Electronics",
       "value": 49700,
       "actualDelayDays": 9.2,
-      "predictedDelayDays": 16,
+      "predictedDelayDays": 15.9,
       "counterfactualDelayDays": 6.3,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 4.17,
+          "contributionDays": 4.14,
           "kind": "controllable"
         },
         {
@@ -2738,7 +2777,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 57,
-      "controllableDays": 7.36,
+      "controllableDays": 7.33,
       "structuralDays": 0.59,
       "complexityScore": 8,
       "treated": true,
@@ -2751,13 +2790,13 @@
       "category": "Assemblies",
       "value": 34663,
       "actualDelayDays": 5.5,
-      "predictedDelayDays": -3.7,
+      "predictedDelayDays": -3.6,
       "counterfactualDelayDays": 0.3,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": -8.09,
+          "contributionDays": -8.02,
           "kind": "controllable"
         },
         {
@@ -2783,7 +2822,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 13,
-      "controllableDays": -11.41,
+      "controllableDays": -11.34,
       "structuralDays": -0.57,
       "complexityScore": 2,
       "treated": false,
@@ -2796,13 +2835,13 @@
       "category": "Fasteners",
       "value": 50715,
       "actualDelayDays": 8.2,
-      "predictedDelayDays": 17.6,
-      "counterfactualDelayDays": 4.4,
+      "predictedDelayDays": 17.5,
+      "counterfactualDelayDays": 4.5,
       "counterfactualLabel": "If procurement had been re-routed to Supplier B",
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 5.38,
+          "contributionDays": 5.34,
           "kind": "controllable"
         },
         {
@@ -2828,7 +2867,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 40,
-      "controllableDays": 8.41,
+      "controllableDays": 8.37,
       "structuralDays": 0.56,
       "complexityScore": 9,
       "treated": false,
@@ -2852,7 +2891,7 @@
         },
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 2,
+          "contributionDays": 1.99,
           "kind": "controllable"
         },
         {
@@ -2873,7 +2912,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 63,
-      "controllableDays": 6.65,
+      "controllableDays": 6.64,
       "structuralDays": 0.65,
       "complexityScore": 10,
       "treated": true,
@@ -2892,7 +2931,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 4.98,
+          "contributionDays": 4.94,
           "kind": "controllable"
         },
         {
@@ -2918,7 +2957,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 100,
-      "controllableDays": 7.83,
+      "controllableDays": 7.79,
       "structuralDays": 1.05,
       "complexityScore": 9,
       "treated": true,
@@ -2937,7 +2976,7 @@
       "drivers": [
         {
           "label": "Supplier A Dependency",
-          "contributionDays": 3.15,
+          "contributionDays": 3.12,
           "kind": "controllable"
         },
         {
@@ -2963,7 +3002,7 @@
       ],
       "populationAvg": 8.2,
       "percentile": 50,
-      "controllableDays": 6.8,
+      "controllableDays": 6.77,
       "structuralDays": 0.65,
       "complexityScore": 6,
       "treated": true,

@@ -22,18 +22,18 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
           <Pill tone="forest">HIGH CONFIDENCE</Pill>
         </div>
         <ul className="space-y-1.5 text-sm text-ink-soft">
-          <li>Causal discovery recovered <b>{f.scenario.causalLinks} verified links</b> across {dv.totalEvents.toLocaleString()} events and {f.scenario.objectTypes} object types — validated against planted ground truth, not left as raw correlation.</li>
+          <li>Autonomous bootstrapped PC recovered <b>{m.truePositives} of {f.scenario.causalLinks}</b> planted edges across {dv.totalEvents.toLocaleString()} events and {f.scenario.objectTypes} object types — F1 {m.f1.toFixed(2)}, with {m.falsePositives} spurious edge above threshold.</li>
           <li>Strongest measured relationship: <b>{dv.strongestRelationship.from} → {dv.strongestRelationship.to}</b> (coefficient {dv.strongestRelationship.coefficient}).</li>
-          <li>Bootstrap stability {Math.round(m.stability * 100)}% across {m.bootstrapRuns} resampled reruns — precision {m.precision.toFixed(2)}, recall {m.recall.toFixed(2)} before domain knowledge.</li>
-          <li>Domain knowledge recovered {f.pipelinePerf.missingEdgesRecovered} missing edge(s), guaranteeing DAG validity without inventing relationships.</li>
+          <li>Bootstrap stability {Math.round(m.stability * 100)}% across {m.bootstrapRuns} resampled reruns of 2,000 rows each.</li>
+          <li>Domain knowledge then adds the {f.pipelinePerf.missingEdgesRecovered} nonlinear edge Fisher-Z cannot detect and prunes the {f.pipelinePerf.spuriousRemoved} spurious one — no invented relationships.</li>
         </ul>
       </Card>
 
       <div className="grid gap-3 grid-cols-2 xl:grid-cols-4">
-        <Badge label="Bootstrap stability" value={`${Math.round(m.stability * 100)}%`} />
+        <Badge label="Discovery F1" value={m.f1.toFixed(2)} />
         <Badge label="Precision" value={m.precision.toFixed(2)} />
         <Badge label="Edge recall" value={m.recall.toFixed(2)} />
-        <Badge label="Recovery F1" value={m.f1.toFixed(2)} />
+        <Badge label="Bootstrap stability" value={`${Math.round(m.stability * 100)}%`} />
       </div>
 
       <Step n={1} title="Understand the event data" hint="foundation for causal discovery">
@@ -123,20 +123,30 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
             <GraphLegend />
           </Card>
           <Card pad={false}>
-            <div className="p-5 pb-2"><SectionTitle hint="bootstrap edge frequency">Edge stability</SectionTitle></div>
+            <div className="p-5 pb-2"><SectionTitle hint="≥ 60% = retained by bootstrap">Edge stability</SectionTitle></div>
             <div className="scroll-slim max-h-[320px] overflow-auto px-5 pb-5">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
                     <th className="pb-2 pr-4 font-semibold">Edge</th>
-                    <th className="pb-2 font-semibold">Frequency</th>
+                    <th className="pb-2 pr-4 font-semibold">Freq.</th>
+                    <th className="pb-2 font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {m.edgeStability.map((e) => (
+                  {[...m.edgeStability].sort((a, b) => b.frequency - a.frequency).map((e) => (
                     <tr key={e.edge} className="border-t border-line-soft text-ink-soft">
                       <td className="py-2 pr-4">{e.edge}</td>
-                      <td className="py-2">{Math.round(e.frequency * 100)}%</td>
+                      <td className="py-2 pr-4">{Math.round(e.frequency * 100)}%</td>
+                      <td className="py-2">
+                        {e.pruned ? (
+                          <span className="text-amber">spurious · pruned</span>
+                        ) : e.frequency >= 0.6 ? (
+                          <span className="text-forest">recovered</span>
+                        ) : (
+                          <span className="text-muted">missed · sub-threshold</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -151,26 +161,26 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
           <Stat value={`${Math.round(m.stability * 100)}%`} label={`Edges stable across ${m.bootstrapRuns} resampled graphs`} accent />
           <Stat value={m.precision.toFixed(2)} label="Precision" />
           <Stat value={m.recall.toFixed(2)} label="Edge recall" />
-          <Stat value={m.f1.toFixed(2)} label="Recovery F1" accent />
+          <Stat value={m.f1.toFixed(2)} label="Discovery F1" accent />
         </div>
+        <p className="mt-2 text-[12px] text-muted">
+          These are the raw statistics — measured before any expert constraint is applied. F1 {m.f1.toFixed(2)} is
+          consistent with published bootstrapped-PC benchmarks on logs of this size; it is not, and should not be, 1.0.
+        </p>
       </Step>
 
-      <Step n={6} title="Evaluate domain-knowledge contribution" hint="with vs. without expert constraints">
+      <Step n={6} title="Evaluate domain-knowledge contribution" hint="what the expert constraints actually changed">
         <div className="grid gap-3 sm:grid-cols-3">
-          <Stat value={`+${f.pipelinePerf.recallGainPct}%`} label="Recall gain" accent />
-          <Stat value={`${f.pipelinePerf.missingEdgesRecovered}`} label="Missing edge(s) recovered" />
-          <Stat value={`−${f.pipelinePerf.spuriousRemoved}`} label="Spurious links removed" />
+          <Stat value={`+${f.pipelinePerf.missingEdgesRecovered}`} label="Nonlinear edge recovered" accent />
+          <Stat value={`−${f.pipelinePerf.spuriousRemoved}`} label="Spurious edge pruned" />
+          <Stat value={`${f.pipelinePerf.validatedLinks}/${f.pipelinePerf.validatedLinks}`} label="Actionable DAG" accent />
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-ink-soft">
-          {["Removed spurious links", "Recovered missing causal edges", "Preserved DAG validity", "Improved causal recall"].map((x) => (
-            <div key={x} className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> {x}</div>
-          ))}
+        <div className="mt-3 grid gap-2 text-sm text-ink-soft sm:grid-cols-2">
+          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Added: {f.scenario.confounderLabel} → {f.scenario.treatmentLabel} (sigmoid — Fisher-Z blind)</div>
+          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Removed: the spurious edge violating a hard process constraint</div>
+          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Every asserted edge is known-true, never invented</div>
+          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Corrected structure is reported separately, never as a discovery score</div>
         </div>
-        <p className="mt-3 text-[12px] text-muted">
-          Pre-DK: precision {m.precision.toFixed(2)} / recall {f.pipelinePerf.preRecall.toFixed(2)} ·
-          Post-DK: precision {f.pipelinePerf.postPrecision.toFixed(2)} / recall {f.pipelinePerf.postRecall.toFixed(2)}
-          — resulting in {f.pipelinePerf.validatedLinks} validated links.
-        </p>
       </Step>
 
       {/* raw data preview (collapsible) */}

@@ -59,18 +59,25 @@ export function CausalGraph({
         const dimmed = hover && hover !== e.source && hover !== e.target;
         const mx = (a.x + b.x) / 2;
         const my = (a.y + b.y) / 2 - 18;
+        const stroke = e.pruned ? "#c98b45" : active ? "#3d5a3d" : e.discovered ? "#a8a492" : "#cbb89a";
         return (
-          <g key={i} opacity={dimmed ? 0.12 : 1}>
+          <g key={i} opacity={dimmed ? 0.12 : e.pruned ? 0.55 : 1}>
             <path
               d={`M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`}
               fill="none"
-              stroke={active ? "#3d5a3d" : e.discovered ? "#a8a492" : "#cbb89a"}
+              stroke={stroke}
               strokeWidth={active ? 2.6 : e.strength === "strong" ? 2 : e.strength === "moderate" ? 1.4 : 0.9}
-              strokeDasharray={e.discovered ? undefined : "5 4"}
+              strokeDasharray={e.pruned || !e.discovered ? "5 4" : undefined}
               markerEnd={active ? "url(#cg-arw-a)" : "url(#cg-arw)"}
               className={active ? "flow-dash" : undefined}
             />
-            {!compact && (
+            {e.pruned && (
+              <g transform={`translate(${mx} ${(a.y + b.y) / 2})`}>
+                <circle r={5.5} fill="#fcfbf6" stroke="#c98b45" strokeWidth={1} />
+                <path d="M-2.5 -2.5 L2.5 2.5 M2.5 -2.5 L-2.5 2.5" stroke="#c98b45" strokeWidth={1.3} />
+              </g>
+            )}
+            {!compact && !e.pruned && (
               <text x={mx} y={my + 4} textAnchor="middle" fontSize={8.5} fill="#8b887b">
                 {e.coef > 0 ? "+" : ""}
                 {e.coef}
@@ -121,10 +128,16 @@ export function GraphLegend({ showDiscovery = true }: { showDiscovery?: boolean 
         </span>
       ))}
       {showDiscovery && (
-        <span className="inline-flex items-center gap-1.5">
-          <span className={clsx("inline-block h-0 w-4 border-t-2 border-dashed border-[#cbb89a]")} />
-          recovered by domain knowledge
-        </span>
+        <>
+          <span className="inline-flex items-center gap-1.5">
+            <span className={clsx("inline-block h-0 w-4 border-t-2 border-dashed border-[#cbb89a]")} />
+            recovered by domain knowledge
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-0 w-4 border-t-2 border-dashed border-[#c98b45]" />
+            <span className="text-[#c98b45]">✕</span> spurious · pruned
+          </span>
+        </>
       )}
     </div>
   );

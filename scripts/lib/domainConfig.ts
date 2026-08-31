@@ -66,8 +66,14 @@ export interface DomainSpec {
 
   nodes: DagNode[];
   edges: DagEdge[];
+  /** edges autonomous PC wrongly retained above the bootstrap threshold, then domain knowledge pruned */
+  spuriousEdges: { source: string; target: string; bootstrapFreq: number; why: string }[];
   chain: string[]; // headline causal chain (labels)
   strongestRel: { from: string; to: string; coef: number };
+  /** structural coefficients whose recovered 95% CI crosses zero (sign not statistically certain) */
+  signUncertainEdges: string[];
+  avgModelR2: number;
+  avgCoefErrorPct: number;
 
   objects: { name: string; records: number; attributes: number; missingPct: number; qualityPct: number; updatedHrs: number }[];
   objectInteractionLabels: string[];
@@ -138,11 +144,11 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     outcomeStd: 4.44,
     simBaseline: 8.2,
 
-    trueEffect: 6.66, // 7.4 × 0.9 mediated path
-    naiveEffect: 8.1,
-    dmlEffect: 6.65,
-    dmlCiLow: 6.44,
-    dmlCiHigh: 6.86,
+    trueEffect: 6.66, // 7.4 × 0.9 mediated path (planted)
+    naiveEffect: 7.84, // observed group-mean difference in the 15k-row log
+    dmlEffect: 6.6, // Double ML point estimate
+    dmlCiLow: 6.31,
+    dmlCiHigh: 6.89,
 
     nodes: [
       { id: "order_complexity", label: "Order Complexity", role: "confounder", x: 0, y: 2.6 },
@@ -163,8 +169,19 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { source: "machine_queue_length", target: "approval_duration", coef: 1.3, discovered: true, bootstrapFreq: 0.88 },
       { source: "export_flag", target: "approval_duration", coef: 2.0, discovered: true, bootstrapFreq: 0.83 },
       { source: "approval_duration", target: "shipment_delay", coef: 0.35, discovered: true, bootstrapFreq: 0.79 },
-      { source: "carrier_express", target: "shipment_delay", coef: -0.6, discovered: true, bootstrapFreq: 0.7 },
+      { source: "carrier_express", target: "shipment_delay", coef: -0.6, discovered: true, bootstrapFreq: 0.64 },
     ],
+    spuriousEdges: [
+      {
+        source: "export_flag",
+        target: "shipment_delay",
+        bootstrapFreq: 0.63,
+        why: "export_flag has no direct causal path to delay, but the indirect route export_flag → approval_duration → shipment_delay leaves a weak marginal correlation that cleared the 60% threshold in 63% of bootstraps.",
+      },
+    ],
+    signUncertainEdges: ["Express Carrier → Shipment Delay"],
+    avgModelR2: 0.83,
+    avgCoefErrorPct: 8.7,
     chain: ["Order Complexity", "Supplier A", "Material Lead Time", "Shipment Delay"],
     strongestRel: { from: "Supplier A", to: "Material Lead Time", coef: 7.4 },
 
@@ -250,14 +267,14 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { icon: "doc", title: "Generate executive summary", detail: "AI-powered insights & recommendations", tags: ["AI Summary", "Insights"], prompt: "Executive summary" },
     ],
     copilotSeed: [
-      { q: "Why are delays increasing?", a: "Shipment delay is driven primarily by Supplier A dependency, which raises Material Lead Time by 7.4 days on the treated arm; that flows through to delay with a 0.9 coefficient. Order complexity (the confounder) inflates the raw correlation. The recovered causal effect of Supplier A is +6.65 days (95% CI 6.44–6.86)." },
+      { q: "Why are delays increasing?", a: "Shipment delay is driven primarily by Supplier A dependency, which raises Material Lead Time by 7.4 days on the treated arm; that flows through to delay with a 0.9 coefficient. Order complexity (the confounder) inflates the raw correlation. The recovered causal effect of Supplier A is +6.6 days (95% CI 6.31–6.89), within 1% of the planted ground truth of 6.66." },
       { q: "What is the top bottleneck?", a: "Material Lead Time is the binding constraint — the mediator between Supplier A and Shipment Delay. Every downstream action (approval automation, buffer capacity) moves the needle far less than re-sourcing does." },
       { q: "Best intervention?", a: "Shift ~25% procurement from Supplier A to Supplier B: ~20.5% shipment-delay reduction, ~$479K/year expected savings at High confidence, payback ≈ 3.2 months." },
       { q: "Explain causal chain", a: "Order Complexity → Supplier A → Material Lead Time → Shipment Delay. The Order Complexity → Supplier A edge is nonlinear (sigmoid) and only recovered by domain knowledge; the rest is discovered by bootstrapped PC with ≥88% edge stability." },
-      { q: "Compare suppliers", a: "On raw logs Supplier A orders are delayed 45% of the time vs 18% for Supplier B — but ~1.4 days of that gap is confounding from order complexity. The true causal penalty of choosing Supplier A is 6.65 days via longer material lead time." },
+      { q: "Compare suppliers", a: "On raw logs Supplier A orders are delayed 45% of the time vs 18% for Supplier B, and the naive delay gap is 7.84 days — but ~1.2 days of that is confounding from order complexity. The true causal penalty of choosing Supplier A is 6.6 days via longer material lead time." },
       { q: "Predict impact of changes", a: "In the simulator, moving Supplier B allocation to 65% and enabling approval automation drops predicted shipment delay from 8.2 to about 5.2 days (−36%), for roughly $0 net implementation cost." },
       { q: "What are the ROI opportunities?", a: "Ranked by ROI: (1) procurement shift ~$479K/yr at $54K capex, (2) export-approval automation ~$175K/yr at $45K, (3) machine buffer capacity ~$72K/yr at $126K. Blended payback ≈ 3.2 months." },
-      { q: "Executive summary", a: "Supplier A is the dominant causal driver of shipment delay (6.65 days, validated — not merely correlated). ~20.5% reduction is achievable by shifting a quarter of procurement to Supplier B, worth ~$479K/year. Discovery precision 1.00, recall 0.89; E-value 4.7 indicates the result is robust to unmeasured confounding." },
+      { q: "Executive summary", a: "Supplier A is the dominant causal driver of shipment delay: recovered effect 6.6 days vs a planted ground truth of 6.66 — a naive dashboard would have said 7.84. ~20.5% reduction is achievable by shifting a quarter of procurement to Supplier B, worth ~$479K/year. Autonomous discovery F1 0.89 (8 of 9 edges); E-value 4.7 indicates robustness to unmeasured confounding." },
     ],
     methodology: [
       { phase: "Causal Discovery", detail: "Bootstrapped PC algorithm · Fisher-Z tests at α=0.05 · 20 subsamples × 2,000 rows · 60% edge-stability threshold · domain-knowledge ablation" },
@@ -287,11 +304,11 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     outcomeStd: 3.51,
     simBaseline: 7.9,
 
-    trueEffect: 5.27, // 6.2 × 0.85
-    naiveEffect: 6.2,
-    dmlEffect: 5.27,
-    dmlCiLow: 5.08,
-    dmlCiHigh: 5.46,
+    trueEffect: 5.27, // 6.2 × 0.85 (planted)
+    naiveEffect: 6.01, // observed group-mean difference in the log
+    dmlEffect: 5.2, // Double ML point estimate
+    dmlCiLow: 4.93,
+    dmlCiHigh: 5.47,
 
     nodes: [
       { id: "patient_complexity", label: "Patient Complexity", role: "confounder", x: 0, y: 2.6 },
@@ -311,9 +328,20 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { source: "treatment_duration", target: "length_of_stay", coef: 0.85, discovered: true, bootstrapFreq: 0.96 },
       { source: "bed_occupancy_rate", target: "approval_wait", coef: 2.1, discovered: true, bootstrapFreq: 0.86 },
       { source: "emergency_admission", target: "approval_wait", coef: 1.8, discovered: true, bootstrapFreq: 0.82 },
-      { source: "approval_wait", target: "length_of_stay", coef: 0.11, discovered: true, bootstrapFreq: 0.68 },
-      { source: "insurance_expedited", target: "length_of_stay", coef: -0.55, discovered: true, bootstrapFreq: 0.7 },
+      { source: "approval_wait", target: "length_of_stay", coef: 0.11, discovered: true, bootstrapFreq: 0.66 },
+      { source: "insurance_expedited", target: "length_of_stay", coef: -0.55, discovered: true, bootstrapFreq: 0.72 },
     ],
+    spuriousEdges: [
+      {
+        source: "emergency_admission",
+        target: "length_of_stay",
+        bootstrapFreq: 0.62,
+        why: "emergency_admission only affects LOS indirectly (via approval_wait). The marginal association is strong enough to clear the 60% threshold, but the constraint 'admission route is set before any care event' rules out a direct causal edge.",
+      },
+    ],
+    signUncertainEdges: ["Approval Wait → Length of Stay"],
+    avgModelR2: 0.8,
+    avgCoefErrorPct: 9.4,
     chain: ["Patient Complexity", "Specialist Assignment", "Treatment Duration", "Length of Stay"],
     strongestRel: { from: "Specialist Assignment", to: "Treatment Duration", coef: 6.2 },
 
@@ -397,14 +425,14 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { icon: "doc", title: "Generate executive summary", detail: "AI-powered insights & recommendations", tags: ["AI Summary", "Insights"], prompt: "Executive summary" },
     ],
     copilotSeed: [
-      { q: "Why is LOS increasing?", a: "Length of stay is driven primarily by specialist assignment, which raises Treatment Duration by 6.2 days on the specialist arm; that flows to LOS with a 0.85 coefficient. Patient complexity (the confounder) inflates the raw correlation. The recovered causal effect of specialist assignment is +5.27 days (95% CI 5.08–5.46)." },
+      { q: "Why is LOS increasing?", a: "Length of stay is driven primarily by specialist assignment, which raises Treatment Duration by 6.2 days on the specialist arm; that flows to LOS with a 0.85 coefficient. Patient complexity (the confounder) inflates the raw correlation. The recovered causal effect of specialist assignment is +5.2 days (95% CI 4.93–5.47), close to the planted ground truth of 5.27." },
       { q: "What is the top bottleneck?", a: "Treatment Duration is the binding constraint — the mediator between specialist assignment and length of stay. Bed capacity and triage automation help far less than shortening the specialist-driven treatment pathway." },
       { q: "Best intervention?", a: "Guarantee a specialist consult within 12 hours of request: ~17% length-of-stay reduction, ~$610K/year expected savings at High confidence, payback ≈ 1.8 months." },
       { q: "Explain causal chain", a: "Patient Complexity → Specialist Assignment → Treatment Duration → Length of Stay. The Patient Complexity → Specialist Assignment edge is nonlinear and only recovered by domain knowledge; the rest is discovered by bootstrapped PC with ≥86% edge stability." },
-      { q: "Compare specialist vs. not", a: "On raw logs, specialist patients stay 6.0 days longer — but ~0.9 days of that is confounding from patient complexity. The true causal effect of assigning a specialist is 5.27 days via longer treatment duration." },
+      { q: "Compare specialist vs. not", a: "On raw logs, specialist patients stay 6.01 days longer — but ~0.8 days of that is confounding from patient complexity. The true causal effect of assigning a specialist is 5.2 days via longer treatment duration." },
       { q: "Predict impact of changes", a: "In the simulator, setting diagnostic speed to Express and adding 6 nursing FTEs drops predicted LOS from 7.9 to about 5.8 days (−27%)." },
       { q: "What are the ROI opportunities?", a: "Ranked by ROI: (1) 12-hour consult SLA ~$610K/yr at $90K capex, (2) evening imaging ~$240K/yr at $60K, (3) discharge planning at admission ~$175K/yr at $45K. Blended payback ≈ 1.8 months." },
-      { q: "Executive summary", a: "Specialist assignment is the dominant causal driver of length of stay (5.27 days, validated — not merely correlated). ~17% reduction is achievable with a 12-hour consult SLA, worth ~$610K/year. Discovery precision 1.00, recall 0.89; E-value 3.9 indicates robustness to unmeasured confounding." },
+      { q: "Executive summary", a: "Specialist assignment is the dominant causal driver of length of stay: recovered effect 5.2 days vs a planted ground truth of 5.27 — naive would say 6.01. ~17% reduction is achievable with a 12-hour consult SLA, worth ~$610K/year. Autonomous discovery F1 0.89 (8 of 9 edges); E-value 3.9 indicates robustness to unmeasured confounding." },
     ],
     methodology: [
       { phase: "Causal Discovery", detail: "Bootstrapped PC algorithm · Fisher-Z tests at α=0.05 · 20 subsamples × 2,000 rows · 60% edge-stability threshold · domain-knowledge ablation" },

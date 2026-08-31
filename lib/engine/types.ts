@@ -23,6 +23,7 @@ const GraphEdge = z.object({
   strength: EdgeStrength,
   discovered: z.boolean(),
   bootstrapFreq: z.number(),
+  pruned: z.boolean(),
 });
 
 const ObjectSummary = z.object({
@@ -172,17 +173,21 @@ export const CausalFixture = z.object({
     truePositives: z.number(),
     falsePositives: z.number(),
     falseNegatives: z.number(),
-    edgeStability: z.array(z.object({ edge: z.string(), frequency: z.number(), discovered: z.boolean() })),
+    edgeStability: z.array(z.object({ edge: z.string(), frequency: z.number(), discovered: z.boolean(), pruned: z.boolean() })),
   }),
 
   pipelinePerf: z.object({
-    postPrecision: z.number(),
+    prePrecision: z.number(),
     preRecall: z.number(),
-    postRecall: z.number(),
-    signConsistency: z.number(),
+    preF1: z.number(),
+    effectErrorPct: z.number(),
+    confoundingRemovedPct: z.number(),
+    bootstrapStability: z.number(),
+    eValue: z.number(),
     avgModelR2: z.number(),
-    coeffAccuracy: z.number(),
-    recallGainPct: z.number(),
+    avgCoefErrorPct: z.number(),
+    signCertain: z.number(),
+    signTotal: z.number(),
     missingEdgesRecovered: z.number(),
     spuriousRemoved: z.number(),
     validatedLinks: z.number(),
@@ -305,6 +310,7 @@ export const CausalFixture = z.object({
       f1: z.number(),
       naive: z.number(),
       causal: z.number(),
+      planted: z.number(),
       eValue: z.number(),
     }),
   ),

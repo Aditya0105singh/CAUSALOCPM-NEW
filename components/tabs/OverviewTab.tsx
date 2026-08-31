@@ -1,4 +1,5 @@
 "use client";
+import { clsx } from "clsx";
 import { Sparkles, TrendingDown, ShieldCheck, ArrowRight, Check, X, AlertTriangle } from "lucide-react";
 import type { CausalFixture } from "@/lib/engine/types";
 import { Card, Pill, SectionTitle, KeyVal } from "@/components/ui";
@@ -143,31 +144,26 @@ export function OverviewTab({ f }: { f: CausalFixture }) {
       {/* Pipeline Performance Summary */}
       <FadeIn>
         <Card>
-          <SectionTitle hint="synthetic ground-truth benchmark · metrics vs. planted structure">
+          <SectionTitle hint="everything below is measured against a DAG + coefficients we planted ourselves">
             Pipeline Performance Summary
           </SectionTitle>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-            {[
-              { v: f.pipelinePerf.postPrecision, d: 2, l: "Post-DK Precision" },
-              { v: f.pipelinePerf.preRecall, d: 2, l: "Pre-DK Recall" },
-              { v: f.pipelinePerf.postRecall, d: 2, l: "DAG Validity" },
-              { v: f.pipelinePerf.signConsistency, d: 2, l: "Sign Consistency" },
-              { v: f.pipelinePerf.avgModelR2, d: 3, l: "Avg Model R²" },
-              { v: f.pipelinePerf.coeffAccuracy, d: 3, l: "Coeff. Accuracy" },
-            ].map((s) => (
-              <div key={s.l} className="rounded-lg border border-line bg-paper-2/40 p-2.5 text-center">
-                <div className="font-display text-lg text-ink">
-                  <CountUp value={s.v} decimals={s.d} duration={0.8} />
-                </div>
-                <div className="mt-0.5 text-[10px] leading-tight text-muted">{s.l}</div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <PerfTile v={f.pipelinePerf.effectErrorPct} decimals={1} suffix="%" l="Effect recovery error" hint={`DML ${f.effects[0].effectDays} vs planted ${f.effects[0].groundTruthDays}`} good />
+            <PerfTile v={f.pipelinePerf.preF1} decimals={2} l="Discovery F1" hint="autonomous bootstrapped PC" />
+            <PerfTile v={f.pipelinePerf.confoundingRemovedPct} decimals={1} suffix="%" l="Confounding removed" hint={`${f.naiveEffect.biasDays} ${f.scenario.outcomeUnit} of naive bias`} />
+            <PerfTile v={f.pipelinePerf.bootstrapStability * 100} decimals={0} suffix="%" l="Bootstrap stability" hint="edges stable across 20 reruns" />
+            <PerfTile v={f.pipelinePerf.eValue} decimals={1} l="E-value" hint="robustness to hidden confounders" good />
+            <PerfTile v={f.pipelinePerf.avgCoefErrorPct} decimals={1} suffix="%" l="Avg coefficient error" hint={`${f.pipelinePerf.signCertain}/${f.pipelinePerf.signTotal} coefficients sign-certain`} />
           </div>
-          <p className="mt-3 text-sm text-ink-soft">
-            The pipeline recovered {f.scenario.causalLinks} validated causal links with bootstrap stability{" "}
-            {Math.round(m.stability * 100)}%. The structural model achieved 100% sign consistency across all{" "}
-            {f.scenario.causalLinks} relationships, and average coefficient accuracy of{" "}
-            {(f.pipelinePerf.coeffAccuracy * 100).toFixed(1)}% against the planted values.
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+            The headline result is <b>effect recovery</b>: Double ML landed within{" "}
+            <b>{f.pipelinePerf.effectErrorPct}%</b> of the planted causal effect, and its 95% CI contains the true value.
+            Autonomous structure discovery scores <b>F1 {f.pipelinePerf.preF1.toFixed(2)}</b> ({m.truePositives}/
+            {f.scenario.causalLinks} planted edges, {m.falsePositives} spurious) — domain knowledge then adds the{" "}
+            {f.pipelinePerf.missingEdgesRecovered} nonlinear edge and prunes the {f.pipelinePerf.spuriousRemoved} spurious
+            one. Coefficient point estimates are off by <b>{f.pipelinePerf.avgCoefErrorPct}%</b> on average;{" "}
+            {f.pipelinePerf.signTotal - f.pipelinePerf.signCertain} weak edge has a CI that crosses zero, so its sign is
+            not claimed as certain.
           </p>
         </Card>
       </FadeIn>
@@ -237,6 +233,32 @@ function MiniDark({ label, value, sub }: { label: string; value: string; sub: st
       <div className="text-[10px] uppercase tracking-wide text-white/50">{label}</div>
       <div className="mt-0.5 font-display text-lg text-white">{value}</div>
       <div className="text-[10px] text-white/45">{sub}</div>
+    </div>
+  );
+}
+
+function PerfTile({
+  v,
+  decimals,
+  suffix = "",
+  l,
+  hint,
+  good = false,
+}: {
+  v: number;
+  decimals: number;
+  suffix?: string;
+  l: string;
+  hint: string;
+  good?: boolean;
+}) {
+  return (
+    <div className="rounded-lg border border-line bg-paper-2/40 p-2.5">
+      <div className={clsx("font-display text-lg leading-none", good ? "text-forest" : "text-ink")}>
+        <CountUp value={v} decimals={decimals} suffix={suffix} duration={0.8} />
+      </div>
+      <div className="mt-1 text-[10px] font-medium leading-tight text-ink-soft">{l}</div>
+      <div className="text-[9px] leading-tight text-muted">{hint}</div>
     </div>
   );
 }

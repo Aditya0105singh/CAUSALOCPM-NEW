@@ -87,8 +87,8 @@ export function CaseInspectorTab({ f }: { f: CausalFixture }) {
           <div className="text-[11px] font-semibold uppercase tracking-wide text-forest-deep">Intervention opportunities</div>
           <div className="mt-1 font-display text-2xl text-forest">{c.controllableDays > 0 ? "+" : ""}{c.controllableDays.toFixed(2)} {f.scenario.outcomeUnit}</div>
           <p className="mt-1 text-sm text-ink-soft">
-            Controllable factors — operational actions targeting these could substantially influence future outcomes.
-            Confidence in the causal effect is high (F1 = {f.discoveryMetrics.f1.toFixed(2)}).
+            Controllable factors — operational actions targeting these could substantially influence future outcomes. The
+            underlying causal effect is robust (E-value {f.sensitivity.eValue}, CI [{f.naiveEffect.ciLow}, {f.naiveEffect.ciHigh}]).
           </p>
           <ul className="mt-2 space-y-1 text-[12px] text-muted">
             {c.drivers.filter((d) => d.kind === "controllable").map((d) => (

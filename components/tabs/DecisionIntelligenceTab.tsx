@@ -141,7 +141,7 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
-                    {["Domain", "Precision", "Recall", "F1", "Naive", "Causal (DML)", "E-value"].map((h) => (
+                    {["Domain", "Discovery F1", "Naive", "Causal (DML)", "Planted", "E-value"].map((h) => (
                       <th key={h} className="pb-2 pr-4 font-semibold">{h}</th>
                     ))}
                   </tr>
@@ -150,11 +150,10 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
                   {f.crossDomain.map((d) => (
                     <tr key={d.domain} className={clsx("border-t border-line-soft text-ink-soft", d.domain === f.scenario.domainLabel && "font-medium text-ink")}>
                       <td className="py-2 pr-4">{d.domain}</td>
-                      <td className="py-2 pr-4">{d.precision.toFixed(2)}</td>
-                      <td className="py-2 pr-4">{d.recall.toFixed(2)}</td>
                       <td className="py-2 pr-4">{d.f1.toFixed(2)}</td>
                       <td className="py-2 pr-4">{d.naive.toFixed(2)}</td>
                       <td className="py-2 pr-4 text-forest">{d.causal.toFixed(2)}</td>
+                      <td className="py-2 pr-4">{d.planted.toFixed(2)}</td>
                       <td className="py-2 pr-4">{d.eValue.toFixed(1)}</td>
                     </tr>
                   ))}
