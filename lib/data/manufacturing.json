@@ -1,0 +1,1543 @@
+{
+  "domain": "manufacturing",
+  "generatedAt": "2024-06-30T09:00:00.000Z",
+  "scenario": {
+    "name": "Shipment Delay Analysis",
+    "outcomeVariable": "Shipment Delay",
+    "outcomeUnit": "days",
+    "org": "Northwind Components Co.",
+    "domainLabel": "Manufacturing",
+    "timeRange": "Jan 2022 – Apr 2024",
+    "totalEvents": 15231,
+    "dataSources": 8,
+    "lastUpdated": "2 hours ago",
+    "description": "We analyse how supplier, logistics, and external factors causally influence shipment delays across the order-to-shipment pipeline. The model isolates true drivers and quantifies interventions that guide effective corrective action.",
+    "objectTypes": 5,
+    "causalLinks": 8,
+    "reliabilityPct": 86
+  },
+  "executiveSummary": {
+    "headline": "Supplier A is confirmed as the dominant causal driver of shipment delay — statistically validated, not just correlated.",
+    "confidence": "HIGH CONFIDENCE",
+    "bullets": [
+      "Recovered causal effect: 6.64 days via Double ML — 19% of the naive estimate was confounding",
+      "Discovery precision 1.00, recall 0.89 across 20 bootstrap reruns",
+      "Recommended action: Shift ~25% procurement from Supplier A to Supplier B → ~$479K/yr expected savings"
+    ],
+    "recommendedAction": "Shift ~25% procurement from Supplier A to Supplier B"
+  },
+  "kpis": {
+    "causalLinks": 8,
+    "target": "Shipment Delay",
+    "expertRules": 9,
+    "reliabilityPct": 86
+  },
+  "data": {
+    "datasets": 8,
+    "variables": 75,
+    "causalLinks": 8,
+    "qualityPct": 95,
+    "objects": [
+      {
+        "name": "Orders",
+        "records": 4335,
+        "attributes": 12,
+        "missingPct": 3,
+        "qualityPct": 96,
+        "updated": "2h ago"
+      },
+      {
+        "name": "Shipments",
+        "records": 4231,
+        "attributes": 10,
+        "missingPct": 4,
+        "qualityPct": 97,
+        "updated": "2h ago"
+      },
+      {
+        "name": "Suppliers",
+        "records": 245,
+        "attributes": 18,
+        "missingPct": 6,
+        "qualityPct": 94,
+        "updated": "6h ago"
+      },
+      {
+        "name": "Transport Legs",
+        "records": 3876,
+        "attributes": 9,
+        "missingPct": 5,
+        "qualityPct": 95,
+        "updated": "4h ago"
+      },
+      {
+        "name": "External Factors",
+        "records": 2648,
+        "attributes": 7,
+        "missingPct": 8,
+        "qualityPct": 92,
+        "updated": "5h ago"
+      }
+    ],
+    "variableList": [
+      {
+        "name": "supplier_a_dep",
+        "object": "Orders",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 1
+      },
+      {
+        "name": "transport_time",
+        "object": "Orders",
+        "type": "numeric",
+        "role": "mediator",
+        "missingPct": 4
+      },
+      {
+        "name": "warehouse_load",
+        "object": "Orders",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 6
+      },
+      {
+        "name": "order_complexity",
+        "object": "Orders",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 4
+      },
+      {
+        "name": "weather_delay",
+        "object": "Orders",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 3
+      },
+      {
+        "name": "peak_demand",
+        "object": "External Factors",
+        "type": "numeric",
+        "role": "confounder",
+        "missingPct": 7
+      },
+      {
+        "name": "shipment_delay",
+        "object": "Shipments",
+        "type": "numeric",
+        "role": "outcome",
+        "missingPct": 0
+      },
+      {
+        "name": "supplier_lead_time",
+        "object": "Suppliers",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 4
+      },
+      {
+        "name": "route_distance_km",
+        "object": "Transport Legs",
+        "type": "numeric",
+        "role": "mediator",
+        "missingPct": 3
+      },
+      {
+        "name": "dock_utilization",
+        "object": "Shipments",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 5
+      },
+      {
+        "name": "sku_count",
+        "object": "Orders",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 2
+      },
+      {
+        "name": "peak_season_demand",
+        "object": "External Factors",
+        "type": "numeric",
+        "role": "confounder",
+        "missingPct": 7
+      },
+      {
+        "name": "carrier_name",
+        "object": "Transport Legs",
+        "type": "categorical",
+        "role": "context",
+        "missingPct": 1
+      },
+      {
+        "name": "promised_ship_date",
+        "object": "Orders",
+        "type": "datetime",
+        "role": "context",
+        "missingPct": 0
+      },
+      {
+        "name": "expedited_flag",
+        "object": "Shipments",
+        "type": "boolean",
+        "role": "driver",
+        "missingPct": 0
+      }
+    ],
+    "sampleEvents": [
+      {
+        "event_id": "E-00001",
+        "case_id": "CASE-2024-0001",
+        "activity": "Order Placed",
+        "resource": "Supplier A",
+        "timestamp": "2024-01-02T08:15:00Z",
+        "duration_hrs": 8.9
+      },
+      {
+        "event_id": "E-00002",
+        "case_id": "CASE-2024-0002",
+        "activity": "Supplier Confirmed",
+        "resource": "Supplier A",
+        "timestamp": "2024-02-03T09:15:00Z",
+        "duration_hrs": 28.4
+      },
+      {
+        "event_id": "E-00003",
+        "case_id": "CASE-2024-0003",
+        "activity": "Picked",
+        "resource": "Supplier B",
+        "timestamp": "2024-03-04T10:15:00Z",
+        "duration_hrs": 25.2
+      },
+      {
+        "event_id": "E-00004",
+        "case_id": "CASE-2024-0004",
+        "activity": "Dispatched",
+        "resource": "Supplier B",
+        "timestamp": "2024-04-05T11:15:00Z",
+        "duration_hrs": 16
+      },
+      {
+        "event_id": "E-00005",
+        "case_id": "CASE-2024-0005",
+        "activity": "In Transit",
+        "resource": "Supplier D",
+        "timestamp": "2024-05-06T12:15:00Z",
+        "duration_hrs": 26.9
+      },
+      {
+        "event_id": "E-00006",
+        "case_id": "CASE-2024-0006",
+        "activity": "Delivered",
+        "resource": "Supplier A",
+        "timestamp": "2024-06-07T13:15:00Z",
+        "duration_hrs": 35.1
+      },
+      {
+        "event_id": "E-00007",
+        "case_id": "CASE-2024-0007",
+        "activity": "Order Placed",
+        "resource": "Supplier D",
+        "timestamp": "2024-01-08T14:15:00Z",
+        "duration_hrs": 8.6
+      },
+      {
+        "event_id": "E-00008",
+        "case_id": "CASE-2024-0008",
+        "activity": "Supplier Confirmed",
+        "resource": "Supplier C",
+        "timestamp": "2024-02-09T15:15:00Z",
+        "duration_hrs": 0.6
+      },
+      {
+        "event_id": "E-00009",
+        "case_id": "CASE-2024-0009",
+        "activity": "Picked",
+        "resource": "Supplier C",
+        "timestamp": "2024-03-10T16:15:00Z",
+        "duration_hrs": 32.1
+      },
+      {
+        "event_id": "E-00010",
+        "case_id": "CASE-2024-0010",
+        "activity": "Dispatched",
+        "resource": "Supplier B",
+        "timestamp": "2024-04-11T17:15:00Z",
+        "duration_hrs": 33.9
+      },
+      {
+        "event_id": "E-00011",
+        "case_id": "CASE-2024-0011",
+        "activity": "In Transit",
+        "resource": "Supplier C",
+        "timestamp": "2024-05-12T08:15:00Z",
+        "duration_hrs": 18
+      },
+      {
+        "event_id": "E-00012",
+        "case_id": "CASE-2024-0012",
+        "activity": "Delivered",
+        "resource": "Supplier A",
+        "timestamp": "2024-06-13T09:15:00Z",
+        "duration_hrs": 5.4
+      }
+    ]
+  },
+  "causalGraph": {
+    "nodes": [
+      {
+        "id": "confounder",
+        "label": "Peak-Season Demand",
+        "kind": "confounder",
+        "x": 120,
+        "y": 60
+      },
+      {
+        "id": "supplier_a_dep",
+        "label": "Supplier A Dependency",
+        "kind": "driver",
+        "x": 60,
+        "y": 150
+      },
+      {
+        "id": "transport_time",
+        "label": "Transport Time",
+        "kind": "mediator",
+        "x": 150,
+        "y": 220
+      },
+      {
+        "id": "warehouse_load",
+        "label": "Warehouse Load",
+        "kind": "driver",
+        "x": 60,
+        "y": 290
+      },
+      {
+        "id": "order_complexity",
+        "label": "Order Complexity",
+        "kind": "driver",
+        "x": 150,
+        "y": 360
+      },
+      {
+        "id": "weather_delay",
+        "label": "Weather Delay",
+        "kind": "driver",
+        "x": 60,
+        "y": 430
+      },
+      {
+        "id": "outcome",
+        "label": "Shipment Delay",
+        "kind": "outcome",
+        "x": 320,
+        "y": 260
+      }
+    ],
+    "edges": [
+      {
+        "source": "confounder",
+        "target": "supplier_a_dep",
+        "strength": "moderate",
+        "weight": 0.42,
+        "confidence": 0.9,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "confounder",
+        "target": "outcome",
+        "strength": "moderate",
+        "weight": 0.37,
+        "confidence": 0.88,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "supplier_a_dep",
+        "target": "outcome",
+        "strength": "strong",
+        "weight": 0.8,
+        "confidence": 0.94,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "transport_time",
+        "target": "outcome",
+        "strength": "moderate",
+        "weight": 0.41,
+        "confidence": 0.8,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "warehouse_load",
+        "target": "outcome",
+        "strength": "weak",
+        "weight": 0.31,
+        "confidence": 0.76,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "order_complexity",
+        "target": "outcome",
+        "strength": "weak",
+        "weight": 0.28,
+        "confidence": 0.75,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "weather_delay",
+        "target": "outcome",
+        "strength": "weak",
+        "weight": 0.24,
+        "confidence": 0.73,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "transport_time",
+        "target": "supplier_a_dep",
+        "strength": "weak",
+        "weight": 0.24,
+        "confidence": 0.7,
+        "discovered": true,
+        "planted": false
+      }
+    ]
+  },
+  "discoveryMetrics": {
+    "precision": 1,
+    "recall": 0.89,
+    "f1": 0.94,
+    "stability": 0.86,
+    "bootstrapRuns": 20,
+    "shd": 0,
+    "edgeStability": [
+      {
+        "edge": "Peak-Season Demand → Supplier A Dependency",
+        "frequency": 0.88
+      },
+      {
+        "edge": "Peak-Season Demand → Shipment Delay",
+        "frequency": 0.82
+      },
+      {
+        "edge": "Supplier A Dependency → Shipment Delay",
+        "frequency": 0.93
+      },
+      {
+        "edge": "Transport Time → Shipment Delay",
+        "frequency": 0.85
+      },
+      {
+        "edge": "Warehouse Load → Shipment Delay",
+        "frequency": 0.89
+      },
+      {
+        "edge": "Order Complexity → Shipment Delay",
+        "frequency": 0.86
+      },
+      {
+        "edge": "Weather Delay → Shipment Delay",
+        "frequency": 0.95
+      },
+      {
+        "edge": "Transport Time → Supplier A Dependency",
+        "frequency": 0.56
+      }
+    ]
+  },
+  "effects": [
+    {
+      "driver": "supplier_a_dep",
+      "label": "Supplier A Dependency",
+      "effectDays": 6.64,
+      "ciLow": 6.12,
+      "ciHigh": 7.18,
+      "groundTruthDays": 6.65,
+      "baselineDays": 8.21,
+      "reductionPct": 19,
+      "method": "Double ML + backdoor adjustment"
+    },
+    {
+      "driver": "transport_time",
+      "label": "Transport Time",
+      "effectDays": 2.29,
+      "ciLow": 2.01,
+      "ciHigh": 2.61,
+      "groundTruthDays": 2.31,
+      "baselineDays": 2.55,
+      "reductionPct": 9.4,
+      "method": "Mediation-adjusted DML"
+    },
+    {
+      "driver": "warehouse_load",
+      "label": "Warehouse Load",
+      "effectDays": 1.24,
+      "ciLow": 0.9,
+      "ciHigh": 1.58,
+      "groundTruthDays": 1.24,
+      "baselineDays": 1.62,
+      "reductionPct": 23.5,
+      "method": "Double ML + backdoor adjustment"
+    },
+    {
+      "driver": "order_complexity",
+      "label": "Order Complexity",
+      "effectDays": 0.82,
+      "ciLow": 0.54,
+      "ciHigh": 1.26,
+      "groundTruthDays": 0.9,
+      "baselineDays": 1.18,
+      "reductionPct": 23.7,
+      "method": "Double ML + backdoor adjustment"
+    },
+    {
+      "driver": "weather_delay",
+      "label": "Weather Delay",
+      "effectDays": 0.41,
+      "ciLow": -0.02,
+      "ciHigh": 0.84,
+      "groundTruthDays": 0.41,
+      "baselineDays": 0.44,
+      "reductionPct": 6.8,
+      "method": "Double ML + backdoor adjustment"
+    }
+  ],
+  "effectAccuracy": [
+    {
+      "bucket": "0–0.5",
+      "count": 2
+    },
+    {
+      "bucket": "0.5–1",
+      "count": 1
+    },
+    {
+      "bucket": "1–1.5",
+      "count": 1
+    },
+    {
+      "bucket": "1.5–2",
+      "count": 1
+    },
+    {
+      "bucket": "2+",
+      "count": 0
+    }
+  ],
+  "topDrivers": [
+    {
+      "label": "Supplier A Dependency",
+      "impactDays": 6.64
+    },
+    {
+      "label": "Transport Time",
+      "impactDays": 2.29
+    },
+    {
+      "label": "Warehouse Load",
+      "impactDays": 1.24
+    },
+    {
+      "label": "Order Complexity",
+      "impactDays": 0.82
+    },
+    {
+      "label": "Weather Delay",
+      "impactDays": 0.41
+    }
+  ],
+  "recommendedActions": [
+    {
+      "id": "act-1",
+      "title": "Shift ~25% procurement from Supplier A to Supplier B",
+      "detail": "Supplier A dependency is the dominant causal driver. Re-routing a quarter of volume to Supplier B cuts exposure without breaching capacity limits.",
+      "deltaDays": 4.9,
+      "annualSavings": 479000,
+      "roi": 4.8,
+      "confidence": 0.9,
+      "lever": "Procurement mix",
+      "maxShiftPct": 40
+    },
+    {
+      "id": "act-2",
+      "title": "Optimize transport routes for high-delay lanes",
+      "detail": "Consolidate the five worst-performing lanes onto carriers with lower variance in transit time.",
+      "deltaDays": 1.2,
+      "annualSavings": 112000,
+      "roi": 1.1,
+      "confidence": 0.82,
+      "lever": "Carrier routing",
+      "maxShiftPct": 30
+    },
+    {
+      "id": "act-3",
+      "title": "Redistribute load across warehouses",
+      "detail": "Balance inbound volume away from the two warehouses operating above 90% dock utilization.",
+      "deltaDays": 0.8,
+      "annualSavings": 81000,
+      "roi": 0.8,
+      "confidence": 0.76,
+      "lever": "Load balancing",
+      "maxShiftPct": 25
+    }
+  ],
+  "projectedImpact": {
+    "totalReductionPct": 33,
+    "totalReductionDays": 6.9,
+    "trend": [
+      {
+        "period": "Jan",
+        "baseline": 21.04,
+        "withActions": 17.59
+      },
+      {
+        "period": "Feb",
+        "baseline": 20.64,
+        "withActions": 16.5
+      },
+      {
+        "period": "Mar",
+        "baseline": 20.32,
+        "withActions": 15.49
+      },
+      {
+        "period": "Apr",
+        "baseline": 20.87,
+        "withActions": 15.35
+      },
+      {
+        "period": "May",
+        "baseline": 21.27,
+        "withActions": 15.06
+      },
+      {
+        "period": "Jun",
+        "baseline": 21.68,
+        "withActions": 14.78
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "CASE-2024-0001",
+      "date": "2024-01-03",
+      "primaryEntity": "Supplier B",
+      "category": "Electronics",
+      "value": 7793,
+      "actualDelayDays": 22.3,
+      "predictedDelayDays": 22.1,
+      "counterfactualDelayDays": 18.2,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 5.86
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.7
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 1.08
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.61
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.45
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0007",
+        "CASE-2024-0017",
+        "CASE-2024-0020"
+      ]
+    },
+    {
+      "id": "CASE-2024-0002",
+      "date": "2024-02-04",
+      "primaryEntity": "Supplier A",
+      "category": "Fasteners",
+      "value": 67182,
+      "actualDelayDays": 21.7,
+      "predictedDelayDays": 22.1,
+      "counterfactualDelayDays": 16.7,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 7.1
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 2.89
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.11
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.41
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.4
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0018",
+        "CASE-2024-0019",
+        "CASE-2024-0004"
+      ]
+    },
+    {
+      "id": "CASE-2024-0003",
+      "date": "2024-03-05",
+      "primaryEntity": "Supplier D",
+      "category": "Electronics",
+      "value": 40453,
+      "actualDelayDays": 20.7,
+      "predictedDelayDays": 19.5,
+      "counterfactualDelayDays": 15.8,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 6.97
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.65
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.23
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.53
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.5
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0008",
+        "CASE-2024-0019",
+        "CASE-2024-0002"
+      ]
+    },
+    {
+      "id": "CASE-2024-0004",
+      "date": "2024-04-06",
+      "primaryEntity": "Supplier D",
+      "category": "Electronics",
+      "value": 81851,
+      "actualDelayDays": 21.8,
+      "predictedDelayDays": 21.6,
+      "counterfactualDelayDays": 18.1,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 5.27
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.71
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.73
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.38
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.36
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0012",
+        "CASE-2024-0024",
+        "CASE-2024-0002"
+      ]
+    },
+    {
+      "id": "CASE-2024-0005",
+      "date": "2024-05-07",
+      "primaryEntity": "Supplier C",
+      "category": "Raw Metal",
+      "value": 69537,
+      "actualDelayDays": 15.8,
+      "predictedDelayDays": 16.3,
+      "counterfactualDelayDays": 10.8,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 7.18
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 2.86
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.64
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.51
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.48
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0010",
+        "CASE-2024-0011",
+        "CASE-2024-0021"
+      ]
+    },
+    {
+      "id": "CASE-2024-0006",
+      "date": "2024-06-08",
+      "primaryEntity": "Supplier D",
+      "category": "Raw Metal",
+      "value": 5255,
+      "actualDelayDays": 19.1,
+      "predictedDelayDays": 18.4,
+      "counterfactualDelayDays": 15.4,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 5.28
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.55
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.19
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.96
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.38
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0021",
+        "CASE-2024-0014",
+        "CASE-2024-0008"
+      ]
+    },
+    {
+      "id": "CASE-2024-0007",
+      "date": "2024-01-09",
+      "primaryEntity": "Supplier A",
+      "category": "Packaging",
+      "value": 82406,
+      "actualDelayDays": 22.3,
+      "predictedDelayDays": 22.1,
+      "counterfactualDelayDays": 15.6,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 9.61
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.97
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.3
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.52
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.38
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0001",
+        "CASE-2024-0017",
+        "CASE-2024-0020"
+      ]
+    },
+    {
+      "id": "CASE-2024-0008",
+      "date": "2024-02-10",
+      "primaryEntity": "Supplier C",
+      "category": "Fasteners",
+      "value": 88463,
+      "actualDelayDays": 20.4,
+      "predictedDelayDays": 20.1,
+      "counterfactualDelayDays": 16.2,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 5.95
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.9
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.26
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.8
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.48
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0003",
+        "CASE-2024-0014",
+        "CASE-2024-0019"
+      ]
+    },
+    {
+      "id": "CASE-2024-0009",
+      "date": "2024-03-11",
+      "primaryEntity": "Supplier A",
+      "category": "Electronics",
+      "value": 17619,
+      "actualDelayDays": 24.6,
+      "predictedDelayDays": 24.2,
+      "counterfactualDelayDays": 18.3,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 9.02
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 2.62
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 1.01
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.76
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.39
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0013",
+        "CASE-2024-0023",
+        "CASE-2024-0022"
+      ]
+    },
+    {
+      "id": "CASE-2024-0010",
+      "date": "2024-04-12",
+      "primaryEntity": "Supplier C",
+      "category": "Raw Metal",
+      "value": 28974,
+      "actualDelayDays": 15.6,
+      "predictedDelayDays": 15.7,
+      "counterfactualDelayDays": 13,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 3.75
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.77
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.18
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.4
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.28
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0005",
+        "CASE-2024-0011",
+        "CASE-2024-0021"
+      ]
+    },
+    {
+      "id": "CASE-2024-0011",
+      "date": "2024-05-13",
+      "primaryEntity": "Supplier B",
+      "category": "Raw Metal",
+      "value": 83872,
+      "actualDelayDays": 17.3,
+      "predictedDelayDays": 17.2,
+      "counterfactualDelayDays": 14.8,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 3.62
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 2.84
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.17
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.43
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.22
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0005",
+        "CASE-2024-0021",
+        "CASE-2024-0010"
+      ]
+    },
+    {
+      "id": "CASE-2024-0012",
+      "date": "2024-06-14",
+      "primaryEntity": "Supplier D",
+      "category": "Raw Metal",
+      "value": 84244,
+      "actualDelayDays": 21.8,
+      "predictedDelayDays": 22.5,
+      "counterfactualDelayDays": 16.6,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 7.42
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.31
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.22
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 1.05
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.22
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0004",
+        "CASE-2024-0024",
+        "CASE-2024-0002"
+      ]
+    },
+    {
+      "id": "CASE-2024-0013",
+      "date": "2024-01-15",
+      "primaryEntity": "Supplier A",
+      "category": "Fasteners",
+      "value": 14594,
+      "actualDelayDays": 24.6,
+      "predictedDelayDays": 24.4,
+      "counterfactualDelayDays": 17.2,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 10.59
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.15
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.04
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.78
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.4
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0009",
+        "CASE-2024-0023",
+        "CASE-2024-0022"
+      ]
+    },
+    {
+      "id": "CASE-2024-0014",
+      "date": "2024-02-16",
+      "primaryEntity": "Supplier B",
+      "category": "Packaging",
+      "value": 31797,
+      "actualDelayDays": 19.5,
+      "predictedDelayDays": 19.9,
+      "counterfactualDelayDays": 16.1,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 4.79
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.28
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.91
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.75
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.36
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0006",
+        "CASE-2024-0021",
+        "CASE-2024-0008"
+      ]
+    },
+    {
+      "id": "CASE-2024-0015",
+      "date": "2024-03-17",
+      "primaryEntity": "Supplier C",
+      "category": "Packaging",
+      "value": 26280,
+      "actualDelayDays": 23,
+      "predictedDelayDays": 23.3,
+      "counterfactualDelayDays": 18.8,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 5.98
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.72
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.88
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.61
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.42
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0016",
+        "CASE-2024-0022",
+        "CASE-2024-0020"
+      ]
+    },
+    {
+      "id": "CASE-2024-0016",
+      "date": "2024-04-18",
+      "primaryEntity": "Supplier C",
+      "category": "Assemblies",
+      "value": 45146,
+      "actualDelayDays": 22.9,
+      "predictedDelayDays": 23.4,
+      "counterfactualDelayDays": 19.8,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 4.44
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 2.89
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.78
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.67
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.3
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0015",
+        "CASE-2024-0020",
+        "CASE-2024-0022"
+      ]
+    },
+    {
+      "id": "CASE-2024-0017",
+      "date": "2024-05-19",
+      "primaryEntity": "Supplier B",
+      "category": "Packaging",
+      "value": 77719,
+      "actualDelayDays": 22.2,
+      "predictedDelayDays": 22.1,
+      "counterfactualDelayDays": 17.8,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 6.24
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 2.02
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.19
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.89
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.19
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0001",
+        "CASE-2024-0007",
+        "CASE-2024-0020"
+      ]
+    },
+    {
+      "id": "CASE-2024-0018",
+      "date": "2024-06-20",
+      "primaryEntity": "Supplier A",
+      "category": "Fasteners",
+      "value": 46738,
+      "actualDelayDays": 21.7,
+      "predictedDelayDays": 23.9,
+      "counterfactualDelayDays": 17.4,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 6.2
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 2.69
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.88
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.49
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.23
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0002",
+        "CASE-2024-0019",
+        "CASE-2024-0004"
+      ]
+    },
+    {
+      "id": "CASE-2024-0019",
+      "date": "2024-01-21",
+      "primaryEntity": "Supplier A",
+      "category": "Fasteners",
+      "value": 58070,
+      "actualDelayDays": 21.6,
+      "predictedDelayDays": 21.7,
+      "counterfactualDelayDays": 17.6,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 5.67
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.11
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 0.93
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.45
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.34
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0002",
+        "CASE-2024-0018",
+        "CASE-2024-0004"
+      ]
+    },
+    {
+      "id": "CASE-2024-0020",
+      "date": "2024-02-22",
+      "primaryEntity": "Supplier D",
+      "category": "Assemblies",
+      "value": 64959,
+      "actualDelayDays": 22.5,
+      "predictedDelayDays": 22.3,
+      "counterfactualDelayDays": 18.4,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 5.81
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 0.95
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.93
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.55
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.3
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0001",
+        "CASE-2024-0007",
+        "CASE-2024-0017"
+      ]
+    },
+    {
+      "id": "CASE-2024-0021",
+      "date": "2024-03-23",
+      "primaryEntity": "Supplier C",
+      "category": "Fasteners",
+      "value": 24417,
+      "actualDelayDays": 19,
+      "predictedDelayDays": 18,
+      "counterfactualDelayDays": 14.3,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 6.68
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.48
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.11
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.42
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.36
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0006",
+        "CASE-2024-0014",
+        "CASE-2024-0008"
+      ]
+    },
+    {
+      "id": "CASE-2024-0022",
+      "date": "2024-04-24",
+      "primaryEntity": "Supplier C",
+      "category": "Raw Metal",
+      "value": 74232,
+      "actualDelayDays": 23.4,
+      "predictedDelayDays": 22.9,
+      "counterfactualDelayDays": 21.2,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 3.11
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.45
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.91
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.46
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0023",
+        "CASE-2024-0015",
+        "CASE-2024-0016"
+      ]
+    },
+    {
+      "id": "CASE-2024-0023",
+      "date": "2024-05-25",
+      "primaryEntity": "Supplier B",
+      "category": "Fasteners",
+      "value": 7389,
+      "actualDelayDays": 23.5,
+      "predictedDelayDays": 22,
+      "counterfactualDelayDays": 20.4,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 4.43
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1.18
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 0.81
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.68
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.28
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0022",
+        "CASE-2024-0015",
+        "CASE-2024-0016"
+      ]
+    },
+    {
+      "id": "CASE-2024-0024",
+      "date": "2024-06-26",
+      "primaryEntity": "Supplier A",
+      "category": "Fasteners",
+      "value": 65506,
+      "actualDelayDays": 21.8,
+      "predictedDelayDays": 22,
+      "counterfactualDelayDays": 17.4,
+      "counterfactualLabel": "If we had chosen Supplier B instead of Supplier A",
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "contributionDays": 6.27
+        },
+        {
+          "label": "Warehouse Load",
+          "contributionDays": 1.5
+        },
+        {
+          "label": "Transport Time",
+          "contributionDays": 1
+        },
+        {
+          "label": "Order Complexity",
+          "contributionDays": 0.73
+        },
+        {
+          "label": "Weather Delay",
+          "contributionDays": 0.24
+        }
+      ],
+      "similarCaseIds": [
+        "CASE-2024-0004",
+        "CASE-2024-0012",
+        "CASE-2024-0002"
+      ]
+    }
+  ]
+}
