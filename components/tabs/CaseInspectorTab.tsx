@@ -173,6 +173,23 @@ export function CaseInspectorTab({ f }: { f: CausalFixture }) {
           </table>
         </div>
       </Card>
+
+      <details className="card p-0">
+        <summary className="cursor-pointer p-5 text-sm font-semibold text-ink">Methodological foundation</summary>
+        <div className="space-y-2 border-t border-line-soft px-5 py-4 text-sm text-ink-soft">
+          <p>
+            This attribution is <b>SCM-grounded SHAP</b>, not formal Causal SHAP: Shapley values are computed over the
+            fitted structural equations, so each bar is a feature&apos;s marginal contribution to the predicted outcome
+            given the discovered DAG — features are split into <b>controllable</b> (operational levers) and{" "}
+            <b>structural</b> (process characteristics).
+          </p>
+          <p>
+            Every case&apos;s attribution rests on the same Double ML effect ({f.naiveEffect.causalDays} {f.scenario.outcomeUnit},
+            95% CI [{f.naiveEffect.ciLow}, {f.naiveEffect.ciHigh}]). Sensitivity: placebo effect{" "}
+            {f.sensitivity.placeboEffect} {f.scenario.outcomeUnit} (expected ≈ 0), E-value {f.sensitivity.eValue}. {f.sensitivity.verdict}
+          </p>
+        </div>
+      </details>
     </div>
   );
 }

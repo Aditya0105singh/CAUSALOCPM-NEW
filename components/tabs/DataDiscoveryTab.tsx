@@ -24,7 +24,7 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
           <li>Causal discovery recovered <b>{f.scenario.causalLinks} verified links</b> across {dv.totalEvents.toLocaleString()} events and {f.scenario.objectTypes} object types — validated against planted ground truth, not left as raw correlation.</li>
           <li>Strongest measured relationship: <b>{dv.strongestRelationship.from} → {dv.strongestRelationship.to}</b> (coefficient {dv.strongestRelationship.coefficient}).</li>
           <li>Bootstrap stability {Math.round(m.stability * 100)}% across {m.bootstrapRuns} resampled reruns — precision {m.precision.toFixed(2)}, recall {m.recall.toFixed(2)} before domain knowledge.</li>
-          <li>Domain knowledge recovered {dv.domainKnowledge.missingEdgesRecovered} missing edge(s), guaranteeing DAG validity without inventing relationships.</li>
+          <li>Domain knowledge recovered {f.pipelinePerf.missingEdgesRecovered} missing edge(s), guaranteeing DAG validity without inventing relationships.</li>
         </ul>
       </Card>
 
@@ -156,9 +156,9 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
 
       <Step n={6} title="Evaluate domain-knowledge contribution" hint="with vs. without expert constraints">
         <div className="grid gap-3 sm:grid-cols-3">
-          <Stat value={`+${dv.domainKnowledge.recallGainPct}%`} label="Recall gain" accent />
-          <Stat value={`${dv.domainKnowledge.missingEdgesRecovered}`} label="Missing edge(s) recovered" />
-          <Stat value={`−${dv.domainKnowledge.spuriousRemoved}`} label="Spurious links removed" />
+          <Stat value={`+${f.pipelinePerf.recallGainPct}%`} label="Recall gain" accent />
+          <Stat value={`${f.pipelinePerf.missingEdgesRecovered}`} label="Missing edge(s) recovered" />
+          <Stat value={`−${f.pipelinePerf.spuriousRemoved}`} label="Spurious links removed" />
         </div>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-ink-soft">
           {["Removed spurious links", "Recovered missing causal edges", "Preserved DAG validity", "Improved causal recall"].map((x) => (
@@ -166,9 +166,9 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
           ))}
         </div>
         <p className="mt-3 text-[12px] text-muted">
-          Pre-DK: precision {dv.domainKnowledge.prePrecision.toFixed(2)} / recall {dv.domainKnowledge.preRecall.toFixed(2)} ·
-          Post-DK: precision {dv.domainKnowledge.postPrecision.toFixed(2)} / recall {dv.domainKnowledge.postRecall.toFixed(2)}
-          — resulting in {dv.domainKnowledge.validatedLinks} validated links.
+          Pre-DK: precision {m.precision.toFixed(2)} / recall {f.pipelinePerf.preRecall.toFixed(2)} ·
+          Post-DK: precision {f.pipelinePerf.postPrecision.toFixed(2)} / recall {f.pipelinePerf.postRecall.toFixed(2)}
+          — resulting in {f.pipelinePerf.validatedLinks} validated links.
         </p>
       </Step>
 

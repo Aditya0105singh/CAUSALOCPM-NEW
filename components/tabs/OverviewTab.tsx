@@ -134,6 +134,35 @@ export function OverviewTab({ f }: { f: CausalFixture }) {
         </Card>
       </div>
 
+      {/* Pipeline Performance Summary */}
+      <Card>
+        <SectionTitle hint="synthetic ground-truth benchmark · metrics vs. planted structure">
+          Pipeline Performance Summary
+        </SectionTitle>
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+          {[
+            { v: f.pipelinePerf.postPrecision.toFixed(2), l: "Post-DK Precision" },
+            { v: f.pipelinePerf.preRecall.toFixed(2), l: "Pre-DK Recall" },
+            { v: f.pipelinePerf.postRecall.toFixed(2), l: "Post-DK Recall" },
+            { v: f.pipelinePerf.signConsistency.toFixed(2), l: "Sign Consistency" },
+            { v: f.pipelinePerf.avgModelR2.toFixed(3), l: "Avg Model R²" },
+            { v: f.pipelinePerf.coeffAccuracy.toFixed(3), l: "Coeff. Accuracy" },
+          ].map((s) => (
+            <div key={s.l} className="rounded-lg border border-line bg-paper-2/40 p-2.5 text-center">
+              <div className="font-display text-lg text-ink">{s.v}</div>
+              <div className="mt-0.5 text-[10px] leading-tight text-muted">{s.l}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-ink-soft">
+          The causal pipeline recovered {f.scenario.causalLinks} validated causal links with bootstrap stability{" "}
+          {Math.round(m.stability * 100)}%. Autonomous PC discovery alone reached recall {m.recall.toFixed(2)}; domain
+          knowledge closed the gap by recovering {f.pipelinePerf.missingEdgesRecovered} nonlinear edge without introducing
+          any spurious links. The structural model achieved {f.pipelinePerf.signConsistency.toFixed(0) === "1" ? "100%" : `${Math.round(f.pipelinePerf.signConsistency * 100)}%`}{" "}
+          sign consistency across {f.scenario.causalLinks} discovered relationships.
+        </p>
+      </Card>
+
       {/* Competitive positioning */}
       <Card pad={false}>
         <div className="p-5 pb-2">

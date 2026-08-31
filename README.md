@@ -41,14 +41,22 @@ datasets are freshly designed here with planted ground truth.)_
 ## The pipeline
 
 ```
-Event Logs → Object Graph → Causal Discovery (DAG) → Structural Causal Model → Counterfactual Simulation & Attribution
+OCEL 2.0 logs → Object Interaction Graph → Bootstrapped PC (DAG) → Mixed SCM → Double ML → SCM-grounded SHAP
 ```
 
-The offline builder (`scripts/build-causal-fixtures.ts`) synthesises each scenario from
-planted causal ground truth, runs the confounding-vs-recovered-effect logic, and validates
-the output against a shared Zod contract (`lib/engine/types.ts`) before writing
-`lib/data/<domain>.json`. It runs automatically on `prebuild`, so Vercel always ships a
-validated fixture.
+The offline builder (`scripts/build-causal-fixtures.ts` + `scripts/lib/domainConfig.ts`)
+encodes the **same planted causal structure as the reference CausalOCPM repo**
+(`data/generate_data.py`): a confounder (`order_complexity` / `patient_complexity`) driving
+both treatment selection and the outcome, plus a mediated true causal path
+(`supplier_a → material_lead_time → shipment_delay`, coefficient 7.4 × 0.9 = 6.66 days).
+It runs the confounding-vs-recovered-effect logic, CATE by tertile, an E-value / placebo /
+random-common-cause sensitivity sweep, and validates the output against a shared Zod
+contract (`lib/engine/types.ts`) before writing `lib/data/<domain>.json`. Runs on `prebuild`.
+
+The what-if simulator (`lib/simulator.ts`) is a direct port of the reference's
+`patch_simulator.py` causal engine — grouped intervention levers propagate through the
+structural equations to a predicted outcome, mediator states, and an effect-decomposition
+waterfall.
 
 ---
 

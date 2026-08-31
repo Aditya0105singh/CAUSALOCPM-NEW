@@ -5,88 +5,102 @@ import type { CausalFixture } from "@/lib/engine/types";
 
 type G = CausalFixture["causalGraph"];
 
-const KIND_COLOR: Record<string, string> = {
-  driver: "#4f7a4a",
-  mediator: "#7ba05b",
+const ROLE_COLOR: Record<string, string> = {
   confounder: "#b9762f",
+  treatment: "#3d5a3d",
+  mediator: "#7ba05b",
+  exogenous: "#9a9683",
   outcome: "#2f4630",
 };
 
 export function CausalGraph({
   graph,
-  height = 340,
+  height = 320,
+  activeEdges,
   compact = false,
 }: {
   graph: G;
   height?: number;
+  /** set of "source->target" keys to draw as active/propagating */
+  activeEdges?: Set<string>;
   compact?: boolean;
 }) {
-  const [active, setActive] = useState<string | null>(null);
+  const [hover, setHover] = useState<string | null>(null);
+
+  const pad = 46;
   const xs = graph.nodes.map((n) => n.x);
   const ys = graph.nodes.map((n) => n.y);
-  const minX = Math.min(...xs) - 40;
-  const minY = Math.min(...ys) - 30;
-  const w = Math.max(...xs) - minX + 60;
-  const h = Math.max(...ys) - minY + 40;
+  const spanX = Math.max(...xs) - Math.min(...xs) || 1;
+  const spanY = Math.max(...ys) - Math.min(...ys) || 1;
+  const W = 640;
+  const H = height;
+  const px = (x: number) => pad + ((x - Math.min(...xs)) / spanX) * (W - pad * 2);
+  const py = (y: number) => pad + ((y - Math.min(...ys)) / spanY) * (H - pad * 2);
   const pos = (id: string) => {
     const n = graph.nodes.find((x) => x.id === id)!;
-    return { x: n.x - minX, y: n.y - minY };
+    return { x: px(n.x), y: py(n.y) };
   };
 
   return (
-    <svg
-      viewBox={`0 0 ${w} ${h}`}
-      style={{ width: "100%", height }}
-      role="img"
-      aria-label="Discovered causal graph"
-    >
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: H }} role="img" aria-label="Discovered causal graph">
       <defs>
-        <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <marker id="cg-arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="#9a9683" />
+        </marker>
+        <marker id="cg-arw-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#3d5a3d" />
         </marker>
       </defs>
 
       {graph.edges.map((e, i) => {
         const a = pos(e.source);
         const b = pos(e.target);
-        const dim = active && active !== e.source && active !== e.target;
+        const active = activeEdges?.has(`${e.source}->${e.target}`);
+        const dimmed = hover && hover !== e.source && hover !== e.target;
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2 - 18;
         return (
-          <g key={i} opacity={dim ? 0.15 : 1}>
-            <line
-              x1={a.x}
-              y1={a.y}
-              x2={b.x}
-              y2={b.y}
-              stroke={e.planted ? "#9a9683" : "#c9b79a"}
-              strokeWidth={e.strength === "strong" ? 2.4 : e.strength === "moderate" ? 1.6 : 1}
-              strokeDasharray={e.planted ? undefined : "4 4"}
-              markerEnd="url(#arw)"
+          <g key={i} opacity={dimmed ? 0.12 : 1}>
+            <path
+              d={`M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`}
+              fill="none"
+              stroke={active ? "#3d5a3d" : e.discovered ? "#a8a492" : "#cbb89a"}
+              strokeWidth={active ? 2.6 : e.strength === "strong" ? 2 : e.strength === "moderate" ? 1.4 : 0.9}
+              strokeDasharray={e.discovered ? undefined : "5 4"}
+              markerEnd={active ? "url(#cg-arw-a)" : "url(#cg-arw)"}
+              className={active ? "flow-dash" : undefined}
             />
+            {!compact && (
+              <text x={mx} y={my + 4} textAnchor="middle" fontSize={8.5} fill="#8b887b">
+                {e.coef > 0 ? "+" : ""}
+                {e.coef}
+              </text>
+            )}
           </g>
         );
       })}
 
       {graph.nodes.map((n) => {
         const p = pos(n.id);
-        const r = n.kind === "outcome" ? 13 : 9;
-        const dim = active && active !== n.id;
+        const r = n.role === "outcome" ? 12 : n.role === "treatment" ? 10 : 8;
+        const dimmed = hover && hover !== n.id;
         return (
           <g
             key={n.id}
             transform={`translate(${p.x} ${p.y})`}
-            opacity={dim ? 0.3 : 1}
-            onMouseEnter={() => setActive(n.id)}
-            onMouseLeave={() => setActive(null)}
-            style={{ cursor: "pointer" }}
+            opacity={dimmed ? 0.28 : 1}
+            onMouseEnter={() => setHover(n.id)}
+            onMouseLeave={() => setHover(null)}
+            style={{ cursor: "default" }}
           >
-            <circle r={r} fill={KIND_COLOR[n.kind]} stroke="#fcfbf6" strokeWidth={2} />
+            <circle r={r} fill={ROLE_COLOR[n.role]} stroke="#fcfbf6" strokeWidth={2} />
             <text
               x={0}
-              y={r + 12}
+              y={r + 11}
               textAnchor="middle"
               fontSize={compact ? 8.5 : 9.5}
               fill="#55534a"
-              fontWeight={n.kind === "outcome" ? 700 : 500}
+              fontWeight={n.role === "outcome" || n.role === "treatment" ? 700 : 500}
             >
               {n.label}
             </text>
@@ -97,19 +111,21 @@ export function CausalGraph({
   );
 }
 
-export function GraphLegend() {
+export function GraphLegend({ showDiscovery = true }: { showDiscovery?: boolean }) {
   return (
-    <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted">
-      {Object.entries(KIND_COLOR).map(([k, c]) => (
+    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted">
+      {Object.entries(ROLE_COLOR).map(([k, c]) => (
         <span key={k} className="inline-flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: c }} />
           <span className="capitalize">{k}</span>
         </span>
       ))}
-      <span className="inline-flex items-center gap-1.5">
-        <span className={clsx("inline-block h-0 w-4 border-t-2 border-dashed border-[#c9b79a]")} />
-        discovered (not planted)
-      </span>
+      {showDiscovery && (
+        <span className="inline-flex items-center gap-1.5">
+          <span className={clsx("inline-block h-0 w-4 border-t-2 border-dashed border-[#cbb89a]")} />
+          recovered by domain knowledge
+        </span>
+      )}
     </div>
   );
 }

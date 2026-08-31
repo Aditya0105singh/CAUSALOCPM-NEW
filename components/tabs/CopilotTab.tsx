@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { AlertTriangle, BarChart3, FileText, FlaskConical, Send, Sparkles, User } from "lucide-react";
 import type { CausalFixture, DomainId } from "@/lib/engine/types";
+import { detectChipKey } from "@/lib/copilot";
 import { Card } from "@/components/ui";
 
 const CAP_ICON: Record<string, typeof Sparkles> = {
@@ -16,24 +17,17 @@ interface Msg {
   content: string;
 }
 
-const SUGGESTED = [
-  "Why is the outcome delay increasing?",
-  "What is the impact of the top driver?",
-  "Which action has the highest ROI?",
-  "How was confounding removed?",
-  "Show me a counterfactual for the worst case",
-];
-
 export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }) {
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
-      content: `I'm your Decision Intelligence Copilot for the ${f.scenario.org} ${f.scenario.name}. Ask me about drivers, effects, counterfactuals, or recommended actions.`,
+      content: `I'm your Decision Intelligence Copilot for the ${f.scenario.org} ${f.scenario.name}. Ask me about causal drivers, effect estimates, sensitivity, counterfactuals, or what-if simulations.`,
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [live, setLive] = useState<boolean | null>(null);
+  const [followUps, setFollowUps] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   async function send(text: string) {
@@ -42,6 +36,7 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
     setMessages(next);
     setInput("");
     setLoading(true);
+    setFollowUps([]);
     try {
       const res = await fetch("/api/copilot", {
         method: "POST",
@@ -51,6 +46,8 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
       const data = await res.json();
       setLive(data.live ?? false);
       setMessages([...next, { role: "assistant", content: data.reply }]);
+      const key = detectChipKey(text);
+      setFollowUps(f.copilot.followUps[key] ?? f.copilot.followUps["custom"] ?? []);
     } catch {
       setMessages([...next, { role: "assistant", content: "Copilot is unavailable right now — please retry." }]);
     } finally {
@@ -67,7 +64,7 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
             <Sparkles size={15} className="text-forest" /> Decision Intelligence Copilot
           </div>
           <span className="text-[11px] text-muted">
-            {live === null ? "" : live ? "live · Claude" : "grounded · scripted"}
+            {live === null ? "grounded on live pipeline data" : live ? "live · Claude" : "grounded · offline fallback"}
           </span>
         </div>
 
@@ -90,9 +87,10 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
               </div>
             </div>
           ))}
+
           {messages.length === 1 && (
             <div className="grid gap-2 pt-1 sm:grid-cols-2">
-              {f.copilotCapabilities.map((cap) => {
+              {f.copilot.capabilities.map((cap) => {
                 const Icon = CAP_ICON[cap.icon] ?? Sparkles;
                 return (
                   <button
@@ -106,7 +104,9 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
                     <div className="mt-1 text-[11px] text-muted">{cap.detail}</div>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {cap.tags.map((t) => (
-                        <span key={t} className="rounded-full bg-sage px-2 py-0.5 text-[10px] text-forest-deep">{t}</span>
+                        <span key={t} className="rounded-full bg-sage px-2 py-0.5 text-[10px] text-forest-deep">
+                          {t}
+                        </span>
                       ))}
                     </div>
                   </button>
@@ -114,7 +114,22 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
               })}
             </div>
           )}
+
           {loading && <div className="pl-10 text-sm text-muted">Copilot is thinking…</div>}
+
+          {!loading && followUps.length > 0 && messages.length > 1 && (
+            <div className="flex flex-wrap gap-1.5 pl-10">
+              {followUps.map((fu) => (
+                <button
+                  key={fu}
+                  onClick={() => send(fu)}
+                  className="rounded-full border border-line bg-card px-2.5 py-1 text-[11px] text-ink-soft hover:border-forest/40 hover:text-forest"
+                >
+                  ↳ {fu}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <form
@@ -127,7 +142,7 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask anything about your data…"
+            placeholder="Ask anything about your causal analysis…"
             className="flex-1 rounded-xl border border-line bg-paper-2 px-3 py-2 text-sm outline-none focus:border-forest/50"
           />
           <button
@@ -141,18 +156,22 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
       </Card>
 
       <Card>
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">Suggested</div>
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">Quick questions</div>
         <div className="space-y-2">
-          {SUGGESTED.map((s) => (
+          {f.copilot.chips.map((c) => (
             <button
-              key={s}
-              onClick={() => send(s)}
+              key={c.key}
+              onClick={() => send(c.label)}
               className="w-full rounded-lg border border-line bg-card px-3 py-2 text-left text-[12px] text-ink-soft hover:bg-paper-2"
             >
-              {s}
+              {c.label}
             </button>
           ))}
         </div>
+        <p className="mt-3 text-[11px] text-muted">
+          Set <code className="rounded bg-paper-2 px-1">ANTHROPIC_API_KEY</code> to switch from the grounded fallback to
+          live Claude answers.
+        </p>
       </Card>
     </div>
   );

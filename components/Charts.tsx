@@ -102,6 +102,30 @@ export function CateChart({ segments, ate }: { segments: CausalFixture["cate"]["
   );
 }
 
+export function SensitivitySweepChart({
+  strengths,
+  estimates,
+  reported,
+}: {
+  strengths: number[];
+  estimates: number[];
+  reported: number;
+}) {
+  const rows = strengths.map((s, i) => ({ label: `${Math.round(s * 100)}%`, estimate: estimates[i] }));
+  return (
+    <Frame height={220}>
+      <LineChart data={rows} margin={{ top: 8, right: 12, left: -18, bottom: 0 }}>
+        <CartesianGrid stroke={GRID} vertical={false} />
+        <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
+        <YAxis tick={AXIS} tickLine={false} axisLine={false} domain={[0, "dataMax + 1"]} />
+        <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e2ddcd", fontSize: 12 }} />
+        <ReferenceLine y={reported} stroke="#3d5a3d" strokeDasharray="4 4" label={{ value: `reported ${reported}`, fontSize: 10, fill: "#3d5a3d", position: "insideTopRight" }} />
+        <Line type="monotone" dataKey="estimate" stroke="#b9762f" strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} name="Estimate under assumed confounding" />
+      </LineChart>
+    </Frame>
+  );
+}
+
 export function ImpactTrendChart({ data }: { data: CausalFixture["projectedImpact"]["trend"] }) {
   return (
     <Frame height={220}>

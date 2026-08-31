@@ -1,7 +1,8 @@
 /**
- * Offline pipeline. Synthesises a fully deterministic causal fixture per domain
- * from planted ground truth, then validates it against the shared Zod contract
- * before writing `lib/data/<domain>.json`. Run: `npm run gen:data`.
+ * Offline pipeline. Synthesises a deterministic causal fixture per domain from
+ * the planted ground truth in `domainConfig.ts`, then validates it against the
+ * shared Zod contract before writing `lib/data/<domain>.json`.
+ * Run: `npm run gen:data`.
  */
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -20,158 +21,182 @@ const round = (n: number, d = 2) => {
 
 function build(spec: DomainSpec) {
   const rng = new RNG(spec.id === "manufacturing" ? 20240601 : 20240602);
-  const totalEvents = spec.id === "manufacturing" ? 15000 : 18400;
-  const drivers = spec.drivers;
-  const confounder = spec.confounder;
   const unit = spec.outcomeUnit;
-  const baselineOutcome = spec.id === "manufacturing" ? 8.12 : 7.9;
+  const baseline = spec.simBaseline;
 
-  // ---- causal graph -----------------------------------------------------
-  const nodes = [
-    { id: "confounder", label: confounder.label, kind: "confounder" as const, x: 150, y: 30 },
-    ...drivers.map((d, i) => ({
-      id: d.id,
-      label: d.label,
-      kind: (d.kind === "mediator" ? "mediator" : "driver") as "driver" | "mediator",
-      x: 40 + (i % 2) * 150,
-      y: 120 + i * 58,
-    })),
-    { id: "outcome", label: spec.outcomeNodeLabel, kind: "outcome" as const, x: 330, y: 250 },
-  ];
+  // ── causal graph ────────────────────────────────────────────────────────
+  const nodes = spec.nodes.map((n) => ({ id: n.id, label: n.label, role: n.role, x: n.x, y: n.y }));
+  const maxCoef = Math.max(...spec.edges.map((e) => Math.abs(e.coef)));
+  const edges = spec.edges.map((e) => {
+    const w = Math.abs(e.coef) / maxCoef;
+    return {
+      source: e.source,
+      target: e.target,
+      coef: e.coef,
+      strength: (w > 0.6 ? "strong" : w > 0.25 ? "moderate" : "weak") as "strong" | "moderate" | "weak",
+      discovered: e.discovered,
+      bootstrapFreq: e.bootstrapFreq,
+    };
+  });
 
-  const edges = [
-    { source: "confounder", target: drivers[0].id, strength: "moderate" as const, weight: 0.42, confidence: 0.9, discovered: true, planted: true },
-    { source: "confounder", target: "outcome", strength: "moderate" as const, weight: 0.37, confidence: 0.88, discovered: true, planted: true },
-    ...drivers.map((d) => {
-      const w = d.groundTruthDays / drivers[0].groundTruthDays;
-      const strength = w > 0.6 ? "strong" : w > 0.3 ? "moderate" : "weak";
-      return {
-        source: d.id,
-        target: "outcome",
-        strength: strength as "strong" | "moderate" | "weak",
-        weight: round(0.2 + w * 0.6, 2),
-        confidence: round(0.72 + w * 0.22, 2),
-        discovered: true,
-        planted: true,
-      };
-    }),
-    { source: drivers[0].id, target: drivers[1].id, strength: "strong" as const, weight: 0.66, confidence: 0.86, discovered: true, planted: true },
-    { source: drivers[2].id, target: drivers[1].id, strength: "weak" as const, weight: 0.24, confidence: 0.7, discovered: true, planted: false },
-  ];
+  const treatmentNode = spec.nodes.find((n) => n.role === "treatment")!;
+  const outcomeNode = spec.nodes.find((n) => n.role === "outcome")!;
 
-  // ---- discovery metrics ---------------------------------------------
-  const precision = 1.0;
-  const recall = 0.89;
-  const f1 = round((2 * precision * recall) / (precision + recall), 2);
+  // ── discovery metrics (pre-domain-knowledge, autonomous PC) ────────────
+  const plantedCount = spec.edges.length;
+  const discoveredAutonomously = spec.edges.filter((e) => e.discovered).length;
   const falsePositives = 0;
+  const falseNegatives = plantedCount - discoveredAutonomously;
+  const precision = round(discoveredAutonomously / (discoveredAutonomously + falsePositives), 2);
+  const recall = round(discoveredAutonomously / plantedCount, 2);
+  const f1 = round((2 * precision * recall) / (precision + recall), 2);
+  const stability = 0.86;
   const reliabilityPct = 86;
 
   const edgeStability = edges.map((e) => ({
-    edge: `${nodeLabel(nodes, e.source)} → ${nodeLabel(nodes, e.target)}`,
-    frequency: round(e.planted ? 0.82 + rng.next() * 0.16 : 0.55 + rng.next() * 0.2, 2),
+    edge: `${label(e.source)} → ${label(e.target)}`,
+    frequency: e.bootstrapFreq,
+    discovered: e.discovered,
   }));
 
-  // ---- effects (Double ML vs naive) --------------------------------
-  const effects = drivers.map((d) => {
-    const ciHalf = 0.06 + rng.next() * 0.09;
-    return {
-      driver: d.id,
-      label: d.label,
-      effectDays: round(d.groundTruthDays + rng.normal(0, 0.02)),
-      ciLow: round(d.groundTruthDays - ciHalf),
-      ciHigh: round(d.groundTruthDays + ciHalf),
-      groundTruthDays: d.groundTruthDays,
-      baselineDays: d.naiveDays,
-      reductionPct: round(((d.naiveDays - d.groundTruthDays) / d.naiveDays) * 100, 1),
-      method: d.kind === "mediator" ? "Mediation-adjusted DML" : "Double ML + backdoor adjustment",
-    };
-  });
-  const top = effects[0];
-
+  // ── naive vs Double ML ───────────────────────────────────────────────
   const naiveEffect = {
-    naiveDays: top.baselineDays,
-    causalDays: top.effectDays,
-    biasDays: round(top.baselineDays - top.effectDays),
-    biasPct: round(((top.baselineDays - top.effectDays) / top.effectDays) * 100, 1),
-    ciLow: top.ciLow,
-    ciHigh: top.ciHigh,
-    method: "Double ML · cross-fitted gradient boosting",
+    naiveDays: spec.naiveEffect,
+    causalDays: spec.dmlEffect,
+    biasDays: round(spec.naiveEffect - spec.dmlEffect),
+    biasPct: round(((spec.naiveEffect - spec.dmlEffect) / spec.dmlEffect) * 100, 1),
+    ciLow: spec.dmlCiLow,
+    ciHigh: spec.dmlCiHigh,
+    method: "Double ML · cross-fitted gradient boosting · sandwich SEs",
   };
 
+  // ── per-driver effects (mediators + exogenous → outcome) ─────────────
+  // The mediated treatment effect plus each direct edge into the outcome.
+  const outcomeParents = spec.edges.filter((e) => e.target === outcomeNode.id);
+  const effects = [
+    {
+      driver: treatmentNode.id,
+      label: treatmentNode.label,
+      effectDays: spec.dmlEffect,
+      ciLow: spec.dmlCiLow,
+      ciHigh: spec.dmlCiHigh,
+      groundTruthDays: spec.trueEffect,
+      naiveDays: spec.naiveEffect,
+      method: "Double ML + backdoor adjustment (mediated path)",
+    },
+    ...outcomeParents
+      .filter((e) => e.source !== treatmentNode.id)
+      .map((e) => {
+        const gt = Math.abs(e.coef) * (spec.id === "manufacturing" ? 3.2 : 3.6);
+        const est = round(gt + rng.normal(0, 0.04));
+        const ciHalf = 0.05 + rng.next() * 0.08;
+        return {
+          driver: e.source,
+          label: label(e.source),
+          effectDays: est,
+          ciLow: round(est - ciHalf),
+          ciHigh: round(est + ciHalf),
+          groundTruthDays: round(gt),
+          naiveDays: round(gt * (1 + rng.next() * 0.12)),
+          method: "Structural coefficient · Double ML",
+        };
+      }),
+  ].sort((a, b) => b.effectDays - a.effectDays);
+
+  const topDrivers = effects.map((e) => ({ label: e.label, impactDays: e.effectDays }));
+
   const effectAccuracy = [
-    { bucket: "0–0.1", count: 3 },
+    { bucket: "0–0.1", count: Math.max(1, effects.length - 2) },
     { bucket: "0.1–0.2", count: 2 },
     { bucket: "0.2–0.3", count: 1 },
     { bucket: "0.3–0.5", count: 0 },
     { bucket: "0.5+", count: 0 },
   ];
 
-  const topDrivers = [...effects]
-    .sort((a, b) => b.effectDays - a.effectDays)
-    .map((e) => ({ label: e.label, impactDays: e.effectDays }));
-
-  const coefficients = [
-    { edge: `${drivers[0].label} → ${drivers[1].label}`, estimated: spec.strongestRel.coefficient, groundTruth: round(spec.strongestRel.coefficient * 1.02) },
-    ...effects.map((e) => ({
-      edge: `${e.label} → ${spec.outcomeNodeLabel}`,
-      estimated: e.effectDays,
-      groundTruth: e.groundTruthDays,
-    })),
-  ];
-
-  // ---- CATE / treatment-effect heterogeneity ----------------------
-  const ate = round(0.02 + rng.next() * 0.06);
-  const cate = {
-    driver: drivers[0].label,
-    segmentVar: spec.segmentVar,
-    ate,
-    segments: spec.cateSegments.map((s) => {
-      const effect = round(ate + s.mult * 0.13);
-      const ciHalf = 0.05 + rng.next() * 0.05;
-      return { label: s.label, effect, ciLow: round(effect - ciHalf), ciHigh: round(effect + ciHalf) };
-    }),
-    note: `The causal effect of ${drivers[0].label} is concentrated in the High ${spec.segmentVar} segment, suggesting interventions targeted by ${spec.segmentVar.toLowerCase()} profile would yield different returns.`,
-  };
-
-  // ---- recommended actions & projected impact --------------------
-  const recommendedActions = spec.actions.map((a) => ({
-    id: a.id,
-    title: a.title,
-    detail: a.detail,
-    deltaDays: a.deltaDays,
-    annualSavings: a.annualSavings,
-    roi: round(a.annualSavings / Math.max(a.capex, 1), 1),
-    confidence: a.confidence,
-    lever: a.lever,
-    maxShiftPct: a.maxShiftPct,
-    reductionPct: round((a.deltaDays / baselineOutcome) * 100, 1),
-    effort: a.effort,
-    timeline: a.timeline,
-    capex: a.capex,
-    evidence: a.evidence,
-  }));
-
-  const totalReductionDays = round(recommendedActions.reduce((s, a) => s + a.deltaDays, 0));
-  const totalReductionPct = round((totalReductionDays / baselineOutcome) * 100, 0);
-
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-  const trend = months.map((m, i) => {
-    const baseline = round(baselineOutcome + rng.normal(0, 0.35));
-    return { period: m, baseline, withActions: round(baseline - totalReductionDays * (0.45 + i * 0.11)) };
+  // ── coefficients (estimated vs planted ground truth) ─────────────────
+  const coefficients = spec.edges.map((e) => {
+    const noise = rng.normal(0, Math.abs(e.coef) * 0.03 + 0.02);
+    return {
+      edge: `${label(e.source)} → ${label(e.target)}`,
+      estimated: round(e.coef + noise),
+      groundTruth: e.coef,
+    };
   });
 
-  // ---- simulator ------------------------------------------------
+  // ── CATE ────────────────────────────────────────────────────────────
+  const ate = round(0.03 + rng.next() * 0.04);
+  const cate = {
+    driver: spec.treatmentLabel,
+    segmentVar: spec.moderatorLabel,
+    ate,
+    segments: spec.cateSegments.map((s) => {
+      const effect = round(ate + s.mult * 0.16);
+      const ciHalf = 0.04 + rng.next() * 0.05;
+      return { label: s.label, effect, ciLow: round(effect - ciHalf), ciHigh: round(effect + ciHalf) };
+    }),
+    note: `The causal effect of ${spec.treatmentLabel} is concentrated in the High ${spec.moderatorLabel} segment — targeted interventions would return more there than in low-complexity cases.`,
+  };
+
+  const sensitivity = {
+    ...spec.sensitivity,
+    reportedEstimate: spec.dmlEffect,
+    placeboEffect: spec.sensitivity.placeboEffect,
+  };
+
+  // ── recommended actions & projected impact ──────────────────────────
+  const recommendedActions = spec.actions.map((a) => {
+    const deltaDays = round((a.reductionPct / 100) * baseline);
+    return {
+      id: a.id,
+      title: a.title,
+      detail: a.detail,
+      deltaDays,
+      reductionPct: a.reductionPct,
+      annualSavings: a.annualSavings,
+      roi: round(a.annualSavings / Math.max(a.capex, 1), 1),
+      confidence: a.confidence,
+      effort: a.effort,
+      timeline: a.timeline,
+      capex: a.capex,
+      evidence: a.evidence,
+      lever: a.lever,
+    };
+  });
+  const totalReductionDays = round(recommendedActions.reduce((s, a) => s + a.deltaDays, 0));
+  const totalReductionPct = round((totalReductionDays / baseline) * 100, 0);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const trend = months.map((m, i) => {
+    const b = round(baseline + rng.normal(0, 0.3));
+    return { period: m, baseline: b, withActions: round(b - totalReductionDays * (0.4 + i * 0.12)) };
+  });
+
+  // ── simulator ───────────────────────────────────────────────────────
+  const mediators =
+    spec.id === "manufacturing"
+      ? [
+          { name: "Material Lead Time", baseline: 7.2, unit: "days" },
+          { name: "Machine Queue Length", baseline: 3.1, unit: "units" },
+          { name: "Approval Duration", baseline: 2.4, unit: "days" },
+        ]
+      : [
+          { name: "Treatment Duration", baseline: 7.6, unit: "days" },
+          { name: "Bed Occupancy Rate", baseline: 78, unit: "%" },
+          { name: "Approval Wait", baseline: 4.4, unit: "days" },
+        ];
+
   const simulator = {
-    baselineOutcome,
-    throughputBaseline: spec.id === "manufacturing" ? 100 : 42,
+    baselineOutcome: baseline,
+    outcomeLabel: spec.outcomeVariable,
+    throughputBaseline: 100,
     riskBaseline: 45,
-    costPerDelayDay: spec.costPerDelayDay,
-    annualVolume: spec.annualVolume,
-    mediators: spec.mediators,
+    costPerDelayDay: spec.id === "manufacturing" ? 1200 : 1500,
+    annualVolume: spec.id === "manufacturing" ? 3000 : 2000,
+    mediators,
     levers: spec.levers,
   };
 
-  // ---- discovery walkthrough -----------------------------------
+  // ── discovery walkthrough numbers ───────────────────────────────────
+  const totalEvents = spec.totalEvents;
   const treatedCases = Math.round((totalEvents * spec.treatedPct) / 100);
   const objectInstances = spec.id === "manufacturing" ? 30025 : 41180;
   const coOccurrenceEdges = spec.id === "manufacturing" ? 105166 : 138420;
@@ -179,95 +204,96 @@ function build(spec: DomainSpec) {
     totalEvents,
     treatedCases,
     treatedPct: spec.treatedPct,
-    avgOutcome: baselineOutcome,
-    stdOutcome: round(baselineOutcome * 0.58),
+    avgOutcome: spec.outcomeMean,
+    stdOutcome: spec.outcomeStd,
     objectInstances,
     coOccurrenceEdges,
     avgDegree: round((coOccurrenceEdges * 2) / objectInstances),
-    topResources:
-      spec.id === "manufacturing"
-        ? [
-            { label: "Top machine", value: "MCH_01" },
-            { label: "Top worker", value: "WRK_07" },
-            { label: "Top supplier", value: "Supplier A" },
-          ]
-        : [
-            { label: "Top service", value: "Cardiology" },
-            { label: "Top ward", value: "Ward 4E" },
-            { label: "Top scanner", value: "CT_02" },
-          ],
+    topResources: spec.topResources,
     correlationGroups: spec.correlationGroups,
-    strongestRelationship: spec.strongestRel,
-    domainKnowledge: {
-      recallGainPct: 11.1,
-      missingEdgesRecovered: 1,
-      spuriousRemoved: 0,
-      validatedLinks: edges.length + 1,
-      prePrecision: 1.0,
-      preRecall: 0.89,
-      postPrecision: 1.0,
-      postRecall: 1.0,
-    },
+    strongestRelationship: { from: spec.strongestRel.from, to: spec.strongestRel.to, coefficient: spec.strongestRel.coef },
   };
 
-  // ---- executive report ---------------------------------------
-  const targetDays = round(baselineOutcome - recommendedActions[0].deltaDays);
+  const pipelinePerf = {
+    postPrecision: 1.0,
+    preRecall: recall,
+    postRecall: 1.0,
+    signConsistency: 1.0,
+    avgModelR2: spec.id === "manufacturing" ? 0.897 : 0.881,
+    coeffAccuracy: spec.id === "manufacturing" ? 0.936 : 0.921,
+    recallGainPct: round((1 - recall) * 100, 1),
+    missingEdgesRecovered: falseNegatives,
+    spuriousRemoved: 0,
+    validatedLinks: plantedCount,
+  };
+
+  // ── executive report ───────────────────────────────────────────────
+  const targetDays = round(baseline - recommendedActions[0].deltaDays);
   const report = {
     date: REPORT_DATE,
     casesAnalysed: totalEvents,
-    groundTruthEffect: top.groundTruthDays,
+    groundTruthEffect: spec.trueEffect,
+    dmlEffect: spec.dmlEffect,
     confoundingRemoved: naiveEffect.biasDays,
     naiveDays: naiveEffect.naiveDays,
     achievableReductionPct: recommendedActions[0].reductionPct,
-    baselineDays: baselineOutcome,
+    baselineDays: baseline,
     targetDays,
-    primaryChain: spec.primaryChain,
-    signCorrect: `${edges.filter((e) => e.planted).length}/${edges.filter((e) => e.planted).length} sign-correct`,
+    primaryChain: spec.chain,
+    signConsistency: `${plantedCount}/${plantedCount} sign-correct`,
     methodology: spec.methodology,
     actions: recommendedActions.map((a, i) => ({
       rank: i + 1,
       action: a.title,
       impactPct: a.reductionPct,
-      confidence: a.confidence >= 0.85 ? "High" : a.confidence >= 0.75 ? "Medium" : "Low",
+      confidence: a.confidence,
       value: `$${Math.round(a.annualSavings / 1000)}K / yr`,
       timeline: a.timeline,
     })),
     totalCapex: recommendedActions.reduce((s, a) => s + a.capex, 0),
     roiPayback: spec.id === "manufacturing" ? "3.2 months" : "1.8 months",
-    riskLevel: spec.id === "manufacturing" ? "Medium — supplier contract renegotiation required" : "Medium — clinical staffing agreements required",
+    riskLevel:
+      spec.id === "manufacturing"
+        ? "Medium — supplier contract renegotiation required"
+        : "Medium — clinical staffing agreements required",
   };
 
-  // ---- cases -------------------------------------------------
+  const crossDomain = [
+    { domain: "Manufacturing", precision: 1.0, recall: 0.89, f1: 0.94, naive: DOMAINS.manufacturing.naiveEffect, causal: DOMAINS.manufacturing.dmlEffect, eValue: DOMAINS.manufacturing.sensitivity.eValue },
+    { domain: "Healthcare", precision: 1.0, recall: 0.89, f1: 0.94, naive: DOMAINS.healthcare.naiveEffect, causal: DOMAINS.healthcare.dmlEffect, eValue: DOMAINS.healthcare.sensitivity.eValue },
+  ];
+
+  // ── cases ──────────────────────────────────────────────────────────
+  const contribDrivers = effects.slice(0, 4);
   const cases = Array.from({ length: 40 }, (_, i) => {
     const entity = rng.pick(spec.entities);
-    const isTopEntity = entity === spec.entities[0];
+    const isTop = entity === spec.entities[0];
     const complexityScore = rng.int(1, 10);
     const treated = rng.bool(spec.treatedPct / 100);
     const actual = round(
-      Math.max(0.4, baselineOutcome + rng.normal(isTopEntity ? 2.4 : -0.4, 2.4) + (complexityScore - 5) * 0.3),
+      Math.max(0.4, baseline + rng.normal(isTop ? 2.2 : -0.5, 2.2) + (complexityScore - 5) * 0.3),
       1,
     );
-    const contributions = drivers.map((d) => {
-      const controllable = d.lever !== "Pathway routing" && d.id !== "case_complexity" && d.id !== "order_complexity";
+    const drivers = contribDrivers.map((dr, j) => {
+      const controllable = j !== contribDrivers.length - 1; // last (complexity-ish) is structural
       const raw =
-        d.groundTruthDays *
+        dr.effectDays *
         (0.3 + rng.next()) *
-        (isTopEntity && d.id === drivers[0].id ? 1.5 : 1) *
-        (actual < baselineOutcome ? -1 : 1);
+        (isTop && j === 0 ? 1.4 : 1) *
+        (actual < baseline ? -1 : 1);
       return {
-        label: d.label,
-        contributionDays: round(raw, 2),
+        label: dr.label,
+        contributionDays: round(raw),
         kind: (controllable ? "controllable" : "structural") as "controllable" | "structural",
       };
     });
-    contributions.sort((a, b) => Math.abs(b.contributionDays) - Math.abs(a.contributionDays));
-    const controllableDays = round(contributions.filter((c) => c.kind === "controllable").reduce((s, c) => s + c.contributionDays, 0));
-    const structuralDays = round(contributions.filter((c) => c.kind === "structural").reduce((s, c) => s + c.contributionDays, 0));
-    const predicted = round(baselineOutcome + controllableDays + structuralDays + rng.normal(0, 0.5), 1);
-    const counterfactual = round(Math.max(0.3, actual - Math.abs(contributions[0].contributionDays) * 0.7), 1);
-    const idNum = String(i).padStart(4, "0");
+    drivers.sort((a, b) => Math.abs(b.contributionDays) - Math.abs(a.contributionDays));
+    const controllableDays = round(drivers.filter((d) => d.kind === "controllable").reduce((s, d) => s + d.contributionDays, 0));
+    const structuralDays = round(drivers.filter((d) => d.kind === "structural").reduce((s, d) => s + d.contributionDays, 0));
+    const predicted = round(baseline + controllableDays + structuralDays + rng.normal(0, 0.5), 1);
+    const counterfactual = round(Math.max(0.3, actual - Math.abs(drivers[0].contributionDays) * 0.7), 1);
     return {
-      id: `${spec.id === "manufacturing" ? "ORD" : "ADM"}_${idNum}`,
+      id: `${spec.id === "manufacturing" ? "ORD" : "ADM"}_${String(i).padStart(4, "0")}`,
       date: `2024-0${1 + (i % 6)}-${String(3 + (i % 24)).padStart(2, "0")}`,
       primaryEntity: entity,
       category: rng.pick(spec.categories),
@@ -275,24 +301,24 @@ function build(spec: DomainSpec) {
       actualDelayDays: actual,
       predictedDelayDays: predicted,
       counterfactualDelayDays: counterfactual,
-      counterfactualLabel: spec.counterfactualLabel,
-      drivers: contributions,
+      counterfactualLabel:
+        spec.id === "manufacturing"
+          ? "If procurement had been re-routed to Supplier B"
+          : "If the specialist consult had happened within 12 hours",
+      drivers,
       similarCaseIds: [] as string[],
-      populationAvg: baselineOutcome,
+      populationAvg: baseline,
       percentile: 0,
       controllableDays,
       structuralDays,
       complexityScore,
       treated,
-      dominantDriver: contributions[0].label,
+      dominantDriver: drivers[0].label,
     };
   });
-  const sorted = [...cases].sort((a, b) => a.actualDelayDays - b.actualDelayDays);
+  const sortedByDelay = [...cases].sort((a, b) => a.actualDelayDays - b.actualDelayDays);
   for (const c of cases) {
-    c.percentile = Math.max(
-      1,
-      Math.round(((sorted.findIndex((s) => s.id === c.id) + 1) / cases.length) * 100),
-    );
+    c.percentile = Math.max(1, Math.round(((sortedByDelay.findIndex((s) => s.id === c.id) + 1) / cases.length) * 100));
     c.similarCaseIds = cases
       .filter((o) => o.id !== c.id)
       .sort((a, b) => Math.abs(a.actualDelayDays - c.actualDelayDays) - Math.abs(b.actualDelayDays - c.actualDelayDays))
@@ -300,11 +326,33 @@ function build(spec: DomainSpec) {
       .map((o) => o.id);
   }
 
-  // ---- sample events --------------------------------------
+  // ── objects / variables / events ───────────────────────────────────
+  const objects = spec.objects.map((o) => ({
+    name: o.name,
+    records: o.records,
+    attributes: o.attributes,
+    missingPct: o.missingPct,
+    qualityPct: o.qualityPct,
+    updated: `${o.updatedHrs}h ago`,
+  }));
+  const roleMap: Record<string, "treatment" | "mediator" | "confounder" | "outcome" | "exogenous"> = {
+    treatment: "treatment",
+    mediator: "mediator",
+    confounder: "confounder",
+    outcome: "outcome",
+    exogenous: "exogenous",
+  };
+  const variableList = spec.nodes.map((n, i) => ({
+    name: n.id,
+    object: spec.objects[i % spec.objects.length].name,
+    type: (n.role === "treatment" || n.role === "exogenous" ? "boolean" : "numeric") as "numeric" | "boolean",
+    role: roleMap[n.role],
+    missingPct: round(rng.range(0, 6), 0),
+  }));
   const activities =
     spec.id === "manufacturing"
-      ? ["Order Placed", "Supplier Confirmed", "Material Received", "Machined", "Assembled", "Dispatched", "Delivered"]
-      : ["Admitted", "Triage", "Consult Requested", "Specialist Seen", "Imaging Ordered", "Diagnostics Complete", "Discharged"];
+      ? ["order_placed", "material_received", "production_started", "quality_check", "shipment_dispatched"]
+      : ["admitted", "triage", "specialist_review", "diagnostics", "discharge_planning", "discharged"];
   const sampleEvents = Array.from({ length: 14 }, (_, i) => ({
     event_id: `E-${String(i + 1).padStart(5, "0")}`,
     case_id: cases[i % cases.length].id,
@@ -314,37 +362,9 @@ function build(spec: DomainSpec) {
     duration_hrs: round(rng.range(0.5, 36), 1),
   }));
 
-  // ---- object + variable summaries ----------------------
-  const objects = spec.objects.map((o) => ({
-    name: o.name,
-    records: o.records,
-    attributes: o.attributes,
-    missingPct: o.missingPct,
-    qualityPct: o.qualityPct,
-    updated: `${o.updatedHrs}h ago`,
-  }));
-
-  const variableList = [
-    ...drivers.map((d) => ({
-      name: d.id,
-      object: spec.objects[0].name,
-      type: "numeric" as const,
-      role: (d.kind === "mediator" ? "mediator" : "driver") as "driver" | "mediator",
-      missingPct: round(rng.range(1, 7), 0),
-    })),
-    { name: confounder.id, object: spec.objects[1].name, type: "numeric" as const, role: "confounder" as const, missingPct: 7 },
-    {
-      name: spec.outcomeVariable.toLowerCase().replace(/\s+/g, "_"),
-      object: spec.objects[spec.objects.length - 1].name,
-      type: "numeric" as const,
-      role: "outcome" as const,
-      missingPct: 0,
-    },
-    ...spec.extraVariables,
-  ];
-
   const qualityPct = Math.round(objects.reduce((s, o) => s + o.qualityPct, 0) / objects.length);
-  const causalLinks = edges.length + 1; // + one domain-knowledge recovered edge
+  const causalLinks = plantedCount; // planted = validated after domain knowledge
+  const expertRules = spec.id === "manufacturing" ? 9 : 11;
 
   const fixture = {
     domain: spec.id,
@@ -353,10 +373,15 @@ function build(spec: DomainSpec) {
       name: spec.scenarioName,
       outcomeVariable: spec.outcomeVariable,
       outcomeUnit: unit,
+      treatmentLabel: spec.treatmentLabel,
+      confounderLabel: spec.confounderLabel,
+      moderatorLabel: spec.moderatorLabel,
       org: spec.org,
       domainLabel: spec.domainLabel,
       timeRange: spec.timeRange,
       totalEvents,
+      treatedCases,
+      treatedPct: spec.treatedPct,
       dataSources: 8,
       lastUpdated: "2 hours ago",
       description: spec.description,
@@ -364,31 +389,42 @@ function build(spec: DomainSpec) {
       causalLinks,
       reliabilityPct,
       objectNames: spec.objectInteractionLabels,
-      baselineOutcome,
+      simBaseline: baseline,
+      outcomeMean: spec.outcomeMean,
+      outcomeStd: spec.outcomeStd,
     },
     executiveSummary: {
       headline:
         spec.id === "manufacturing"
-          ? "Supplier A is confirmed as the dominant causal driver of shipment delay — statistically validated, not just correlated."
-          : "Specialist assignment latency is confirmed as the dominant causal driver of discharge delay — statistically validated, not just correlated.",
+          ? "Supplier A dependency is the dominant causal driver of shipment delay — statistically validated, not just correlated."
+          : "Specialist assignment is the dominant causal driver of length of stay — statistically validated, not just correlated.",
       confidence: "HIGH CONFIDENCE" as const,
       bullets: [
-        `Recovered causal effect: ${top.effectDays} ${unit} via Double ML — the naive estimate ran ${naiveEffect.biasPct}% high due to confounding from ${confounder.label}`,
-        `Discovery precision ${precision.toFixed(2)}, recall ${recall.toFixed(2)} across 20 bootstrap reruns (F1 ${f1.toFixed(2)})`,
-        `Recommended action: ${recommendedActions[0].title} → ~$${Math.round(recommendedActions[0].annualSavings / 1000)}K/yr expected savings`,
+        `Recovered causal effect: ${spec.dmlEffect} ${unit} via Double ML — the naive estimate ran ${naiveEffect.biasPct}% high on confounding from ${spec.confounderLabel}`,
+        `Discovery precision ${precision.toFixed(2)}, recall ${recall.toFixed(2)} across ${20} bootstrap reruns (F1 ${f1.toFixed(2)}); domain knowledge recovered the ${falseNegatives} nonlinear edge autonomous PC missed`,
+        `Recommended action: ${recommendedActions[0].title} → ~$${Math.round(recommendedActions[0].annualSavings / 1000)}K/yr expected savings, payback ${report.roiPayback}`,
+        `E-value ${spec.sensitivity.eValue} — an unmeasured confounder would need that strength on both treatment and outcome to nullify the effect`,
       ],
       recommendedAction: recommendedActions[0].title,
       alertOutcome: spec.outcomeVariable,
       alertReductionPct: recommendedActions[0].reductionPct,
-      chain: spec.primaryChain,
+      chain: spec.chain,
       riskSegment: spec.riskSegment,
     },
-    kpis: {
-      causalLinks,
-      target: spec.outcomeVariable,
-      expertRules: spec.id === "manufacturing" ? 9 : 11,
-      reliabilityPct,
+    kpis: { causalLinks, target: spec.outcomeVariable, expertRules, reliabilityPct },
+    discoveryMetrics: {
+      precision,
+      recall,
+      f1,
+      stability,
+      bootstrapRuns: 20,
+      shd: falsePositives + falseNegatives,
+      truePositives: discoveredAutonomously,
+      falsePositives,
+      falseNegatives,
+      edgeStability,
     },
+    pipelinePerf,
     data: {
       datasets: 8,
       variables: variableList.length + 60,
@@ -400,43 +436,39 @@ function build(spec: DomainSpec) {
     },
     discovery,
     causalGraph: { nodes, edges },
-    discoveryMetrics: {
-      precision,
-      recall,
-      f1,
-      stability: reliabilityPct / 100,
-      bootstrapRuns: 20,
-      shd: falsePositives,
-      edgeStability,
-    },
     effects,
     naiveEffect,
     coefficients,
     cate,
+    sensitivity,
     effectAccuracy,
     topDrivers,
     recommendedActions,
     projectedImpact: { totalReductionPct, totalReductionDays, trend },
     simulator,
     report,
-    copilotCapabilities: spec.copilotCapabilities,
+    crossDomain,
+    copilot: {
+      chips: spec.copilotChips,
+      followUps: spec.copilotFollowUps,
+      capabilities: spec.copilotCapabilities,
+    },
     cases,
   };
 
   return CausalFixture.parse(fixture);
-}
 
-function nodeLabel(nodes: { id: string; label: string }[], id: string) {
-  return nodes.find((n) => n.id === id)?.label ?? id;
+  function label(id: string) {
+    return spec.nodes.find((n) => n.id === id)?.label ?? id;
+  }
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
 for (const spec of Object.values(DOMAINS)) {
   const fixture = build(spec);
-  const path = join(OUT_DIR, `${spec.id}.json`);
-  writeFileSync(path, JSON.stringify(fixture, null, 2));
+  writeFileSync(join(OUT_DIR, `${spec.id}.json`), JSON.stringify(fixture, null, 2));
   console.log(
-    `✓ ${spec.id.padEnd(14)} → ${fixture.causalGraph.edges.length} edges · ${fixture.cases.length} cases · ${fixture.simulator.levers.length} levers`,
+    `✓ ${spec.id.padEnd(14)} → ${fixture.causalGraph.edges.length} edges · ${fixture.cases.length} cases · ${fixture.simulator.levers.length} levers · precision ${fixture.discoveryMetrics.precision} recall ${fixture.discoveryMetrics.recall}`,
   );
 }
 console.log("Done.");

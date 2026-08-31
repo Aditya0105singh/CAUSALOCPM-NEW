@@ -36,7 +36,7 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
                     </div>
                     <div className="mt-0.5 font-display text-lg text-ink">{a.title}</div>
                   </div>
-                  <Pill tone="forest">{Math.round(a.confidence * 100)}% conf.</Pill>
+                  <Pill tone="forest">{a.confidence} confidence</Pill>
                 </div>
                 <p className="mt-2 text-sm text-ink-soft">{a.detail}</p>
                 <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
@@ -128,7 +128,38 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
                   <span className="text-muted"> — {mm.detail}</span>
                 </div>
               ))}
-              <div className="text-sm"><span className="font-medium text-ink">Model confidence</span><span className="text-muted"> — {r.signCorrect} across the estimated causal coefficients</span></div>
+              <div className="text-sm"><span className="font-medium text-ink">Model confidence</span><span className="text-muted"> — {r.signConsistency} across the estimated causal coefficients · E-value {f.sensitivity.eValue}</span></div>
+            </div>
+          </Section>
+
+          <Section label="05 · Cross-domain validation benchmark">
+            <p className="mb-2 text-[12px] text-muted">
+              The identical pipeline, run on an independent domain with no code changes — evidence the framework is
+              generalised, not overfit to one dataset.
+            </p>
+            <div className="scroll-slim overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
+                    {["Domain", "Precision", "Recall", "F1", "Naive", "Causal (DML)", "E-value"].map((h) => (
+                      <th key={h} className="pb-2 pr-4 font-semibold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {f.crossDomain.map((d) => (
+                    <tr key={d.domain} className={clsx("border-t border-line-soft text-ink-soft", d.domain === f.scenario.domainLabel && "font-medium text-ink")}>
+                      <td className="py-2 pr-4">{d.domain}</td>
+                      <td className="py-2 pr-4">{d.precision.toFixed(2)}</td>
+                      <td className="py-2 pr-4">{d.recall.toFixed(2)}</td>
+                      <td className="py-2 pr-4">{d.f1.toFixed(2)}</td>
+                      <td className="py-2 pr-4">{d.naive.toFixed(2)}</td>
+                      <td className="py-2 pr-4 text-forest">{d.causal.toFixed(2)}</td>
+                      <td className="py-2 pr-4">{d.eValue.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </Section>
 
