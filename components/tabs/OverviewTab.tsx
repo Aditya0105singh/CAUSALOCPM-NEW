@@ -19,6 +19,7 @@ export function OverviewTab({ f }: { f: CausalFixture }) {
     <div className="space-y-5">
       {/* Causal Intelligence Alert */}
       <motion.div
+        id="tour-alert"
         initial={{ opacity: 0, scale: 0.985 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -83,7 +84,9 @@ export function OverviewTab({ f }: { f: CausalFixture }) {
         </Card>
       </FadeIn>
 
-      <ValidationExplainer f={f} />
+      <div id="tour-explainer" className="scroll-mt-24">
+        <ValidationExplainer f={f} />
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <FadeIn className="lg:col-span-2" delay={0.05}>

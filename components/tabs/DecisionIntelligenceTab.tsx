@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { clsx } from "clsx";
-import { FileText } from "lucide-react";
+import { FileText, Printer } from "lucide-react";
 import type { CausalFixture } from "@/lib/engine/types";
 import { Card, SectionTitle, Pill } from "@/components/ui";
 import { ImpactTrendChart } from "@/components/Charts";
@@ -16,7 +16,7 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex gap-1 border-b border-line">
+      <div className="no-print flex gap-1 border-b border-line">
         {SUB.map((s) => (
           <button key={s} onClick={() => setSub(s)} className={clsx("px-3 py-2 text-sm", sub === s ? "tab-underline font-semibold text-ink" : "text-muted hover:text-ink")}>
             {s}
@@ -61,12 +61,23 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
       )}
 
       {sub === "Executive Report" && (
-        <Card>
+        <Card id="tour-report">
           <div className="flex items-center justify-between border-b border-line pb-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-ink">
               <FileText size={15} className="text-forest" /> Executive Causal Analysis Report
             </div>
-            <Pill tone="neutral">Confidential</Pill>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => window.print()}
+                className="no-print inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-2.5 py-1 text-[12px] font-medium text-ink-soft hover:border-forest/40 hover:text-forest"
+              >
+                <Printer size={13} /> Save as PDF
+              </button>
+              <Pill tone="neutral">Confidential</Pill>
+            </div>
+          </div>
+          <div className="print-only mb-2 mt-1 text-[11px] text-muted">
+            Generated from CausalOCPM · {f.scenario.org} · {r.date}
           </div>
           <div className="mt-1 text-[12px] text-muted">
             {f.scenario.domainLabel} Domain · {r.date} · {r.casesAnalysed.toLocaleString()} cases analysed

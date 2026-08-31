@@ -117,7 +117,7 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
           </p>
         </div>
         <div className="mt-4 grid gap-5 lg:grid-cols-2">
-          <Card>
+          <Card id="tour-dag" className="scroll-mt-24">
             <SectionTitle hint="drag nodes · click to trace paths · ↳ backdoor toggle">Full discovered DAG</SectionTitle>
             <CausalGraph graph={f.causalGraph} height={320} />
             <GraphLegend />

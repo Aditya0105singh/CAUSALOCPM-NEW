@@ -74,7 +74,7 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
         <Stat value={`${Math.round(m.stability * 100)}%`} label="Bootstrap Stability" sub={`${m.bootstrapRuns} reruns`} />
       </div>
 
-      <Card>
+      <Card id="tour-effect" className="scroll-mt-24">
         <SectionTitle hint="Double ML backdoor adjustment">Naive correlation vs. recovered causal effect</SectionTitle>
         <div className="flex flex-wrap items-end gap-6">
           <div>
@@ -90,7 +90,7 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
       </Card>
 
       {/* ── What-If Simulator ── */}
-      <Card pad={false} className="border-forest/25">
+      <Card id="tour-sim" pad={false} className="border-forest/25 scroll-mt-24">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-ink">
             <Zap size={15} className="text-forest" /> What-If Causal Simulator
@@ -296,7 +296,7 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
       </div>
 
       {/* Sensitivity */}
-      <Card>
+      <Card id="tour-sensitivity" className="scroll-mt-24">
         <SectionTitle hint="how much would an unmeasured confounder have to matter before this flips?">
           <span className="inline-flex items-center gap-1.5"><ShieldCheck size={14} className="text-forest" /> Sensitivity to Unmeasured Confounding</span>
         </SectionTitle>

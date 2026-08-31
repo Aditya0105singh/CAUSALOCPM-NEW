@@ -3,11 +3,19 @@ import { Factory, Github, HeartPulse, Link2, MoreVertical, ShieldCheck, Target, 
 import type { CausalFixture, DomainId } from "@/lib/engine/types";
 import { CountUp, motion } from "@/components/motion";
 
-export function TopBar({ f, domain }: { f: CausalFixture; domain: DomainId }) {
+export function TopBar({
+  f,
+  domain,
+  rightSlot,
+}: {
+  f: CausalFixture;
+  domain: DomainId;
+  rightSlot?: React.ReactNode;
+}) {
   const DomainIcon = domain === "manufacturing" ? Factory : HeartPulse;
 
   return (
-    <div className="mb-6">
+    <div className="no-print mb-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <motion.h1
@@ -32,16 +40,17 @@ export function TopBar({ f, domain }: { f: CausalFixture; domain: DomainId }) {
 
         <div className="flex items-center gap-4">
           <Connector />
-          <div className="hidden items-center gap-3 text-[12px] text-ink-soft sm:flex">
+          <div className="flex items-center gap-2 text-[12px] text-ink-soft">
+            {rightSlot}
             <a
               href="https://github.com/Aditya0105singh/CAUSALOCPM"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 rounded-lg border border-line bg-card px-2.5 py-1.5 font-medium hover:border-forest/40 hover:text-forest"
+              className="hidden items-center gap-1.5 rounded-lg border border-line bg-card px-2.5 py-1.5 font-medium hover:border-forest/40 hover:text-forest sm:flex"
             >
               <Github size={14} /> Fork
             </a>
-            <button className="rounded-lg border border-line bg-card p-1.5 text-muted hover:text-ink" aria-label="More">
+            <button className="hidden rounded-lg border border-line bg-card p-1.5 text-muted hover:text-ink sm:block" aria-label="More">
               <MoreVertical size={14} />
             </button>
           </div>

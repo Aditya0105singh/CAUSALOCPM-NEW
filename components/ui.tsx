@@ -8,14 +8,18 @@ export function Card({
   className,
   pad = true,
   hover = false,
+  id,
 }: {
   children: ReactNode;
   className?: string;
   pad?: boolean;
   hover?: boolean;
+  id?: string;
 }) {
   return (
-    <div className={clsx("card", hover && "card-hover", pad && "p-5", className)}>{children}</div>
+    <div id={id} className={clsx("card", hover && "card-hover", pad && "p-5", className)}>
+      {children}
+    </div>
   );
 }
 

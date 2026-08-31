@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { BarChart3, Bot, Database, LayoutGrid, Lightbulb, Search, Settings as SettingsIcon } from "lucide-react";
 import type { CausalFixture, DomainId } from "@/lib/engine/types";
 import { AnimatePresence, motion } from "@/components/motion";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
+import { GuidedTour, TourButton, buildTour } from "./GuidedTour";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { DataDiscoveryTab } from "./tabs/DataDiscoveryTab";
 import { ModelPerformanceTab } from "./tabs/ModelPerformanceTab";
@@ -29,14 +30,39 @@ type TabId = (typeof TABS)[number]["id"];
 export function Console({ fixtures }: { fixtures: Record<DomainId, CausalFixture> }) {
   const [domain, setDomain] = useState<DomainId>("manufacturing");
   const [tab, setTab] = useState<TabId>("overview");
+  const [tour, setTour] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
   const f = fixtures[domain];
+
+  const spotlight = useCallback((anchor: string) => {
+    const attempt = (tries: number) => {
+      const el = document.getElementById(anchor);
+      if (!el) {
+        if (tries > 0) setTimeout(() => attempt(tries - 1), 90);
+        return;
+      }
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("tour-spotlight");
+      window.setTimeout(() => el.classList.remove("tour-spotlight"), 2400);
+    };
+    attempt(12);
+  }, []);
+
+  const onTourGo = useCallback(
+    (t: string, anchor: string) => {
+      setTab(t as TabId);
+      // let the tab mount, then scroll
+      setTimeout(() => spotlight(anchor), 90);
+    },
+    [spotlight],
+  );
 
   return (
     <div className="mx-auto flex min-h-screen max-w-[1440px]">
       <Sidebar fixtures={fixtures} domain={domain} onDomain={setDomain} />
 
-      <main className="min-w-0 flex-1 px-5 py-6 sm:px-8">
-        <TopBar f={f} domain={domain} />
+      <main ref={mainRef} className="min-w-0 flex-1 px-5 py-6 sm:px-8">
+        <TopBar f={f} domain={domain} rightSlot={<TourButton onClick={() => setTour(true)} />} />
 
         {/* mobile domain switch */}
         <div className="mb-4 flex gap-2 lg:hidden">
@@ -54,7 +80,7 @@ export function Console({ fixtures }: { fixtures: Record<DomainId, CausalFixture
           ))}
         </div>
 
-        <div className="scroll-slim -mx-1 mb-5 flex gap-0.5 overflow-x-auto border-b border-line px-1">
+        <div className="scroll-slim no-print -mx-1 mb-5 flex gap-0.5 overflow-x-auto border-b border-line px-1">
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = t.id === tab;
@@ -105,6 +131,10 @@ export function Console({ fixtures }: { fixtures: Record<DomainId, CausalFixture
           CausalOCPM · A Causal Audit Layer for Agentic AI Decisions · Object-Centric Process Mining × Structural Causal Models
         </footer>
       </main>
+
+      <AnimatePresence>
+        {tour && <GuidedTour steps={buildTour(f)} onGo={onTourGo} onClose={() => setTour(false)} />}
+      </AnimatePresence>
     </div>
   );
 }
