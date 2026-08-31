@@ -67,7 +67,7 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
             </div>
           </div>
           <Card className="lg:col-span-2">
-            <CausalGraph graph={f.causalGraph} height={260} compact />
+            <CausalGraph graph={f.causalGraph} height={260} compact interactive={false} />
             <GraphLegend />
           </Card>
         </div>
@@ -118,8 +118,8 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
         </div>
         <div className="mt-4 grid gap-5 lg:grid-cols-2">
           <Card>
-            <SectionTitle>Full discovered DAG</SectionTitle>
-            <CausalGraph graph={f.causalGraph} height={300} />
+            <SectionTitle hint="drag nodes · click to trace paths · ↳ backdoor toggle">Full discovered DAG</SectionTitle>
+            <CausalGraph graph={f.causalGraph} height={320} />
             <GraphLegend />
           </Card>
           <Card pad={false}>
@@ -210,10 +210,9 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
 function Step({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       <Card hover className="relative">
         <span className="absolute -left-3 top-5 hidden h-7 w-7 items-center justify-center rounded-full bg-forest text-[13px] font-semibold text-white shadow-[0_2px_8px_rgba(61,90,61,0.3)] sm:flex">

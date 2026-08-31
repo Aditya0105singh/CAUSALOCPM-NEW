@@ -270,8 +270,7 @@ function AnimatedBar({ value, max, delay }: { value: number; max: number; delay:
       <motion.div
         className="h-full rounded-full bg-forest"
         initial={{ width: 0 }}
-        whileInView={{ width: `${pct}%` }}
-        viewport={{ once: true }}
+        animate={{ width: `${pct}%` }}
         transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
       />
     </div>

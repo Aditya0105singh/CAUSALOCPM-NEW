@@ -1,6 +1,6 @@
 "use client";
-import { motion, useInView, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { motion, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
+import { useEffect, useState, type ReactNode } from "react";
 
 export { AnimatePresence, motion };
 
@@ -28,14 +28,13 @@ export function FadeIn({
   );
 }
 
-/** Stagger children in as they scroll into view. */
+/** Stagger children in on mount. */
 export function Stagger({ children, className, gap = 0.06 }: { children: ReactNode; className?: string; gap?: number }) {
   return (
     <motion.div
       className={className}
       initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-40px" }}
+      animate="show"
       variants={{ hidden: {}, show: { transition: { staggerChildren: gap } } }}
     >
       {children}
@@ -71,16 +70,14 @@ export function CountUp({
   suffix?: string;
   duration?: number;
 }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-20px" });
-  const [display, setDisplay] = useState(0);
+  const [display, setDisplay] = useState(value);
 
   useEffect(() => {
-    if (!inView) return;
+    setDisplay(0);
     let raf = 0;
-    const start = performance.now();
+    const startAt = performance.now();
     const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / (duration * 1000));
+      const t = Math.min(1, (now - startAt) / (duration * 1000));
       const eased = 1 - Math.pow(1 - t, 3);
       setDisplay(value * eased);
       if (t < 1) raf = requestAnimationFrame(tick);
@@ -88,15 +85,13 @@ export function CountUp({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [inView, value, duration]);
+  }, [value, duration]);
 
   const formatted =
-    Math.abs(value) >= 1000
-      ? Math.round(display).toLocaleString("en-US")
-      : display.toFixed(decimals);
+    Math.abs(value) >= 1000 ? Math.round(display).toLocaleString("en-US") : display.toFixed(decimals);
 
   return (
-    <span ref={ref}>
+    <span>
       {prefix}
       {formatted}
       {suffix}
