@@ -129,6 +129,12 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
               <span>ROI payback: <b className="text-ink">{r.roiPayback}</b></span>
               <span>Risk level: <b className="text-ink">{r.riskLevel}</b></span>
             </div>
+            <p className="mt-2 text-[11px] text-muted">
+              ✱ Value estimates apply to the ~{f.simulator.annualVolume.toLocaleString()} in-scope{" "}
+              {f.domain === "manufacturing" ? "shipments" : "admissions"}/year at ${f.simulator.costPerDelayDay.toLocaleString()}{" "}
+              avg cost per {f.scenario.outcomeUnit.replace(/s$/, "")}-day (configurable domain parameters). Reduction % from
+              the policy simulator under the stated lever scenario.
+            </p>
           </Section>
 
           <Section label="04 · Methodology & confidence">

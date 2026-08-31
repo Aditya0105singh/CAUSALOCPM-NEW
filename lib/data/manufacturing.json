@@ -37,7 +37,7 @@
     "bullets": [
       "Recovered causal effect: 6.6 days via Double ML vs a planted ground truth of 6.66 (error 0.9%). A naive dashboard would have said 7.84.",
       "Autonomous discovery F1 0.89 — 8 of 9 planted edges found, 1 spurious retained; domain knowledge then adds the 1 nonlinear edge Fisher-Z cannot detect and prunes the 1 spurious one",
-      "Recommended action: Shift ~25% procurement from Supplier A to Supplier B → ~$479K/yr expected savings, payback 3.2 months",
+      "Recommended action: Shift ~25% procurement from Supplier A to Supplier B → ~$479K/yr expected savings, payback 3.7 months",
       "E-value 4.7 — an unmeasured confounder would need that strength on both treatment and outcome to nullify the effect"
     ],
     "recommendedAction": "Shift ~25% procurement from Supplier A to Supplier B",
@@ -870,8 +870,8 @@
     "outcomeLabel": "Shipment Delay",
     "throughputBaseline": 100,
     "riskBaseline": 45,
-    "costPerDelayDay": 1200,
-    "annualVolume": 3000,
+    "costPerDelayDay": 960,
+    "annualVolume": 297,
     "mediators": [
       {
         "name": "Material Lead Time",
@@ -1059,7 +1059,7 @@
       }
     ],
     "totalCapex": 225000,
-    "roiPayback": "3.2 months",
+    "roiPayback": "3.7 months",
     "riskLevel": "Medium — supplier contract renegotiation required"
   },
   "crossDomain": [

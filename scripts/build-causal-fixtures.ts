@@ -200,13 +200,19 @@ function build(spec: DomainSpec) {
           { name: "Approval Wait", baseline: 4.4, unit: "days" },
         ];
 
+  // Volume is derived from the #1 action so the simulator's $ savings and the
+  // recommended-action cards agree (top action ≈ its stated annual savings).
+  const costPerDelayDay = spec.id === "manufacturing" ? 960 : 2200;
+  const a1DaysCut = (spec.actions[0].reductionPct / 100) * baseline;
+  const annualVolume = Math.round(spec.actions[0].annualSavings / (a1DaysCut * costPerDelayDay));
+
   const simulator = {
     baselineOutcome: baseline,
     outcomeLabel: spec.outcomeVariable,
     throughputBaseline: 100,
     riskBaseline: 45,
-    costPerDelayDay: spec.id === "manufacturing" ? 1200 : 1500,
-    annualVolume: spec.id === "manufacturing" ? 3000 : 2000,
+    costPerDelayDay,
+    annualVolume,
     mediators,
     levers: spec.levers,
   };
@@ -274,7 +280,12 @@ function build(spec: DomainSpec) {
       timeline: a.timeline,
     })),
     totalCapex: recommendedActions.reduce((s, a) => s + a.capex, 0),
-    roiPayback: spec.id === "manufacturing" ? "3.2 months" : "1.8 months",
+    roiPayback: `${round(
+      (recommendedActions.reduce((s, a) => s + a.capex, 0) /
+        recommendedActions.reduce((s, a) => s + a.annualSavings, 0)) *
+        12,
+      1,
+    )} months`,
     riskLevel:
       spec.id === "manufacturing"
         ? "Medium — supplier contract renegotiation required"
