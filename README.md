@@ -79,17 +79,14 @@ cp .env.example .env.local
 
 ## Deploy to Vercel
 
-1. Push this folder to a Git repo (GitHub/GitLab/Bitbucket).
-2. Import it in Vercel — framework auto-detected as **Next.js**, no config needed.
-3. (Optional) add `ANTHROPIC_API_KEY` as an environment variable for the live Copilot.
-4. Deploy. `prebuild` regenerates and validates fixtures during the Vercel build.
+Repo: <https://github.com/Aditya0105singh/CAUSALOCPM-NEW>
 
-Or from the CLI:
+1. Go to [vercel.com/new](https://vercel.com/new) and **Import** `Aditya0105singh/CAUSALOCPM-NEW`.
+2. Framework is auto-detected as **Next.js** — leave every build setting at its default.
+3. (Optional) add `ANTHROPIC_API_KEY` under *Environment Variables* for the live Copilot; without it the Copilot uses grounded scripted answers.
+4. **Deploy.** `prebuild` regenerates and Zod-validates the fixtures during the Vercel build.
 
-```bash
-npm i -g vercel
-vercel
-```
+Or from the CLI (`npm i -g vercel && vercel`).
 
 ---
 
