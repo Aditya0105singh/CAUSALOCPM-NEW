@@ -94,9 +94,12 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
           <Section label="02 · Primary causal chain">
             <div className="font-display text-lg text-ink">{r.primaryChain.join("  →  ")}</div>
             <p className="mt-1 text-sm text-ink-soft">
-              Confounding closes through {f.executiveSummary.riskSegment.toLowerCase().includes("supplier") ? "supplier / order complexity" : "acuity / case complexity"} — traditional analytics cannot detect this.
-              CausalOCPM&apos;s bootstrapped PC algorithm (+ domain-knowledge integration) recovered {f.scenario.causalLinks} causal edges
-              with F1 = {f.discoveryMetrics.f1.toFixed(2)} (precision {f.discoveryMetrics.precision.toFixed(2)}, recall {f.discoveryMetrics.recall.toFixed(2)}).
+              The confounding path closes through {f.scenario.confounderLabel.toLowerCase()} — traditional analytics
+              cannot detect it. Autonomous bootstrapped PC recovers {f.discoveryMetrics.truePositives} of{" "}
+              {f.scenario.causalLinks} planted edges (F1 {f.discoveryMetrics.f1.toFixed(2)}, precision{" "}
+              {f.discoveryMetrics.precision.toFixed(2)}, recall {f.discoveryMetrics.recall.toFixed(2)}); domain-knowledge
+              constraints then complete the DAG. Structural coefficients recovered within {f.pipelinePerf.avgCoefErrorPct}%
+              of their planted values.
             </p>
           </Section>
 

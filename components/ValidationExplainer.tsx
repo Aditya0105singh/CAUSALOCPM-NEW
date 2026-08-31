@@ -8,9 +8,9 @@ import { CountUp, FadeIn } from "@/components/motion";
 
 /**
  * "Why should a judge trust these numbers?" — the defensible framing.
- * Leads with EFFECT recovery (close to a known planted truth), then explains the
- * honest F1 ~0.89: one nonlinear edge Fisher-Z can't see, one spurious edge the
- * conservative bootstrap occasionally lets through. No metric is claimed at 1.0.
+ * Every value is the actual output of the reference pipeline's validate.py on
+ * the 15,000-row synthetic logs (seed 42). Leads with effect recovery, then the
+ * honest pre-domain-knowledge F1 (0.94 mfg / 0.83 hc). No metric claimed at 1.0.
  */
 export function ValidationExplainer({ f }: { f: CausalFixture }) {
   const [ablation, setAblation] = useState<"pc" | "dk">("pc");
@@ -18,10 +18,13 @@ export function ValidationExplainer({ f }: { f: CausalFixture }) {
   const errAbs = Math.abs(t.effectDays - t.groundTruthDays);
   const m = f.discoveryMetrics;
   const pc = { precision: m.precision, recall: m.recall, f1: m.f1 };
-  // "+ domain knowledge" is expert-corrected structure, not a discovery score —
-  // we deliberately do NOT show 1.00/1.00/1.00 as if the algorithm earned it.
   const dkEdges = `${m.truePositives + m.falseNegatives}/${m.truePositives + m.falseNegatives}`;
   const shown = pc;
+
+  const label = (id: string) => f.causalGraph.nodes.find((n) => n.id === id)?.label ?? id;
+  const missed = f.causalGraph.edges.filter((e) => !e.discovered && !e.pruned).map((e) => `${label(e.source)} → ${label(e.target)}`);
+  const spurious = f.causalGraph.edges.filter((e) => e.pruned).map((e) => `${label(e.source)} → ${label(e.target)}`);
+  const nlMissed = missed.some((x) => x.startsWith(f.scenario.confounderLabel));
 
   return (
     <Card className="border-forest/20">
@@ -77,7 +80,7 @@ export function ValidationExplainer({ f }: { f: CausalFixture }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-[13px] font-semibold text-ink">
             <ScanSearch size={14} className="text-forest" /> DAG discovery — {m.truePositives} of {f.scenario.causalLinks}{" "}
-            edges found, {m.falsePositives} spurious
+            edges found{m.falsePositives ? `, ${m.falsePositives} spurious` : ", no spurious edges"}
           </div>
           <div className="flex overflow-hidden rounded-lg border border-line text-[11px]">
             <button
@@ -112,29 +115,53 @@ export function ValidationExplainer({ f }: { f: CausalFixture }) {
               ))}
             </div>
             <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
-              <b>F1 {shown.f1.toFixed(2)} — comparable to published PC-algorithm benchmarks, and honest.</b> Bootstrapped
-              PC found {m.truePositives} of {f.scenario.causalLinks} planted edges. The <b>1 missing</b> edge is{" "}
-              <code className="rounded bg-card px-1">
-                {f.scenario.confounderLabel} → {f.scenario.treatmentLabel}
-              </code>
-              , a <b>nonlinear (sigmoid) confounding link</b>: Fisher-Z tests only detect <i>linear</i> conditional
-              independence, so this edge is structurally invisible to the algorithm no matter how much data you feed it.
-              The <b>1 spurious</b> edge is a weak marginal correlation that occasionally cleared the conservative 60%
-              bootstrap threshold.
+              <b>F1 {shown.f1.toFixed(2)} — the real autonomous number, and honest.</b> Bootstrapped PC found{" "}
+              {m.truePositives} of {f.scenario.causalLinks} planted edges.{" "}
+              {missed.length > 0 && (
+                <>
+                  Missed:{" "}
+                  {missed.map((mm, i) => (
+                    <span key={mm}>
+                      <code className="rounded bg-card px-1">{mm}</code>
+                      {i < missed.length - 1 ? " and " : ". "}
+                    </span>
+                  ))}
+                  {nlMissed ? (
+                    <>
+                      That edge is a <b>nonlinear (sigmoid) confounding link</b> — Fisher-Z tests only <i>linear</i>{" "}
+                      conditional independence, so it is structurally invisible to the algorithm.{" "}
+                    </>
+                  ) : (
+                    <>
+                      Both are among the weakest planted edges (small coefficients relative to the outcome&apos;s
+                      variance).{" "}
+                    </>
+                  )}
+                </>
+              )}
+              {spurious.length > 0 && (
+                <>
+                  {" "}
+                  It also retained one spurious edge —{" "}
+                  <code className="rounded bg-card px-1">{spurious[0]}</code>, {f.spuriousEdgeReason}
+                </>
+              )}
             </p>
           </>
         ) : (
           <>
             <div className="mt-3 flex flex-wrap gap-3">
-              <DkChip label={`+${m.falseNegatives} edge recovered`} tone="ok" />
-              <DkChip label={`−${m.falsePositives} spurious pruned`} tone="ok" />
+              <DkChip label={`+${m.falseNegatives} edge${m.falseNegatives === 1 ? "" : "s"} recovered`} tone="ok" />
+              {m.falsePositives > 0 && <DkChip label={`${m.falsePositives} spurious re-oriented`} tone="ok" />}
               <DkChip label={`${dkEdges} valid DAG`} tone="neutral" />
             </div>
             <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
-              Domain knowledge does two jobs: it <b>asserts</b> the one known-true edge Fisher-Z can&apos;t see (not an
-              invented relationship), and it <b>removes</b> the spurious edge that violates a hard process constraint. The
-              result is an actionable DAG. We report this as <b>expert-corrected structure</b> — never as a discovery
-              score, because measuring recovery of edges you just hand-added would be circular.
+              Domain knowledge <b>asserts</b> the {m.falseNegatives} known-true edge{m.falseNegatives === 1 ? "" : "s"}{" "}
+              PC missed (not invented — these are relationships in the planted structure)
+              {m.falsePositives > 0 && <> and <b>flips</b> the spurious edge back to its correct direction</>}. The result
+              is an actionable DAG. We report it as <b>expert-corrected structure</b> — never as a discovery score,
+              because measuring recovery of edges you just hand-added would be circular. That is what a headline
+              &ldquo;F1&nbsp;=&nbsp;1.000&rdquo; on this step actually is.
             </p>
           </>
         )}
@@ -144,7 +171,9 @@ export function ValidationExplainer({ f }: { f: CausalFixture }) {
         <CircleHelp size={13} className="mt-0.5 shrink-0" />
         <span>
           Bootstrapped PC · Fisher-Z α = 0.05 · 20 subsamples × 2,000 rows · Double ML with 5-fold cross-fitting, GBM
-          nuisance models, sandwich SEs · CATE across tertiles · 10-seed robustness.
+          nuisance models, sandwich SEs · CATE across tertiles · 10-seed robustness. Every figure is the actual
+          output of the reference pipeline&apos;s <code className="rounded bg-card px-1">validate.py</code> — full report
+          in <code className="rounded bg-card px-1">docs/reference-run/</code>.
         </span>
       </div>
     </Card>

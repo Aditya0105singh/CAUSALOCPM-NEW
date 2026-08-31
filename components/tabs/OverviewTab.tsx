@@ -147,26 +147,26 @@ export function OverviewTab({ f }: { f: CausalFixture }) {
       {/* Pipeline Performance Summary */}
       <FadeIn>
         <Card>
-          <SectionTitle hint="everything below is measured against a DAG + coefficients we planted ourselves">
+          <SectionTitle hint="actual outputs of the reference pipeline's validate.py on the 15,000-row synthetic log">
             Pipeline Performance Summary
           </SectionTitle>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <PerfTile v={f.pipelinePerf.effectErrorPct} decimals={1} suffix="%" l="Effect recovery error" hint={`DML ${f.effects[0].effectDays} vs planted ${f.effects[0].groundTruthDays}`} good />
             <PerfTile v={f.pipelinePerf.preF1} decimals={2} l="Discovery F1" hint="autonomous bootstrapped PC" />
-            <PerfTile v={f.pipelinePerf.confoundingRemovedPct} decimals={1} suffix="%" l="Confounding removed" hint={`${f.naiveEffect.biasDays} ${f.scenario.outcomeUnit} of naive bias`} />
+            <PerfTile v={f.pipelinePerf.confoundingRemovedPct} decimals={1} suffix="%" l="Confounding removed" hint={`${f.naiveEffect.biasDays} ${f.scenario.outcomeUnit} of the naive estimate`} />
             <PerfTile v={f.pipelinePerf.bootstrapStability * 100} decimals={0} suffix="%" l="Bootstrap stability" hint="edges stable across 20 reruns" />
-            <PerfTile v={f.pipelinePerf.eValue} decimals={1} l="E-value" hint="robustness to hidden confounders" good />
-            <PerfTile v={f.pipelinePerf.avgCoefErrorPct} decimals={1} suffix="%" l="Avg coefficient error" hint={`${f.pipelinePerf.signCertain}/${f.pipelinePerf.signTotal} coefficients sign-certain`} />
+            <PerfTile v={f.pipelinePerf.eValue} decimals={1} l="E-value" hint="hidden-confounder robustness" good />
+            <PerfTile v={f.pipelinePerf.avgModelR2} decimals={2} l="Outcome model R²" hint={`coefficients within ${f.pipelinePerf.avgCoefErrorPct}% of planted`} good />
           </div>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            The headline result is <b>effect recovery</b>: Double ML landed within{" "}
-            <b>{f.pipelinePerf.effectErrorPct}%</b> of the planted causal effect, and its 95% CI contains the true value.
-            Autonomous structure discovery scores <b>F1 {f.pipelinePerf.preF1.toFixed(2)}</b> ({m.truePositives}/
-            {f.scenario.causalLinks} planted edges, {m.falsePositives} spurious) — domain knowledge then adds the{" "}
-            {f.pipelinePerf.missingEdgesRecovered} nonlinear edge and prunes the {f.pipelinePerf.spuriousRemoved} spurious
-            one. Coefficient point estimates are off by <b>{f.pipelinePerf.avgCoefErrorPct}%</b> on average;{" "}
-            {f.pipelinePerf.signTotal - f.pipelinePerf.signCertain} weak edge has a CI that crosses zero, so its sign is
-            not claimed as certain.
+            The headline is <b>effect recovery</b>: Double ML landed within <b>{f.pipelinePerf.effectErrorPct}%</b> of the
+            planted causal effect ({f.effects[0].effectDays} vs {f.effects[0].groundTruthDays}), CI [{f.naiveEffect.ciLow},{" "}
+            {f.naiveEffect.ciHigh}] containing the truth, where a naive estimate ran {f.naiveEffect.inflationPct}% high.
+            Autonomous discovery scores <b>F1 {f.pipelinePerf.preF1.toFixed(2)}</b> ({m.truePositives}/
+            {f.scenario.causalLinks} edges{m.falsePositives ? `, ${m.falsePositives} spurious` : ", no spurious edges"});
+            domain knowledge recovers the {f.pipelinePerf.missingEdgesRecovered} missed edge
+            {f.pipelinePerf.missingEdgesRecovered === 1 ? "" : "s"}. Structural coefficients are recovered within{" "}
+            <b>{f.pipelinePerf.avgCoefErrorPct}%</b> of their planted values, all sign-correct.
           </p>
         </Card>
       </FadeIn>

@@ -60,10 +60,11 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
         </div>
         <p className="text-sm text-ink-soft">
           Confounding adjustment recovered a causal effect of <b className="text-forest">{ne.causalDays} {unit}</b> for{" "}
-          {f.scenario.treatmentLabel} — the naive, uncorrected estimate ran {ne.biasPct}% higher. Naive correlation
+          {f.scenario.treatmentLabel} — the naive, uncorrected estimate ran {ne.inflationPct}% higher. Naive correlation
           suggested {ne.naiveDays} {unit}; Double ML (cross-fitted GBM, sandwich SEs) gives {ne.causalDays} {unit} (95% CI
-          [{ne.ciLow}, {ne.ciHigh}]), matching the planted ground truth of {f.effects[0].groundTruthDays}. Treatment
-          effects vary by {f.cate.segmentVar} segment (CATE) — see below.
+          [{ne.ciLow}, {ne.ciHigh}]), matching the planted ground truth of {f.effects[0].groundTruthDays} to{" "}
+          {f.pipelinePerf.effectErrorPct}%. Confounding accounts for {ne.biasDays} {unit} ({ne.biasPct}% of the naive
+          figure).
         </p>
       </Card>
 
@@ -81,7 +82,7 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
             <div className="font-display text-3xl text-amber"><CountUp value={ne.naiveDays} decimals={2} /></div>
             <div className="text-[11px] text-muted">naive correlation ({unit})</div>
           </div>
-          <div className="pb-2 text-sm text-muted">− {ne.biasDays} {unit} confounding bias →</div>
+          <div className="pb-2 text-sm text-muted">− {ne.biasDays} {unit} ({ne.biasPct}%) confounding bias →</div>
           <div>
             <div className="font-display text-3xl text-forest"><CountUp value={ne.causalDays} decimals={2} /></div>
             <div className="text-[11px] text-muted">Double ML causal effect · 95% CI [{ne.ciLow}, {ne.ciHigh}] · planted {f.effects[0].groundTruthDays}</div>
@@ -320,15 +321,32 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
             detail="Confounder strength (risk-ratio scale) needed to nullify the result"
           />
         </div>
-        <div className="mt-4">
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
-            Causal estimate vs. assumed unmeasured-confounder strength
+        <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              Causal estimate vs. assumed unmeasured-confounder strength
+            </div>
+            <SensitivitySweepChart
+              strengths={f.sensitivity.strengths}
+              estimates={f.sensitivity.estimatesUnderConfounding}
+              reported={f.sensitivity.reportedEstimate}
+            />
           </div>
-          <SensitivitySweepChart
-            strengths={f.sensitivity.strengths}
-            estimates={f.sensitivity.estimatesUnderConfounding}
-            reported={f.sensitivity.reportedEstimate}
-          />
+          <div className="rounded-lg border border-line bg-paper-2/40 p-3">
+            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              {f.sensitivity.seedRobustness.nSeeds}-seed robustness
+            </div>
+            <p className="text-[12px] text-ink-soft">
+              Regenerate the dataset {f.sensitivity.seedRobustness.nSeeds}× from the same causal structure and re-run the
+              full pipeline on each:
+            </p>
+            <div className="mt-2 space-y-1 text-[12px]">
+              <div className="flex justify-between"><span className="text-muted">Causal estimate</span><b className="text-forest">{f.sensitivity.seedRobustness.causalMean} ± {f.sensitivity.seedRobustness.causalStd}</b></div>
+              <div className="flex justify-between"><span className="text-muted">Range</span><span className="text-ink">[{f.sensitivity.seedRobustness.causalLo}, {f.sensitivity.seedRobustness.causalHi}]</span></div>
+              <div className="flex justify-between"><span className="text-muted">Naive range</span><span className="text-muted">[{f.sensitivity.seedRobustness.naiveLo}, {f.sensitivity.seedRobustness.naiveHi}]</span></div>
+              <div className="flex justify-between border-t border-line-soft pt-1"><span className="text-muted">Planted truth</span><b className="text-ink">{f.effects[0].groundTruthDays}</b></div>
+            </div>
+          </div>
         </div>
         <p className="mt-2 text-[12px] text-muted">{f.sensitivity.verdict}</p>
       </Card>

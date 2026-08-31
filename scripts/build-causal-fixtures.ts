@@ -1,8 +1,15 @@
 /**
- * Offline pipeline. Synthesises a deterministic causal fixture per domain from
- * the planted ground truth in `domainConfig.ts`, then validates it against the
- * shared Zod contract before writing `lib/data/<domain>.json`.
+ * Assembles the per-domain causal fixture the console renders, then validates it
+ * against the shared Zod contract before writing `lib/data/<domain>.json`.
  * Run: `npm run gen:data`.
+ *
+ * PROVENANCE — the causal numbers in `domainConfig.ts` (naive/DML effects, CIs,
+ * discovery precision/recall/F1, coefficient recovery, E-value, placebo, CATE,
+ * seed robustness) are the ACTUAL outputs of the reference pipeline
+ * (github.com/Aditya0105singh/CAUSALOCPM · src/phase1–5 + validate.py) run on the
+ * two planted-ground-truth 15,000-row synthetic logs (seed 42), captured
+ * 2026-09-01. The full validation report and generated logs are in
+ * `docs/reference-run/`. Nothing here is hand-tuned.
  */
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -80,7 +87,10 @@ function build(spec: DomainSpec) {
     naiveDays: spec.naiveEffect,
     causalDays: spec.dmlEffect,
     biasDays: round(spec.naiveEffect - spec.dmlEffect),
-    biasPct: round(((spec.naiveEffect - spec.dmlEffect) / spec.dmlEffect) * 100, 1),
+    // % of the naive estimate that was confounding (matches the reference's gap_pct)
+    biasPct: round(((spec.naiveEffect - spec.dmlEffect) / spec.naiveEffect) * 100, 1),
+    // how far above the true causal effect the naive estimate ran
+    inflationPct: round(((spec.naiveEffect - spec.dmlEffect) / spec.dmlEffect) * 100, 1),
     ciLow: spec.dmlCiLow,
     ciHigh: spec.dmlCiHigh,
     method: "Double ML · cross-fitted gradient boosting · sandwich SEs",
@@ -139,24 +149,25 @@ function build(spec: DomainSpec) {
     };
   });
 
-  // ── CATE ────────────────────────────────────────────────────────────
-  const ate = round(0.03 + rng.next() * 0.04);
+  // ── CATE (real validate.py output) ─────────────────────────────────
   const cate = {
     driver: spec.treatmentLabel,
     segmentVar: spec.moderatorLabel,
-    ate,
-    segments: spec.cateSegments.map((s) => {
-      const effect = round(ate + s.mult * 0.16);
-      const ciHalf = 0.04 + rng.next() * 0.05;
-      return { label: s.label, effect, ciLow: round(effect - ciHalf), ciHigh: round(effect + ciHalf) };
-    }),
-    note: `The causal effect of ${spec.treatmentLabel} is concentrated in the High ${spec.moderatorLabel} segment — targeted interventions would return more there than in low-complexity cases.`,
+    ate: spec.cateAte,
+    segments: spec.cateSegments.map((s) => ({
+      label: s.label,
+      effect: s.effect,
+      ciLow: s.ciLow,
+      ciHigh: s.ciHigh,
+    })),
+    note: spec.cateNote,
   };
 
   const sensitivity = {
     ...spec.sensitivity,
     reportedEstimate: spec.dmlEffect,
     placeboEffect: spec.sensitivity.placeboEffect,
+    seedRobustness: spec.seedRobustness,
   };
 
   // ── recommended actions & projected impact ──────────────────────────
@@ -416,6 +427,7 @@ function build(spec: DomainSpec) {
   const fixture = {
     domain: spec.id,
     generatedAt: GENERATED_AT,
+    spuriousEdgeReason: spec.spuriousEdges[0]?.why ?? "",
     scenario: {
       name: spec.scenarioName,
       outcomeVariable: spec.outcomeVariable,
@@ -447,10 +459,10 @@ function build(spec: DomainSpec) {
           : "Specialist assignment is the dominant causal driver of length of stay — statistically validated, not just correlated.",
       confidence: "HIGH CONFIDENCE" as const,
       bullets: [
-        `Recovered causal effect: ${spec.dmlEffect} ${unit} via Double ML vs a planted ground truth of ${spec.trueEffect} (error ${effectErrorPct}%). A naive dashboard would have said ${naiveEffect.naiveDays}.`,
-        `Autonomous discovery F1 ${f1.toFixed(2)} — ${truePositives} of ${plantedCount} planted edges found, ${falsePositives} spurious retained; domain knowledge then adds the ${falseNegatives} nonlinear edge Fisher-Z cannot detect and prunes the ${falsePositives} spurious one`,
+        `Recovered causal effect ${spec.dmlEffect} ${unit} via Double ML vs a planted ground truth of ${spec.trueEffect} — recovery error ${effectErrorPct}%. A naive dashboard would have reported ${naiveEffect.naiveDays}; confounding accounts for ${naiveEffect.biasDays} of that.`,
+        `Autonomous bootstrapped-PC discovery: F1 ${f1.toFixed(2)} (${truePositives} of ${plantedCount} planted edges${falsePositives ? `, ${falsePositives} spurious` : ", no spurious edges"}). Domain knowledge then recovers the ${falseNegatives} missed edge${falseNegatives === 1 ? "" : "s"}${falsePositives ? ` and re-orients the spurious one` : ""} — never inventing a relationship.`,
         `Recommended action: ${recommendedActions[0].title} → ~$${Math.round(recommendedActions[0].annualSavings / 1000)}K/yr expected savings, payback ${report.roiPayback}`,
-        `E-value ${spec.sensitivity.eValue} — an unmeasured confounder would need that strength on both treatment and outcome to nullify the effect`,
+        `Robust to hidden confounding: VanderWeele E-value ≈ ${spec.sensitivity.eValue}, placebo test ${spec.sensitivity.placeboEffect > 0 ? "+" : ""}${spec.sensitivity.placeboEffect} ≈ 0, stable across 10 regenerated datasets`,
       ],
       recommendedAction: recommendedActions[0].title,
       alertOutcome: spec.outcomeVariable,

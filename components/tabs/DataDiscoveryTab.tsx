@@ -22,10 +22,10 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
           <Pill tone="forest">HIGH CONFIDENCE</Pill>
         </div>
         <ul className="space-y-1.5 text-sm text-ink-soft">
-          <li>Autonomous bootstrapped PC recovered <b>{m.truePositives} of {f.scenario.causalLinks}</b> planted edges across {dv.totalEvents.toLocaleString()} events and {f.scenario.objectTypes} object types — F1 {m.f1.toFixed(2)}, with {m.falsePositives} spurious edge above threshold.</li>
+          <li>Autonomous bootstrapped PC recovered <b>{m.truePositives} of {f.scenario.causalLinks}</b> planted edges across {dv.totalEvents.toLocaleString()} events and {f.scenario.objectTypes} object types — precision {m.precision.toFixed(2)}, recall {m.recall.toFixed(2)}, F1 {m.f1.toFixed(2)}{m.falsePositives ? `, ${m.falsePositives} spurious edge` : ", no spurious edges"}.</li>
           <li>Strongest measured relationship: <b>{dv.strongestRelationship.from} → {dv.strongestRelationship.to}</b> (coefficient {dv.strongestRelationship.coefficient}).</li>
           <li>Bootstrap stability {Math.round(m.stability * 100)}% across {m.bootstrapRuns} resampled reruns of 2,000 rows each.</li>
-          <li>Domain knowledge then adds the {f.pipelinePerf.missingEdgesRecovered} nonlinear edge Fisher-Z cannot detect and prunes the {f.pipelinePerf.spuriousRemoved} spurious one — no invented relationships.</li>
+          <li>Domain knowledge then recovers the {f.pipelinePerf.missingEdgesRecovered} missed edge{f.pipelinePerf.missingEdgesRecovered === 1 ? "" : "s"}{f.pipelinePerf.spuriousRemoved ? " and re-orients the spurious one" : ""} — no invented relationships.</li>
         </ul>
       </Card>
 
@@ -164,21 +164,22 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
           <Stat value={m.f1.toFixed(2)} label="Discovery F1" accent />
         </div>
         <p className="mt-2 text-[12px] text-muted">
-          These are the raw statistics — measured before any expert constraint is applied. F1 {m.f1.toFixed(2)} is
-          consistent with published bootstrapped-PC benchmarks on logs of this size; it is not, and should not be, 1.0.
+          The raw autonomous statistics — before any expert constraint. Precision {m.precision.toFixed(2)}, recall{" "}
+          {m.recall.toFixed(2)}, F1 {m.f1.toFixed(2)}. Not 1.0, and it shouldn&apos;t be — a 1.0 here would mean either
+          overfitting or grading the algorithm on edges it was handed.
         </p>
       </Step>
 
       <Step n={6} title="Evaluate domain-knowledge contribution" hint="what the expert constraints actually changed">
         <div className="grid gap-3 sm:grid-cols-3">
-          <Stat value={`+${f.pipelinePerf.missingEdgesRecovered}`} label="Nonlinear edge recovered" accent />
-          <Stat value={`−${f.pipelinePerf.spuriousRemoved}`} label="Spurious edge pruned" />
+          <Stat value={`+${f.pipelinePerf.missingEdgesRecovered}`} label={`Missed edge${f.pipelinePerf.missingEdgesRecovered === 1 ? "" : "s"} recovered`} accent />
+          <Stat value={`${f.pipelinePerf.spuriousRemoved}`} label="Spurious edge re-oriented" />
           <Stat value={`${f.pipelinePerf.validatedLinks}/${f.pipelinePerf.validatedLinks}`} label="Actionable DAG" accent />
         </div>
         <div className="mt-3 grid gap-2 text-sm text-ink-soft sm:grid-cols-2">
-          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Added: {f.scenario.confounderLabel} → {f.scenario.treatmentLabel} (sigmoid — Fisher-Z blind)</div>
-          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Removed: the spurious edge violating a hard process constraint</div>
-          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Every asserted edge is known-true, never invented</div>
+          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Asserts the {f.pipelinePerf.missingEdgesRecovered} known-true edge{f.pipelinePerf.missingEdgesRecovered === 1 ? "" : "s"} PC missed</div>
+          {f.pipelinePerf.spuriousRemoved > 0 && <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Flips the spurious edge back to its causal direction</div>}
+          <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Every asserted edge is in the planted structure, never invented</div>
           <div className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> Corrected structure is reported separately, never as a discovery score</div>
         </div>
       </Step>

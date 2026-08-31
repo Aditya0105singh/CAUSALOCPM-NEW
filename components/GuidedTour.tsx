@@ -37,7 +37,7 @@ export function buildTour(f: CausalFixture): TourStep[] {
       anchor: "tour-explainer",
       kicker: "3 · Honest discovery",
       title: `Autonomous discovery: F1 ${f.discoveryMetrics.f1.toFixed(2)}`,
-      body: `Bootstrapped PC recovers ${f.discoveryMetrics.truePositives} of ${f.scenario.causalLinks} edges. It misses one nonlinear link (Fisher-Z is linear) and keeps one spurious edge. Domain knowledge fixes both — toggle "Autonomous PC / + Domain knowledge" to see.`,
+      body: `Bootstrapped PC recovers ${f.discoveryMetrics.truePositives} of ${f.scenario.causalLinks} planted edges${f.discoveryMetrics.falsePositives ? `, plus ${f.discoveryMetrics.falsePositives} spurious one` : " with no spurious edges"}. Not 1.0 — and it shouldn't be. Domain knowledge closes the gap; toggle "Autonomous PC / + Domain knowledge" to see.`,
     },
     {
       tab: "model",

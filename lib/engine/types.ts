@@ -119,6 +119,7 @@ const CateSegment = z.object({ label: z.string(), effect: z.number(), ciLow: z.n
 export const CausalFixture = z.object({
   domain: DomainId,
   generatedAt: z.string(),
+  spuriousEdgeReason: z.string(),
 
   scenario: z.object({
     name: z.string(),
@@ -230,6 +231,7 @@ export const CausalFixture = z.object({
     causalDays: z.number(),
     biasDays: z.number(),
     biasPct: z.number(),
+    inflationPct: z.number(),
     ciLow: z.number(),
     ciHigh: z.number(),
     method: z.string(),
@@ -252,6 +254,15 @@ export const CausalFixture = z.object({
     strengths: z.array(z.number()),
     estimatesUnderConfounding: z.array(z.number()),
     verdict: z.string(),
+    seedRobustness: z.object({
+      nSeeds: z.number(),
+      causalMean: z.number(),
+      causalStd: z.number(),
+      causalLo: z.number(),
+      causalHi: z.number(),
+      naiveLo: z.number(),
+      naiveHi: z.number(),
+    }),
   }),
 
   effectAccuracy: z.array(z.object({ bucket: z.string(), count: z.number() })),
