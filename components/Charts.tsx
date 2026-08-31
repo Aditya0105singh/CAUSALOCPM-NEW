@@ -4,8 +4,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  ErrorBar,
+  Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -47,6 +51,52 @@ export function EffectAccuracyChart({ data }: { data: CausalFixture["effectAccur
           contentStyle={{ borderRadius: 10, border: "1px solid #e2ddcd", fontSize: 12 }}
         />
         <Bar dataKey="count" fill="#4f7a4a" radius={[4, 4, 0, 0]} maxBarSize={46} isAnimationActive={false} />
+      </BarChart>
+    </Frame>
+  );
+}
+
+export function CoefficientChart({ data }: { data: CausalFixture["coefficients"] }) {
+  const rows = data.map((d) => ({
+    edge: d.edge.replace(/ → .*/, " →"),
+    Estimated: d.estimated,
+    "Ground truth": d.groundTruth,
+  }));
+  return (
+    <Frame height={Math.max(200, rows.length * 34)}>
+      <BarChart layout="vertical" data={rows} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+        <CartesianGrid stroke={GRID} horizontal={false} />
+        <XAxis type="number" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
+        <YAxis type="category" dataKey="edge" tick={{ ...AXIS, fontSize: 10 }} width={130} tickLine={false} axisLine={false} />
+        <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e2ddcd", fontSize: 12 }} />
+        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Bar dataKey="Estimated" fill="#4f7a4a" radius={[0, 3, 3, 0]} maxBarSize={9} isAnimationActive={false} />
+        <Bar dataKey="Ground truth" fill="#c9b79a" radius={[0, 3, 3, 0]} maxBarSize={9} isAnimationActive={false} />
+      </BarChart>
+    </Frame>
+  );
+}
+
+export function CateChart({ segments, ate }: { segments: CausalFixture["cate"]["segments"]; ate: number }) {
+  const rows = segments.map((s) => ({
+    label: s.label,
+    effect: s.effect,
+    err: [s.effect - s.ciLow, s.ciHigh - s.effect] as [number, number],
+  }));
+  return (
+    <Frame height={220}>
+      <BarChart data={rows} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+        <CartesianGrid stroke={GRID} vertical={false} />
+        <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
+        <YAxis tick={AXIS} tickLine={false} axisLine={false} />
+        <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e2ddcd", fontSize: 12 }} />
+        <ReferenceLine y={ate} stroke="#b9762f" strokeDasharray="4 4" label={{ value: "ATE", fontSize: 10, fill: "#b9762f" }} />
+        <Bar dataKey="effect" radius={[3, 3, 0, 0]} maxBarSize={54} isAnimationActive={false}>
+          {rows.map((r, i) => (
+            <Cell key={i} fill={r.effect > ate ? "#3d5a3d" : "#9bb08a"} />
+          ))}
+          <ErrorBar dataKey="err" width={4} strokeWidth={1.5} stroke="#55534a" />
+        </Bar>
       </BarChart>
     </Frame>
   );

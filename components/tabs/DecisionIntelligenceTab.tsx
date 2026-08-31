@@ -1,29 +1,24 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { clsx } from "clsx";
+import { FileText } from "lucide-react";
 import type { CausalFixture } from "@/lib/engine/types";
 import { Card, SectionTitle, Pill } from "@/components/ui";
 import { ImpactTrendChart } from "@/components/Charts";
 import { fmtMoney } from "@/lib/format";
 
-const SUB = ["Recommendations", "Impact Simulator", "Action Log"] as const;
+const SUB = ["Recommendations", "Executive Report", "Action Log"] as const;
 
 export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
   const [sub, setSub] = useState<(typeof SUB)[number]>("Recommendations");
   const pi = f.projectedImpact;
+  const r = f.report;
 
   return (
     <div className="space-y-5">
       <div className="flex gap-1 border-b border-line">
         {SUB.map((s) => (
-          <button
-            key={s}
-            onClick={() => setSub(s)}
-            className={clsx(
-              "px-3 py-2 text-sm",
-              sub === s ? "tab-underline font-semibold text-ink" : "text-muted hover:text-ink",
-            )}
-          >
+          <button key={s} onClick={() => setSub(s)} className={clsx("px-3 py-2 text-sm", sub === s ? "tab-underline font-semibold text-ink" : "text-muted hover:text-ink")}>
             {s}
           </button>
         ))}
@@ -36,43 +31,116 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
               <Card key={a.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-[11px] font-semibold text-muted">ACTION {i + 1} · {a.lever}</div>
+                    <div className="text-[11px] font-semibold text-muted">
+                      #{i + 1} · {a.lever} · <span className={a.evidence === "MEASURED" ? "text-forest" : "text-amber"}>{a.evidence}</span>
+                    </div>
                     <div className="mt-0.5 font-display text-lg text-ink">{a.title}</div>
                   </div>
                   <Pill tone="forest">{Math.round(a.confidence * 100)}% conf.</Pill>
                 </div>
                 <p className="mt-2 text-sm text-ink-soft">{a.detail}</p>
-                <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                  <span className="text-muted">
-                    Expected impact <b className="text-forest">−{a.deltaDays.toFixed(2)} d</b>
-                  </span>
-                  <span className="text-muted">
-                    Annual savings <b className="text-forest">~{fmtMoney(a.annualSavings)}</b>
-                  </span>
-                  <span className="text-muted">
-                    ROI <b className="text-ink">{a.roi.toFixed(1)}×</b>
-                  </span>
+                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                  <span className="text-muted">Delay reduction <b className="text-forest">~{a.reductionPct}%</b></span>
+                  <span className="text-muted">Annual savings <b className="text-forest">~{fmtMoney(a.annualSavings)}</b></span>
+                  <span className="text-muted">Capex <b className="text-ink">{fmtMoney(a.capex)}</b></span>
+                  <span className="text-muted">Effort <b className="text-ink">{a.effort}</b></span>
+                  <span className="text-muted">Timeline <b className="text-ink">{a.timeline}</b></span>
                 </div>
               </Card>
             ))}
           </div>
 
           <Card>
-            <SectionTitle hint={`${f.scenario.outcomeUnit}`}>Projected Impact (All Actions)</SectionTitle>
+            <SectionTitle hint={f.scenario.outcomeUnit}>Projected impact (all actions)</SectionTitle>
             <div className="font-display text-3xl text-forest">{pi.totalReductionPct}%</div>
-            <div className="text-[12px] text-muted">≈ {pi.totalReductionDays.toFixed(2)} days total reduction</div>
-            <div className="mt-3">
-              <ImpactTrendChart data={pi.trend} />
-            </div>
+            <div className="text-[12px] text-muted">≈ {pi.totalReductionDays.toFixed(2)} {f.scenario.outcomeUnit} total reduction</div>
+            <div className="mt-3"><ImpactTrendChart data={pi.trend} /></div>
+            <p className="mt-2 text-[11px] text-muted">Orange = baseline trajectory · green = with the recommended actions phased in.</p>
           </Card>
         </div>
       )}
 
-      {sub === "Impact Simulator" && <Simulator f={f} />}
+      {sub === "Executive Report" && (
+        <Card>
+          <div className="flex items-center justify-between border-b border-line pb-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+              <FileText size={15} className="text-forest" /> Executive Causal Analysis Report
+            </div>
+            <Pill tone="neutral">Confidential</Pill>
+          </div>
+          <div className="mt-1 text-[12px] text-muted">
+            {f.scenario.domainLabel} Domain · {r.date} · {r.casesAnalysed.toLocaleString()} cases analysed
+          </div>
+
+          <Section label="01 · Key findings">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <KeyFinding v={`${r.groundTruthEffect} ${f.scenario.outcomeUnit}`} l="Ground-truth effect" sub="planted SCM coefficient — DML validates recovery" />
+              <KeyFinding v={`${r.confoundingRemoved} ${f.scenario.outcomeUnit}`} l="Confounding bias removed" sub={`naive ${r.naiveDays} ${f.scenario.outcomeUnit}`} />
+              <KeyFinding v={`${r.achievableReductionPct}%`} l="Achievable reduction" sub={`from ${r.baselineDays} → ${r.targetDays} ${f.scenario.outcomeUnit}`} />
+            </div>
+          </Section>
+
+          <Section label="02 · Primary causal chain">
+            <div className="font-display text-lg text-ink">{r.primaryChain.join("  →  ")}</div>
+            <p className="mt-1 text-sm text-ink-soft">
+              Confounding closes through {f.executiveSummary.riskSegment.toLowerCase().includes("supplier") ? "supplier / order complexity" : "acuity / case complexity"} — traditional analytics cannot detect this.
+              CausalOCPM&apos;s bootstrapped PC algorithm (+ domain-knowledge integration) recovered {f.scenario.causalLinks} causal edges
+              with F1 = {f.discoveryMetrics.f1.toFixed(2)} (precision {f.discoveryMetrics.precision.toFixed(2)}, recall {f.discoveryMetrics.recall.toFixed(2)}).
+            </p>
+          </Section>
+
+          <Section label="03 · Recommended action plan">
+            <div className="scroll-slim overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
+                    {["#", "Action", "Impact", "Confidence", "Value", "Timeline"].map((h) => (
+                      <th key={h} className="pb-2 pr-4 font-semibold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {r.actions.map((a) => (
+                    <tr key={a.rank} className="border-t border-line-soft text-ink-soft">
+                      <td className="py-2 pr-4">{a.rank}</td>
+                      <td className="py-2 pr-4">{a.action}</td>
+                      <td className="py-2 pr-4 text-forest">{a.impactPct}%</td>
+                      <td className="py-2 pr-4">{a.confidence}</td>
+                      <td className="py-2 pr-4">{a.value}</td>
+                      <td className="py-2 pr-4">{a.timeline}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted">
+              <span>Total capex: <b className="text-ink">~{fmtMoney(r.totalCapex)}</b></span>
+              <span>ROI payback: <b className="text-ink">{r.roiPayback}</b></span>
+              <span>Risk level: <b className="text-ink">{r.riskLevel}</b></span>
+            </div>
+          </Section>
+
+          <Section label="04 · Methodology & confidence">
+            <div className="space-y-2">
+              {r.methodology.map((mm) => (
+                <div key={mm.phase} className="text-sm">
+                  <span className="font-medium text-ink">{mm.phase}</span>
+                  <span className="text-muted"> — {mm.detail}</span>
+                </div>
+              ))}
+              <div className="text-sm"><span className="font-medium text-ink">Model confidence</span><span className="text-muted"> — {r.signCorrect} across the estimated causal coefficients</span></div>
+            </div>
+          </Section>
+
+          <p className="mt-4 border-t border-line pt-3 text-[11px] text-muted">
+            Generated by CausalOCPM · Causal Process Intelligence Framework · {r.date}
+          </p>
+        </Card>
+      )}
 
       {sub === "Action Log" && (
         <Card pad={false}>
-          <div className="scroll-slim overflow-auto p-5">
+          <div className="scroll-slim overflow-x-auto p-5">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
@@ -88,9 +156,7 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
                     <td className="py-2 pr-4">{a.title}</td>
                     <td className="py-2 pr-4">{a.lever}</td>
                     <td className="py-2 pr-4 text-forest">−{a.deltaDays.toFixed(2)}</td>
-                    <td className="py-2 pr-4">
-                      <Pill tone={i === 0 ? "forest" : "neutral"}>{i === 0 ? "Approved" : "Proposed"}</Pill>
-                    </td>
+                    <td className="py-2 pr-4"><Pill tone={i === 0 ? "forest" : "neutral"}>{i === 0 ? "Approved" : "Proposed"}</Pill></td>
                   </tr>
                 ))}
               </tbody>
@@ -102,62 +168,21 @@ export function DecisionIntelligenceTab({ f }: { f: CausalFixture }) {
   );
 }
 
-function Simulator({ f }: { f: CausalFixture }) {
-  const drivers = f.effects;
-  const [shift, setShift] = useState<Record<string, number>>(
-    Object.fromEntries(drivers.map((d) => [d.driver, 0])),
-  );
-
-  const totalDelta = useMemo(
-    () =>
-      drivers.reduce((s, d) => {
-        const rec = f.recommendedActions.find((a) => a.lever && d.label.toLowerCase().includes(a.lever.split(" ")[0].toLowerCase()));
-        const cap = rec?.maxShiftPct ?? 30;
-        const applied = Math.min(shift[d.driver], cap);
-        return s + (d.effectDays * applied) / 100;
-      }, 0),
-    [shift, drivers, f.recommendedActions],
-  );
-
-  const baseline = f.projectedImpact.trend[0].baseline;
-
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-5 lg:grid-cols-3">
-      <Card className="lg:col-span-2">
-        <SectionTitle hint="drag to reduce each driver's exposure">Impact Simulator</SectionTitle>
-        <div className="space-y-4">
-          {drivers.map((d) => (
-            <div key={d.driver}>
-              <div className="mb-1 flex justify-between text-[12px]">
-                <span className="text-ink-soft">{d.label}</span>
-                <span className="text-muted">
-                  −{shift[d.driver]}% → <b className="text-forest">−{((d.effectDays * shift[d.driver]) / 100).toFixed(2)}d</b>
-                </span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={50}
-                value={shift[d.driver]}
-                onChange={(e) => setShift((s) => ({ ...s, [d.driver]: Number(e.target.value) }))}
-                className="w-full accent-[#3d5a3d]"
-              />
-            </div>
-          ))}
-        </div>
-      </Card>
+    <div className="mt-5">
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-forest-deep">{label}</div>
+      {children}
+    </div>
+  );
+}
 
-      <Card className="border-forest/30 bg-sage/40">
-        <SectionTitle>Simulated Outcome</SectionTitle>
-        <div className="text-[12px] text-muted">Baseline {f.scenario.outcomeVariable.toLowerCase()}</div>
-        <div className="font-display text-xl text-ink">{baseline.toFixed(2)} d</div>
-        <div className="mt-3 text-[12px] text-muted">After simulated interventions</div>
-        <div className="font-display text-3xl text-forest">{Math.max(0, baseline - totalDelta).toFixed(2)} d</div>
-        <div className="mt-2 rounded-lg bg-card p-3 text-sm">
-          Total reduction <b className="text-forest">−{totalDelta.toFixed(2)} d</b>{" "}
-          <span className="text-muted">({baseline > 0 ? Math.round((totalDelta / baseline) * 100) : 0}%)</span>
-        </div>
-      </Card>
+function KeyFinding({ v, l, sub }: { v: string; l: string; sub: string }) {
+  return (
+    <div className="rounded-lg border border-line bg-paper-2/50 p-3">
+      <div className="font-display text-xl text-ink">{v}</div>
+      <div className="text-[11px] font-medium text-ink-soft">{l}</div>
+      <div className="text-[10px] text-muted">{sub}</div>
     </div>
   );
 }

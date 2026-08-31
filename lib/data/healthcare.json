@@ -8,34 +8,50 @@
     "org": "Meridian Health System",
     "domainLabel": "Healthcare",
     "timeRange": "Mar 2022 – Jun 2024",
-    "totalEvents": 18402,
+    "totalEvents": 18400,
     "dataSources": 8,
     "lastUpdated": "2 hours ago",
     "description": "We analyse how specialist scheduling, diagnostics, and bed capacity causally influence discharge delays across the inpatient admission workflow. The model separates true clinical drivers from acuity-driven confounding.",
     "objectTypes": 5,
-    "causalLinks": 8,
-    "reliabilityPct": 86
+    "causalLinks": 11,
+    "reliabilityPct": 86,
+    "objectNames": [
+      "Admissions",
+      "Patients",
+      "Care Teams",
+      "Diagnostics",
+      "Beds"
+    ],
+    "baselineOutcome": 7.9
   },
   "executiveSummary": {
     "headline": "Specialist assignment latency is confirmed as the dominant causal driver of discharge delay — statistically validated, not just correlated.",
     "confidence": "HIGH CONFIDENCE",
     "bullets": [
-      "Recovered causal effect: 1.84 days via Double ML — 15.3% of the naive estimate was confounding",
-      "Discovery precision 1.00, recall 0.89 across 20 bootstrap reruns",
+      "Recovered causal effect: 1.83 days via Double ML — the naive estimate ran 17.5% high due to confounding from Acuity / Comorbidity Index",
+      "Discovery precision 1.00, recall 0.89 across 20 bootstrap reruns (F1 0.94)",
       "Recommended action: Guarantee specialist consult within 12 hours of request → ~$610K/yr expected savings"
     ],
-    "recommendedAction": "Guarantee specialist consult within 12 hours of request"
+    "recommendedAction": "Guarantee specialist consult within 12 hours of request",
+    "alertOutcome": "Discharge Delay",
+    "alertReductionPct": 17.1,
+    "chain": [
+      "Specialist Latency",
+      "Diagnostic Turnaround",
+      "Discharge Delay"
+    ],
+    "riskSegment": "Cardiology"
   },
   "kpis": {
-    "causalLinks": 8,
+    "causalLinks": 11,
     "target": "Discharge Delay",
     "expertRules": 11,
     "reliabilityPct": 86
   },
   "data": {
     "datasets": 8,
-    "variables": 75,
-    "causalLinks": 8,
+    "variables": 76,
+    "causalLinks": 11,
     "qualityPct": 96,
     "objects": [
       {
@@ -85,46 +101,53 @@
         "object": "Admissions",
         "type": "numeric",
         "role": "driver",
-        "missingPct": 3
+        "missingPct": 7
       },
       {
         "name": "diagnostic_turnaround",
         "object": "Admissions",
         "type": "numeric",
         "role": "mediator",
-        "missingPct": 1
+        "missingPct": 4
       },
       {
         "name": "bed_availability",
         "object": "Admissions",
         "type": "numeric",
         "role": "driver",
-        "missingPct": 6
+        "missingPct": 2
       },
       {
         "name": "case_complexity",
         "object": "Admissions",
         "type": "numeric",
         "role": "driver",
-        "missingPct": 3
+        "missingPct": 2
+      },
+      {
+        "name": "medication_recon",
+        "object": "Admissions",
+        "type": "numeric",
+        "role": "driver",
+        "missingPct": 5
       },
       {
         "name": "staffing_ratio",
         "object": "Admissions",
         "type": "numeric",
         "role": "driver",
-        "missingPct": 6
+        "missingPct": 2
       },
       {
         "name": "acuity_index",
-        "object": "Bed Resources",
+        "object": "Patients",
         "type": "numeric",
         "role": "confounder",
         "missingPct": 7
       },
       {
         "name": "discharge_delay",
-        "object": "Patients",
+        "object": "Bed Resources",
         "type": "numeric",
         "role": "outcome",
         "missingPct": 0
@@ -189,101 +212,188 @@
     "sampleEvents": [
       {
         "event_id": "E-00001",
-        "case_id": "ADM-2024-0001",
+        "case_id": "ADM_0000",
         "activity": "Admitted",
         "resource": "General Medicine",
         "timestamp": "2024-01-02T08:15:00Z",
-        "duration_hrs": 7.5
+        "duration_hrs": 23.4
       },
       {
         "event_id": "E-00002",
-        "case_id": "ADM-2024-0002",
+        "case_id": "ADM_0001",
         "activity": "Triage",
-        "resource": "General Medicine",
+        "resource": "Pulmonology",
         "timestamp": "2024-02-03T09:15:00Z",
-        "duration_hrs": 14.5
+        "duration_hrs": 2.2
       },
       {
         "event_id": "E-00003",
-        "case_id": "ADM-2024-0003",
+        "case_id": "ADM_0002",
         "activity": "Consult Requested",
-        "resource": "Neurology",
+        "resource": "General Medicine",
         "timestamp": "2024-03-04T10:15:00Z",
-        "duration_hrs": 19
+        "duration_hrs": 5.2
       },
       {
         "event_id": "E-00004",
-        "case_id": "ADM-2024-0004",
+        "case_id": "ADM_0003",
         "activity": "Specialist Seen",
-        "resource": "Cardiology",
+        "resource": "Pulmonology",
         "timestamp": "2024-04-05T11:15:00Z",
-        "duration_hrs": 21
+        "duration_hrs": 13.9
       },
       {
         "event_id": "E-00005",
-        "case_id": "ADM-2024-0005",
-        "activity": "Diagnostics Complete",
-        "resource": "Orthopedics",
+        "case_id": "ADM_0004",
+        "activity": "Imaging Ordered",
+        "resource": "Pulmonology",
         "timestamp": "2024-05-06T12:15:00Z",
-        "duration_hrs": 1.6
+        "duration_hrs": 32.2
       },
       {
         "event_id": "E-00006",
-        "case_id": "ADM-2024-0006",
-        "activity": "Discharged",
+        "case_id": "ADM_0005",
+        "activity": "Diagnostics Complete",
         "resource": "Orthopedics",
         "timestamp": "2024-06-07T13:15:00Z",
-        "duration_hrs": 9.4
+        "duration_hrs": 20.4
       },
       {
         "event_id": "E-00007",
-        "case_id": "ADM-2024-0007",
-        "activity": "Admitted",
-        "resource": "Cardiology",
+        "case_id": "ADM_0006",
+        "activity": "Discharged",
+        "resource": "Orthopedics",
         "timestamp": "2024-01-08T14:15:00Z",
-        "duration_hrs": 3
+        "duration_hrs": 0.5
       },
       {
         "event_id": "E-00008",
-        "case_id": "ADM-2024-0008",
-        "activity": "Triage",
-        "resource": "Orthopedics",
+        "case_id": "ADM_0007",
+        "activity": "Admitted",
+        "resource": "Neurology",
         "timestamp": "2024-02-09T15:15:00Z",
-        "duration_hrs": 22.6
+        "duration_hrs": 0.5
       },
       {
         "event_id": "E-00009",
-        "case_id": "ADM-2024-0009",
-        "activity": "Consult Requested",
-        "resource": "Cardiology",
+        "case_id": "ADM_0008",
+        "activity": "Triage",
+        "resource": "General Medicine",
         "timestamp": "2024-03-10T16:15:00Z",
-        "duration_hrs": 2.5
+        "duration_hrs": 16.3
       },
       {
         "event_id": "E-00010",
-        "case_id": "ADM-2024-0010",
-        "activity": "Specialist Seen",
-        "resource": "General Medicine",
+        "case_id": "ADM_0009",
+        "activity": "Consult Requested",
+        "resource": "Neurology",
         "timestamp": "2024-04-11T17:15:00Z",
-        "duration_hrs": 13.1
+        "duration_hrs": 28.6
       },
       {
         "event_id": "E-00011",
-        "case_id": "ADM-2024-0011",
-        "activity": "Diagnostics Complete",
-        "resource": "Cardiology",
+        "case_id": "ADM_0010",
+        "activity": "Specialist Seen",
+        "resource": "Orthopedics",
         "timestamp": "2024-05-12T08:15:00Z",
-        "duration_hrs": 35
+        "duration_hrs": 7
       },
       {
         "event_id": "E-00012",
-        "case_id": "ADM-2024-0012",
-        "activity": "Discharged",
-        "resource": "General Medicine",
+        "case_id": "ADM_0011",
+        "activity": "Imaging Ordered",
+        "resource": "Neurology",
         "timestamp": "2024-06-13T09:15:00Z",
-        "duration_hrs": 19.5
+        "duration_hrs": 19.1
+      },
+      {
+        "event_id": "E-00013",
+        "case_id": "ADM_0012",
+        "activity": "Diagnostics Complete",
+        "resource": "Neurology",
+        "timestamp": "2024-01-14T10:15:00Z",
+        "duration_hrs": 28.6
+      },
+      {
+        "event_id": "E-00014",
+        "case_id": "ADM_0013",
+        "activity": "Discharged",
+        "resource": "Orthopedics",
+        "timestamp": "2024-02-15T11:15:00Z",
+        "duration_hrs": 4.4
       }
     ]
+  },
+  "discovery": {
+    "totalEvents": 18400,
+    "treatedCases": 9384,
+    "treatedPct": 51,
+    "avgOutcome": 7.9,
+    "stdOutcome": 4.58,
+    "objectInstances": 41180,
+    "coOccurrenceEdges": 138420,
+    "avgDegree": 6.72,
+    "topResources": [
+      {
+        "label": "Top service",
+        "value": "Cardiology"
+      },
+      {
+        "label": "Top ward",
+        "value": "Ward 4E"
+      },
+      {
+        "label": "Top scanner",
+        "value": "CT_02"
+      }
+    ],
+    "correlationGroups": [
+      {
+        "name": "Consult timing",
+        "options": [
+          {
+            "label": "Consult > 24h",
+            "onTimePct": 49,
+            "delayedPct": 51
+          },
+          {
+            "label": "Consult < 12h",
+            "onTimePct": 84,
+            "delayedPct": 16
+          }
+        ]
+      },
+      {
+        "name": "Imaging block",
+        "options": [
+          {
+            "label": "Day only",
+            "onTimePct": 63,
+            "delayedPct": 37
+          },
+          {
+            "label": "Day + evening",
+            "onTimePct": 86,
+            "delayedPct": 14
+          }
+        ]
+      }
+    ],
+    "strongestRelationship": {
+      "from": "Specialist Latency",
+      "to": "Diagnostic Turnaround",
+      "coefficient": 4.11
+    },
+    "domainKnowledge": {
+      "recallGainPct": 11.1,
+      "missingEdgesRecovered": 1,
+      "spuriousRemoved": 0,
+      "validatedLinks": 11,
+      "prePrecision": 1,
+      "preRecall": 0.89,
+      "postPrecision": 1,
+      "postRecall": 1
+    }
   },
   "causalGraph": {
     "nodes": [
@@ -291,50 +401,57 @@
         "id": "confounder",
         "label": "Acuity / Comorbidity Index",
         "kind": "confounder",
-        "x": 120,
-        "y": 60
+        "x": 150,
+        "y": 30
       },
       {
         "id": "specialist_latency",
         "label": "Specialist Assignment Latency",
         "kind": "driver",
-        "x": 60,
-        "y": 150
+        "x": 40,
+        "y": 120
       },
       {
         "id": "diagnostic_turnaround",
         "label": "Diagnostic Turnaround",
         "kind": "mediator",
-        "x": 150,
-        "y": 220
+        "x": 190,
+        "y": 178
       },
       {
         "id": "bed_availability",
         "label": "Downstream Bed Availability",
         "kind": "driver",
-        "x": 60,
-        "y": 290
+        "x": 40,
+        "y": 236
       },
       {
         "id": "case_complexity",
         "label": "Case Complexity",
         "kind": "driver",
-        "x": 150,
-        "y": 360
+        "x": 190,
+        "y": 294
+      },
+      {
+        "id": "medication_recon",
+        "label": "Medication Reconciliation",
+        "kind": "driver",
+        "x": 40,
+        "y": 352
       },
       {
         "id": "staffing_ratio",
         "label": "Nurse Staffing Ratio",
         "kind": "driver",
-        "x": 60,
-        "y": 430
+        "x": 190,
+        "y": 410
       },
       {
         "id": "outcome",
         "label": "Discharge Delay",
         "kind": "outcome",
-        "x": 320,
-        "y": 260
+        "x": 330,
+        "y": 250
       }
     ],
     "edges": [
@@ -393,6 +510,15 @@
         "planted": true
       },
       {
+        "source": "medication_recon",
+        "target": "outcome",
+        "strength": "weak",
+        "weight": 0.36,
+        "confidence": 0.78,
+        "discovered": true,
+        "planted": true
+      },
+      {
         "source": "staffing_ratio",
         "target": "outcome",
         "strength": "weak",
@@ -402,8 +528,17 @@
         "planted": true
       },
       {
-        "source": "diagnostic_turnaround",
-        "target": "specialist_latency",
+        "source": "specialist_latency",
+        "target": "diagnostic_turnaround",
+        "strength": "strong",
+        "weight": 0.66,
+        "confidence": 0.86,
+        "discovered": true,
+        "planted": true
+      },
+      {
+        "source": "bed_availability",
+        "target": "diagnostic_turnaround",
         "strength": "weak",
         "weight": 0.24,
         "confidence": 0.7,
@@ -445,12 +580,20 @@
         "frequency": 0.83
       },
       {
-        "edge": "Nurse Staffing Ratio → Discharge Delay",
+        "edge": "Medication Reconciliation → Discharge Delay",
         "frequency": 0.96
       },
       {
-        "edge": "Diagnostic Turnaround → Specialist Assignment Latency",
-        "frequency": 0.7
+        "edge": "Nurse Staffing Ratio → Discharge Delay",
+        "frequency": 0.94
+      },
+      {
+        "edge": "Specialist Assignment Latency → Diagnostic Turnaround",
+        "frequency": 0.91
+      },
+      {
+        "edge": "Downstream Bed Availability → Diagnostic Turnaround",
+        "frequency": 0.63
       }
     ]
   },
@@ -458,9 +601,9 @@
     {
       "driver": "specialist_latency",
       "label": "Specialist Assignment Latency",
-      "effectDays": 1.84,
-      "ciLow": 1.43,
-      "ciHigh": 2.21,
+      "effectDays": 1.83,
+      "ciLow": 1.69,
+      "ciHigh": 1.95,
       "groundTruthDays": 1.82,
       "baselineDays": 2.15,
       "reductionPct": 15.3,
@@ -469,9 +612,9 @@
     {
       "driver": "diagnostic_turnaround",
       "label": "Diagnostic Turnaround",
-      "effectDays": 1.05,
-      "ciLow": 0.55,
-      "ciHigh": 1.55,
+      "effectDays": 1.02,
+      "ciLow": 0.97,
+      "ciHigh": 1.13,
       "groundTruthDays": 1.05,
       "baselineDays": 1.28,
       "reductionPct": 18,
@@ -480,9 +623,9 @@
     {
       "driver": "bed_availability",
       "label": "Downstream Bed Availability",
-      "effectDays": 0.88,
-      "ciLow": 0.66,
-      "ciHigh": 1.22,
+      "effectDays": 0.96,
+      "ciLow": 0.84,
+      "ciHigh": 1.04,
       "groundTruthDays": 0.94,
       "baselineDays": 1.21,
       "reductionPct": 22.3,
@@ -492,67 +635,154 @@
       "driver": "case_complexity",
       "label": "Case Complexity",
       "effectDays": 0.68,
-      "ciLow": 0.39,
-      "ciHigh": 1.01,
+      "ciLow": 0.6,
+      "ciHigh": 0.8,
       "groundTruthDays": 0.7,
       "baselineDays": 0.92,
       "reductionPct": 23.9,
       "method": "Double ML + backdoor adjustment"
     },
     {
+      "driver": "medication_recon",
+      "label": "Medication Reconciliation",
+      "effectDays": 0.48,
+      "ciLow": 0.36,
+      "ciHigh": 0.6,
+      "groundTruthDays": 0.48,
+      "baselineDays": 0.57,
+      "reductionPct": 15.8,
+      "method": "Double ML + backdoor adjustment"
+    },
+    {
       "driver": "staffing_ratio",
       "label": "Nurse Staffing Ratio",
-      "effectDays": 0.37,
-      "ciLow": 0.03,
-      "ciHigh": 0.73,
+      "effectDays": 0.39,
+      "ciLow": 0.29,
+      "ciHigh": 0.47,
       "groundTruthDays": 0.38,
       "baselineDays": 0.44,
       "reductionPct": 13.6,
       "method": "Double ML + backdoor adjustment"
     }
   ],
+  "naiveEffect": {
+    "naiveDays": 2.15,
+    "causalDays": 1.83,
+    "biasDays": 0.32,
+    "biasPct": 17.5,
+    "ciLow": 1.69,
+    "ciHigh": 1.95,
+    "method": "Double ML · cross-fitted gradient boosting"
+  },
+  "coefficients": [
+    {
+      "edge": "Specialist Assignment Latency → Diagnostic Turnaround",
+      "estimated": 4.11,
+      "groundTruth": 4.19
+    },
+    {
+      "edge": "Specialist Assignment Latency → Discharge Delay",
+      "estimated": 1.83,
+      "groundTruth": 1.82
+    },
+    {
+      "edge": "Diagnostic Turnaround → Discharge Delay",
+      "estimated": 1.02,
+      "groundTruth": 1.05
+    },
+    {
+      "edge": "Downstream Bed Availability → Discharge Delay",
+      "estimated": 0.96,
+      "groundTruth": 0.94
+    },
+    {
+      "edge": "Case Complexity → Discharge Delay",
+      "estimated": 0.68,
+      "groundTruth": 0.7
+    },
+    {
+      "edge": "Medication Reconciliation → Discharge Delay",
+      "estimated": 0.48,
+      "groundTruth": 0.48
+    },
+    {
+      "edge": "Nurse Staffing Ratio → Discharge Delay",
+      "estimated": 0.39,
+      "groundTruth": 0.38
+    }
+  ],
+  "cate": {
+    "driver": "Specialist Assignment Latency",
+    "segmentVar": "Case Complexity",
+    "ate": 0.07,
+    "segments": [
+      {
+        "label": "Low (1–4)",
+        "effect": 0.08,
+        "ciLow": 0,
+        "ciHigh": 0.16
+      },
+      {
+        "label": "Mid (5–7)",
+        "effect": 0.14,
+        "ciLow": 0.06,
+        "ciHigh": 0.22
+      },
+      {
+        "label": "High (8–10)",
+        "effect": 0.2,
+        "ciLow": 0.1,
+        "ciHigh": 0.3
+      }
+    ],
+    "note": "The causal effect of Specialist Assignment Latency is concentrated in the High Case Complexity segment, suggesting interventions targeted by case complexity profile would yield different returns."
+  },
   "effectAccuracy": [
     {
-      "bucket": "0–0.5",
+      "bucket": "0–0.1",
+      "count": 3
+    },
+    {
+      "bucket": "0.1–0.2",
       "count": 2
     },
     {
-      "bucket": "0.5–1",
+      "bucket": "0.2–0.3",
       "count": 1
     },
     {
-      "bucket": "1–1.5",
-      "count": 1
+      "bucket": "0.3–0.5",
+      "count": 0
     },
     {
-      "bucket": "1.5–2",
-      "count": 1
-    },
-    {
-      "bucket": "2+",
+      "bucket": "0.5+",
       "count": 0
     }
   ],
   "topDrivers": [
     {
       "label": "Specialist Assignment Latency",
-      "impactDays": 1.84
+      "impactDays": 1.83
     },
     {
       "label": "Diagnostic Turnaround",
-      "impactDays": 1.05
+      "impactDays": 1.02
     },
     {
       "label": "Downstream Bed Availability",
-      "impactDays": 0.88
+      "impactDays": 0.96
     },
     {
       "label": "Case Complexity",
       "impactDays": 0.68
     },
     {
+      "label": "Medication Reconciliation",
+      "impactDays": 0.48
+    },
+    {
       "label": "Nurse Staffing Ratio",
-      "impactDays": 0.37
+      "impactDays": 0.39
     }
   ],
   "recommendedActions": [
@@ -562,21 +792,31 @@
       "detail": "Specialist assignment latency is the dominant causal driver. A 12-hour consult SLA on the top three services removes most of the avoidable wait.",
       "deltaDays": 1.35,
       "annualSavings": 610000,
-      "roi": 6.1,
+      "roi": 6.8,
       "confidence": 0.88,
       "lever": "Consult scheduling",
-      "maxShiftPct": 45
+      "maxShiftPct": 45,
+      "reductionPct": 17.1,
+      "effort": "Medium",
+      "timeline": "Immediate",
+      "capex": 90000,
+      "evidence": "MEASURED"
     },
     {
       "id": "act-2",
       "title": "Add evening imaging slots for inpatients",
-      "detail": "Shift 20% of inpatient imaging demand into an evening block to cut diagnostic turnaround on the critical path.",
+      "detail": "Shifting 20% of inpatient imaging demand into an evening block cuts diagnostic turnaround on the critical path.",
       "deltaDays": 0.7,
       "annualSavings": 240000,
-      "roi": 2.4,
+      "roi": 4,
       "confidence": 0.8,
-      "lever": "Lab/imaging capacity",
-      "maxShiftPct": 35
+      "lever": "Imaging capacity",
+      "maxShiftPct": 35,
+      "reductionPct": 8.9,
+      "effort": "Low",
+      "timeline": "30 days",
+      "capex": 60000,
+      "evidence": "ILLUSTRATIVE"
     },
     {
       "id": "act-3",
@@ -584,960 +824,2476 @@
       "detail": "Early discharge planning frees downstream beds sooner and reduces the queueing effect on new admissions.",
       "deltaDays": 0.55,
       "annualSavings": 175000,
-      "roi": 1.8,
+      "roi": 3.9,
       "confidence": 0.74,
       "lever": "Discharge planning",
-      "maxShiftPct": 30
+      "maxShiftPct": 30,
+      "reductionPct": 7,
+      "effort": "Medium",
+      "timeline": "60 days",
+      "capex": 45000,
+      "evidence": "ILLUSTRATIVE"
     }
   ],
   "projectedImpact": {
-    "totalReductionPct": 20,
+    "totalReductionPct": 33,
     "totalReductionDays": 2.6,
     "trend": [
       {
         "period": "Jan",
-        "baseline": 12.84,
-        "withActions": 11.54
+        "baseline": 7.62,
+        "withActions": 6.45
       },
       {
         "period": "Feb",
-        "baseline": 13.26,
-        "withActions": 11.7
+        "baseline": 8.31,
+        "withActions": 6.85
       },
       {
         "period": "Mar",
-        "baseline": 12.79,
-        "withActions": 10.97
+        "baseline": 7.58,
+        "withActions": 5.84
       },
       {
         "period": "Apr",
-        "baseline": 13.7,
-        "withActions": 11.62
+        "baseline": 7.23,
+        "withActions": 5.2
       },
       {
         "period": "May",
-        "baseline": 12.62,
-        "withActions": 10.28
+        "baseline": 8.29,
+        "withActions": 5.98
       },
       {
         "period": "Jun",
-        "baseline": 13.8,
-        "withActions": 11.2
+        "baseline": 7.35,
+        "withActions": 4.75
       }
     ]
   },
+  "simulator": {
+    "baselineOutcome": 7.9,
+    "throughputBaseline": 42,
+    "riskBaseline": 45,
+    "costPerDelayDay": 1650,
+    "annualVolume": 5100,
+    "mediators": [
+      {
+        "name": "Diagnostic Turnaround",
+        "baseline": 14.6,
+        "unit": "hrs"
+      },
+      {
+        "name": "Bed Queue Depth",
+        "baseline": 2.4,
+        "unit": "beds"
+      },
+      {
+        "name": "Medication Recon Time",
+        "baseline": 3.1,
+        "unit": "hrs"
+      }
+    ],
+    "levers": [
+      {
+        "id": "consult_sla",
+        "label": "Specialist Consult SLA",
+        "group": "Consults & Scheduling",
+        "kind": "slider",
+        "min": 4,
+        "max": 48,
+        "step": 2,
+        "unit": "hrs",
+        "baseline": 26,
+        "maxEffectDays": 1.6,
+        "mediator": "Diagnostic Turnaround",
+        "hint": "Guaranteed time from consult request to specialist review."
+      },
+      {
+        "id": "priority_consult",
+        "label": "Priority Consult Pathway",
+        "group": "Consults & Scheduling",
+        "kind": "toggle",
+        "min": 0,
+        "max": 1,
+        "step": 1,
+        "unit": "",
+        "baseline": 0,
+        "maxEffectDays": 0.9,
+        "mediator": "Diagnostic Turnaround",
+        "hint": "Fast-track pathway for the top three admitting services."
+      },
+      {
+        "id": "evening_imaging",
+        "label": "Evening Imaging Capacity",
+        "group": "Diagnostics",
+        "kind": "slider",
+        "min": 0,
+        "max": 40,
+        "step": 5,
+        "unit": "%",
+        "baseline": 0,
+        "maxEffectDays": 1.05,
+        "mediator": "Diagnostic Turnaround",
+        "hint": "Share of inpatient imaging demand shifted into an evening block."
+      },
+      {
+        "id": "pharmacy_workflow",
+        "label": "Streamline Med Reconciliation",
+        "group": "Diagnostics",
+        "kind": "toggle",
+        "min": 0,
+        "max": 1,
+        "step": 1,
+        "unit": "",
+        "baseline": 0,
+        "maxEffectDays": 0.48,
+        "mediator": "Medication Recon Time",
+        "hint": "Move reconciliation to the ward pharmacist workflow."
+      },
+      {
+        "id": "early_discharge_planning",
+        "label": "Discharge Planning at Admission",
+        "group": "Beds & Flow",
+        "kind": "toggle",
+        "min": 0,
+        "max": 1,
+        "step": 1,
+        "unit": "",
+        "baseline": 0,
+        "maxEffectDays": 0.94,
+        "mediator": "Bed Queue Depth",
+        "hint": "Begin discharge planning at admission for elective cases."
+      },
+      {
+        "id": "staffing_ratio",
+        "label": "Improve Nurse Staffing Ratio",
+        "group": "Beds & Flow",
+        "kind": "slider",
+        "min": 0,
+        "max": 20,
+        "step": 2,
+        "unit": "%",
+        "baseline": 0,
+        "maxEffectDays": 0.38,
+        "hint": "Additional nursing hours per patient-day on the busiest wards."
+      },
+      {
+        "id": "pathway_routing",
+        "label": "Care-Pathway Routing Discipline",
+        "group": "Beds & Flow",
+        "kind": "slider",
+        "min": 0,
+        "max": 30,
+        "step": 5,
+        "unit": "%",
+        "baseline": 0,
+        "maxEffectDays": 0.7,
+        "hint": "Share of complex cases routed to the standardised pathway."
+      }
+    ]
+  },
+  "report": {
+    "date": "August 31, 2026",
+    "casesAnalysed": 18400,
+    "groundTruthEffect": 1.82,
+    "confoundingRemoved": 0.32,
+    "naiveDays": 2.15,
+    "achievableReductionPct": 17.1,
+    "baselineDays": 7.9,
+    "targetDays": 6.55,
+    "primaryChain": [
+      "Specialist Latency",
+      "Diagnostic Turnaround",
+      "Discharge Delay"
+    ],
+    "signCorrect": "9/9 sign-correct",
+    "methodology": [
+      {
+        "phase": "Causal Discovery",
+        "detail": "Bootstrapped PC algorithm · 20 subsamples × 2,400 rows · 60% edge-stability threshold"
+      },
+      {
+        "phase": "Effect Estimation",
+        "detail": "Double ML (Chernozhukov et al. 2018) · 5-fold cross-fitting · gradient-boosted nuisance models · sandwich SEs"
+      },
+      {
+        "phase": "Validation",
+        "detail": "Planted ground-truth coefficients · placebo-treatment refuter (expected ≈ 0) · 10-seed stability check · bootstrap CIs"
+      }
+    ],
+    "actions": [
+      {
+        "rank": 1,
+        "action": "Guarantee specialist consult within 12 hours of request",
+        "impactPct": 17.1,
+        "confidence": "High",
+        "value": "$610K / yr",
+        "timeline": "Immediate"
+      },
+      {
+        "rank": 2,
+        "action": "Add evening imaging slots for inpatients",
+        "impactPct": 8.9,
+        "confidence": "Medium",
+        "value": "$240K / yr",
+        "timeline": "30 days"
+      },
+      {
+        "rank": 3,
+        "action": "Start discharge planning at admission for elective cases",
+        "impactPct": 7,
+        "confidence": "Low",
+        "value": "$175K / yr",
+        "timeline": "60 days"
+      }
+    ],
+    "totalCapex": 195000,
+    "roiPayback": "1.8 months",
+    "riskLevel": "Medium — clinical staffing agreements required"
+  },
+  "copilotCapabilities": [
+    {
+      "icon": "alert",
+      "title": "What is the top bottleneck?",
+      "detail": "Identify the most impactful constraint",
+      "tags": [
+        "Bottleneck Analysis",
+        "Root Cause"
+      ],
+      "prompt": "What is the top bottleneck?"
+    },
+    {
+      "icon": "chart",
+      "title": "Show causal KPI impact",
+      "detail": "See which factors drive discharge delay",
+      "tags": [
+        "Causal Impact",
+        "KPI Analysis"
+      ],
+      "prompt": "Which factors have the largest causal impact on discharge delay?"
+    },
+    {
+      "icon": "flask",
+      "title": "Run a what-if simulation",
+      "detail": "Test interventions & predict outcomes",
+      "tags": [
+        "Simulation",
+        "Forecasting"
+      ],
+      "prompt": "Run a counterfactual for the worst case"
+    },
+    {
+      "icon": "doc",
+      "title": "Generate executive summary",
+      "detail": "AI-powered insights & recommendations",
+      "tags": [
+        "AI Summary",
+        "Insights"
+      ],
+      "prompt": "Generate an executive summary of the causal findings"
+    }
+  ],
   "cases": [
     {
-      "id": "ADM-2024-0001",
+      "id": "ADM_0000",
       "date": "2024-01-03",
       "primaryEntity": "Orthopedics",
       "category": "Emergency",
-      "value": 85579,
-      "actualDelayDays": 15,
-      "predictedDelayDays": 15.3,
-      "counterfactualDelayDays": 14.3,
+      "value": 14990,
+      "actualDelayDays": 7,
+      "predictedDelayDays": 5.1,
+      "counterfactualDelayDays": 6.3,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 0.97
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.91
+          "contributionDays": -1.03,
+          "kind": "controllable"
         },
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 0.48
+          "contributionDays": -0.87,
+          "kind": "controllable"
         },
         {
-          "label": "Case Complexity",
-          "contributionDays": 0.44
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.53,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.28,
+          "kind": "controllable"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.18
+          "contributionDays": -0.27,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.23,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0016",
-        "ADM-2024-0007",
-        "ADM-2024-0011"
-      ]
+        "ADM_0026",
+        "ADM_0021",
+        "ADM_0002"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 40,
+      "controllableDays": -2.98,
+      "structuralDays": -0.23,
+      "complexityScore": 1,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
     },
     {
-      "id": "ADM-2024-0002",
+      "id": "ADM_0001",
       "date": "2024-02-04",
-      "primaryEntity": "Pulmonology",
+      "primaryEntity": "Orthopedics",
       "category": "Emergency",
-      "value": 30122,
-      "actualDelayDays": 9.6,
+      "value": 3073,
+      "actualDelayDays": 3.5,
+      "predictedDelayDays": 3.6,
+      "counterfactualDelayDays": 2.8,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -1.06,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -0.9,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.77,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.56,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.36,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.34,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0033",
+        "ADM_0023",
+        "ADM_0035"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 8,
+      "controllableDays": -3.22,
+      "structuralDays": -0.77,
+      "complexityScore": 2,
+      "treated": true,
+      "dominantDriver": "Downstream Bed Availability"
+    },
+    {
+      "id": "ADM_0002",
+      "date": "2024-03-05",
+      "primaryEntity": "General Medicine",
+      "category": "Observation",
+      "value": 38816,
+      "actualDelayDays": 6.5,
+      "predictedDelayDays": 2.9,
+      "counterfactualDelayDays": 5.5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.48,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -1.03,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.7,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.69,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.54,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.35,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0021",
+        "ADM_0017",
+        "ADM_0013"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 35,
+      "controllableDays": -4.09,
+      "structuralDays": -0.7,
+      "complexityScore": 9,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0003",
+      "date": "2024-04-06",
+      "primaryEntity": "Pulmonology",
+      "category": "Observation",
+      "value": 58180,
+      "actualDelayDays": 7.9,
+      "predictedDelayDays": 13.1,
+      "counterfactualDelayDays": 6.3,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 2.31,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 1.19,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.55,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.4,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.31,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.31,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0016",
+        "ADM_0004",
+        "ADM_0030"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 53,
+      "controllableDays": 4.52,
+      "structuralDays": 0.55,
+      "complexityScore": 8,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0004",
+      "date": "2024-05-07",
+      "primaryEntity": "Orthopedics",
+      "category": "Observation",
+      "value": 30373,
+      "actualDelayDays": 8,
       "predictedDelayDays": 10.9,
+      "counterfactualDelayDays": 7.4,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.9,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 0.72,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.54,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.5,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.46,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.33,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0003",
+        "ADM_0016",
+        "ADM_0008"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 57,
+      "controllableDays": 2.91,
+      "structuralDays": 0.54,
+      "complexityScore": 7,
+      "treated": false,
+      "dominantDriver": "Downstream Bed Availability"
+    },
+    {
+      "id": "ADM_0005",
+      "date": "2024-06-08",
+      "primaryEntity": "General Medicine",
+      "category": "Observation",
+      "value": 20018,
+      "actualDelayDays": 10,
+      "predictedDelayDays": 13.1,
+      "counterfactualDelayDays": 8.5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 2.14,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 1.15,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.77,
+          "kind": "structural"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.43,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.43,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.33,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0024",
+        "ADM_0027",
+        "ADM_0010"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 83,
+      "controllableDays": 4.48,
+      "structuralDays": 0.77,
+      "complexityScore": 10,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0006",
+      "date": "2024-01-09",
+      "primaryEntity": "Cardiology",
+      "category": "Transfer",
+      "value": 66219,
+      "actualDelayDays": 12.3,
+      "predictedDelayDays": 13.4,
+      "counterfactualDelayDays": 10.3,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 2.82,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.76,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.74,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.74,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.36,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.17,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0009",
+        "ADM_0022",
+        "ADM_0020"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 95,
+      "controllableDays": 4.83,
+      "structuralDays": 0.76,
+      "complexityScore": 7,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0007",
+      "date": "2024-02-10",
+      "primaryEntity": "Cardiology",
+      "category": "Observation",
+      "value": 13744,
+      "actualDelayDays": 8.9,
+      "predictedDelayDays": 14.1,
+      "counterfactualDelayDays": 6.5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 3.45,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 1.17,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.48,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.48,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.46,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.23,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0029",
+        "ADM_0039",
+        "ADM_0018"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 65,
+      "controllableDays": 5.81,
+      "structuralDays": 0.46,
+      "complexityScore": 3,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0008",
+      "date": "2024-03-11",
+      "primaryEntity": "Orthopedics",
+      "category": "Emergency",
+      "value": 54027,
+      "actualDelayDays": 8.2,
+      "predictedDelayDays": 11.4,
+      "counterfactualDelayDays": 7.2,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 1.37,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.47,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.43,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.39,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.33,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.32,
+          "kind": "structural"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0004",
+        "ADM_0003",
+        "ADM_0016"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 60,
+      "controllableDays": 2.99,
+      "structuralDays": 0.32,
+      "complexityScore": 3,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0009",
+      "date": "2024-04-12",
+      "primaryEntity": "Neurology",
+      "category": "Elective",
+      "value": 82381,
+      "actualDelayDays": 12.3,
+      "predictedDelayDays": 12.8,
+      "counterfactualDelayDays": 11.5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 1.14,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.88,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.88,
+          "kind": "structural"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 0.64,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.51,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.25,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0006",
+        "ADM_0022",
+        "ADM_0020"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 98,
+      "controllableDays": 3.42,
+      "structuralDays": 0.88,
+      "complexityScore": 9,
+      "treated": false,
+      "dominantDriver": "Downstream Bed Availability"
+    },
+    {
+      "id": "ADM_0010",
+      "date": "2024-05-13",
+      "primaryEntity": "Cardiology",
+      "category": "Transfer",
+      "value": 41471,
+      "actualDelayDays": 9.8,
+      "predictedDelayDays": 14.3,
+      "counterfactualDelayDays": 7.4,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 3.36,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 1.1,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.95,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.82,
+          "kind": "structural"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.47,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.17,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0024",
+        "ADM_0027",
+        "ADM_0005"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 75,
+      "controllableDays": 6.05,
+      "structuralDays": 0.82,
+      "complexityScore": 5,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0011",
+      "date": "2024-06-14",
+      "primaryEntity": "Cardiology",
+      "category": "Transfer",
+      "value": 81571,
+      "actualDelayDays": 7.7,
+      "predictedDelayDays": 1.9,
+      "counterfactualDelayDays": 6.2,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -2.2,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -1.32,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.91,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.41,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.34,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.22,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0030",
+        "ADM_0025",
+        "ADM_0003"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 48,
+      "controllableDays": -5.06,
+      "structuralDays": -0.34,
+      "complexityScore": 6,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0012",
+      "date": "2024-01-15",
+      "primaryEntity": "Neurology",
+      "category": "Emergency",
+      "value": 42103,
+      "actualDelayDays": 4.9,
+      "predictedDelayDays": 3.2,
+      "counterfactualDelayDays": 4.2,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.96,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.91,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -0.8,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.38,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.32,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.26,
+          "kind": "structural"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0038",
+        "ADM_0034",
+        "ADM_0015"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 15,
+      "controllableDays": -3.37,
+      "structuralDays": -0.26,
+      "complexityScore": 4,
+      "treated": false,
+      "dominantDriver": "Downstream Bed Availability"
+    },
+    {
+      "id": "ADM_0013",
+      "date": "2024-02-16",
+      "primaryEntity": "General Medicine",
+      "category": "Observation",
+      "value": 28819,
+      "actualDelayDays": 6.2,
+      "predictedDelayDays": 4.2,
+      "counterfactualDelayDays": 5.3,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.28,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.46,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.46,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.38,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.31,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.23,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0031",
+        "ADM_0017",
+        "ADM_0014"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 28,
+      "controllableDays": -2.66,
+      "structuralDays": -0.46,
+      "complexityScore": 3,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0014",
+      "date": "2024-03-17",
+      "primaryEntity": "Pulmonology",
+      "category": "Elective",
+      "value": 1517,
+      "actualDelayDays": 6,
+      "predictedDelayDays": 3.1,
+      "counterfactualDelayDays": 5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.47,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.91,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.51,
+          "kind": "structural"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.48,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.43,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.14,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0028",
+        "ADM_0015",
+        "ADM_0013"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 23,
+      "controllableDays": -3.43,
+      "structuralDays": -0.51,
+      "complexityScore": 3,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0015",
+      "date": "2024-04-18",
+      "primaryEntity": "Pulmonology",
+      "category": "Elective",
+      "value": 11310,
+      "actualDelayDays": 5.9,
+      "predictedDelayDays": 3,
+      "counterfactualDelayDays": 4.6,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.84,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -1.24,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.57,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.43,
+          "kind": "structural"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.41,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.35,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0014",
+        "ADM_0028",
+        "ADM_0013"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 20,
+      "controllableDays": -4.41,
+      "structuralDays": -0.43,
+      "complexityScore": 3,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0016",
+      "date": "2024-05-19",
+      "primaryEntity": "Pulmonology",
+      "category": "Observation",
+      "value": 63671,
+      "actualDelayDays": 7.9,
+      "predictedDelayDays": 12.1,
+      "counterfactualDelayDays": 6.5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 2.04,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 1.15,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.56,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.46,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.39,
+          "kind": "structural"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.35,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0003",
+        "ADM_0004",
+        "ADM_0030"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 55,
+      "controllableDays": 4.56,
+      "structuralDays": 0.39,
+      "complexityScore": 1,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0017",
+      "date": "2024-06-20",
+      "primaryEntity": "Orthopedics",
+      "category": "Elective",
+      "value": 89115,
+      "actualDelayDays": 6.3,
+      "predictedDelayDays": 4.3,
+      "counterfactualDelayDays": 5.5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -1.09,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -0.94,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.74,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.72,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.54,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.19,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0013",
+        "ADM_0031",
+        "ADM_0002"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 33,
+      "controllableDays": -3.48,
+      "structuralDays": -0.74,
+      "complexityScore": 5,
+      "treated": false,
+      "dominantDriver": "Downstream Bed Availability"
+    },
+    {
+      "id": "ADM_0018",
+      "date": "2024-01-21",
+      "primaryEntity": "Neurology",
+      "category": "Elective",
+      "value": 69420,
+      "actualDelayDays": 9.3,
+      "predictedDelayDays": 11.4,
+      "counterfactualDelayDays": 8.1,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 1.76,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.96,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.5,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.47,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.41,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.28,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0029",
+        "ADM_0039",
+        "ADM_0007"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 73,
+      "controllableDays": 3.88,
+      "structuralDays": 0.5,
+      "complexityScore": 9,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0019",
+      "date": "2024-02-22",
+      "primaryEntity": "General Medicine",
+      "category": "Transfer",
+      "value": 32851,
+      "actualDelayDays": 10.3,
+      "predictedDelayDays": 11.9,
+      "counterfactualDelayDays": 9.4,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 1.26,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.58,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.35,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.31,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.26,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.25,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0032",
+        "ADM_0005",
+        "ADM_0024"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 85,
+      "controllableDays": 2.75,
+      "structuralDays": 0.26,
+      "complexityScore": 2,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0020",
+      "date": "2024-03-23",
+      "primaryEntity": "Cardiology",
+      "category": "Elective",
+      "value": 83508,
+      "actualDelayDays": 11.4,
+      "predictedDelayDays": 11.7,
+      "counterfactualDelayDays": 10.6,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 1.17,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 0.87,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.85,
+          "kind": "structural"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.57,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.45,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.43,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0037",
+        "ADM_0006",
+        "ADM_0009"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 90,
+      "controllableDays": 3.49,
+      "structuralDays": 0.85,
+      "complexityScore": 10,
+      "treated": true,
+      "dominantDriver": "Diagnostic Turnaround"
+    },
+    {
+      "id": "ADM_0021",
+      "date": "2024-04-24",
+      "primaryEntity": "Orthopedics",
+      "category": "Elective",
+      "value": 64258,
+      "actualDelayDays": 6.6,
+      "predictedDelayDays": 4.7,
+      "counterfactualDelayDays": 6,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -0.89,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.8,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.68,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.47,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.3,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.29,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0002",
+        "ADM_0017",
+        "ADM_0013"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 38,
+      "controllableDays": -2.96,
+      "structuralDays": -0.47,
+      "complexityScore": 9,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0022",
+      "date": "2024-05-25",
+      "primaryEntity": "Cardiology",
+      "category": "Observation",
+      "value": 4999,
+      "actualDelayDays": 12.7,
+      "predictedDelayDays": 12.7,
+      "counterfactualDelayDays": 11.5,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 1.72,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 1.22,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 1.18,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.85,
+          "kind": "structural"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.43,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.18,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0006",
+        "ADM_0009",
+        "ADM_0020"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 100,
+      "controllableDays": 4.73,
+      "structuralDays": 0.85,
+      "complexityScore": 5,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0023",
+      "date": "2024-06-26",
+      "primaryEntity": "General Medicine",
+      "category": "Transfer",
+      "value": 81357,
+      "actualDelayDays": 3.1,
+      "predictedDelayDays": 2.8,
+      "counterfactualDelayDays": 2.3,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -1.15,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.12,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -1.02,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.48,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.42,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.39,
+          "kind": "structural"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0001",
+        "ADM_0035",
+        "ADM_0033"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 5,
+      "controllableDays": -4.19,
+      "structuralDays": -0.39,
+      "complexityScore": 4,
+      "treated": true,
+      "dominantDriver": "Downstream Bed Availability"
+    },
+    {
+      "id": "ADM_0024",
+      "date": "2024-01-03",
+      "primaryEntity": "Orthopedics",
+      "category": "Observation",
+      "value": 66402,
+      "actualDelayDays": 9.9,
+      "predictedDelayDays": 13.6,
+      "counterfactualDelayDays": 9,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 1.27,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 1.22,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.9,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.69,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.59,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.4,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0027",
+        "ADM_0005",
+        "ADM_0010"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 78,
+      "controllableDays": 4.38,
+      "structuralDays": 0.69,
+      "complexityScore": 3,
+      "treated": true,
+      "dominantDriver": "Diagnostic Turnaround"
+    },
+    {
+      "id": "ADM_0025",
+      "date": "2024-02-04",
+      "primaryEntity": "Neurology",
+      "category": "Transfer",
+      "value": 32987,
+      "actualDelayDays": 7.6,
+      "predictedDelayDays": 3.3,
+      "counterfactualDelayDays": 6.6,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.37,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -1.08,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.91,
+          "kind": "structural"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.87,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.44,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.39,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0011",
+        "ADM_0030",
+        "ADM_0003"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 45,
+      "controllableDays": -4.15,
+      "structuralDays": -0.91,
+      "complexityScore": 10,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0026",
+      "date": "2024-03-05",
+      "primaryEntity": "Orthopedics",
+      "category": "Emergency",
+      "value": 65360,
+      "actualDelayDays": 7.1,
+      "predictedDelayDays": 3.2,
+      "counterfactualDelayDays": 6.3,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.18,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -1.08,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.74,
+          "kind": "structural"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.73,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.3,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.28,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0000",
+        "ADM_0021",
+        "ADM_0025"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 43,
+      "controllableDays": -3.57,
+      "structuralDays": -0.74,
+      "complexityScore": 2,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0027",
+      "date": "2024-04-06",
+      "primaryEntity": "Cardiology",
+      "category": "Transfer",
+      "value": 35197,
+      "actualDelayDays": 9.9,
+      "predictedDelayDays": 12.8,
       "counterfactualDelayDays": 8.8,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 1.2
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.98
+          "contributionDays": 1.54,
+          "kind": "controllable"
         },
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 0.81
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.29
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.18
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0004",
-        "ADM-2024-0017",
-        "ADM-2024-0021"
-      ]
-    },
-    {
-      "id": "ADM-2024-0003",
-      "date": "2024-03-05",
-      "primaryEntity": "Cardiology",
-      "category": "Observation",
-      "value": 51326,
-      "actualDelayDays": 13.6,
-      "predictedDelayDays": 14,
-      "counterfactualDelayDays": 12.5,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.56
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.2
+          "contributionDays": 1.35,
+          "kind": "controllable"
         },
         {
           "label": "Downstream Bed Availability",
-          "contributionDays": 1.05
+          "contributionDays": 1.02,
+          "kind": "controllable"
         },
         {
           "label": "Case Complexity",
-          "contributionDays": 0.56
+          "contributionDays": 0.64,
+          "kind": "structural"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.36
+          "contributionDays": 0.48,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.15,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0022",
-        "ADM-2024-0008",
-        "ADM-2024-0023"
-      ]
-    },
-    {
-      "id": "ADM-2024-0004",
-      "date": "2024-04-06",
-      "primaryEntity": "Cardiology",
-      "category": "Transfer",
-      "value": 75261,
-      "actualDelayDays": 10.1,
-      "predictedDelayDays": 10.3,
-      "counterfactualDelayDays": 8.4,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 2.5
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 0.93
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.81
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.5
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.43
-        }
+        "ADM_0024",
+        "ADM_0005",
+        "ADM_0010"
       ],
-      "similarCaseIds": [
-        "ADM-2024-0021",
-        "ADM-2024-0002",
-        "ADM-2024-0015"
-      ]
+      "populationAvg": 7.9,
+      "percentile": 80,
+      "controllableDays": 4.54,
+      "structuralDays": 0.64,
+      "complexityScore": 1,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
     },
     {
-      "id": "ADM-2024-0005",
+      "id": "ADM_0028",
       "date": "2024-05-07",
-      "primaryEntity": "Neurology",
-      "category": "Observation",
-      "value": 8569,
-      "actualDelayDays": 12.3,
-      "predictedDelayDays": 11.9,
-      "counterfactualDelayDays": 10.7,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 2.23
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.14
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 1.06
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.73
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.25
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0020",
-        "ADM-2024-0013",
-        "ADM-2024-0006"
-      ]
-    },
-    {
-      "id": "ADM-2024-0006",
-      "date": "2024-06-08",
       "primaryEntity": "Pulmonology",
-      "category": "Observation",
-      "value": 21836,
-      "actualDelayDays": 11.7,
-      "predictedDelayDays": 11.2,
-      "counterfactualDelayDays": 11,
+      "category": "Elective",
+      "value": 28690,
+      "actualDelayDays": 6,
+      "predictedDelayDays": 4.3,
+      "counterfactualDelayDays": 5.3,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 1.13
-        },
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.07
+          "contributionDays": -1.01,
+          "kind": "controllable"
         },
         {
           "label": "Downstream Bed Availability",
-          "contributionDays": 0.91
+          "contributionDays": -0.78,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -0.62,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.57,
+          "kind": "controllable"
         },
         {
           "label": "Case Complexity",
-          "contributionDays": 0.43
+          "contributionDays": -0.43,
+          "kind": "structural"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.38
+          "contributionDays": -0.22,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0013",
-        "ADM-2024-0018",
-        "ADM-2024-0005"
-      ]
+        "ADM_0014",
+        "ADM_0015",
+        "ADM_0013"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 25,
+      "controllableDays": -3.2,
+      "structuralDays": -0.43,
+      "complexityScore": 1,
+      "treated": true,
+      "dominantDriver": "Diagnostic Turnaround"
     },
     {
-      "id": "ADM-2024-0007",
+      "id": "ADM_0029",
+      "date": "2024-06-08",
+      "primaryEntity": "Orthopedics",
+      "category": "Elective",
+      "value": 35392,
+      "actualDelayDays": 9.1,
+      "predictedDelayDays": 11,
+      "counterfactualDelayDays": 8.3,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 1.2,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 0.79,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": 0.63,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": 0.28,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.26,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.15,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0039",
+        "ADM_0007",
+        "ADM_0018"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 68,
+      "controllableDays": 3.05,
+      "structuralDays": 0.26,
+      "complexityScore": 7,
+      "treated": false,
+      "dominantDriver": "Diagnostic Turnaround"
+    },
+    {
+      "id": "ADM_0030",
       "date": "2024-01-09",
       "primaryEntity": "Orthopedics",
-      "category": "Elective",
-      "value": 39030,
-      "actualDelayDays": 15.3,
-      "predictedDelayDays": 14.6,
-      "counterfactualDelayDays": 14.4,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.35
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.29
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.89
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.66
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.48
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0016",
-        "ADM-2024-0001",
-        "ADM-2024-0010"
-      ]
-    },
-    {
-      "id": "ADM-2024-0008",
-      "date": "2024-02-10",
-      "primaryEntity": "Pulmonology",
       "category": "Observation",
-      "value": 61136,
-      "actualDelayDays": 13.4,
-      "predictedDelayDays": 13.7,
-      "counterfactualDelayDays": 12,
+      "value": 23341,
+      "actualDelayDays": 7.8,
+      "predictedDelayDays": 4.6,
+      "counterfactualDelayDays": 7,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -1.17,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.9,
+          "kind": "controllable"
+        },
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -0.56,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.46,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.39,
+          "kind": "structural"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.36,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0011",
+        "ADM_0003",
+        "ADM_0016"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 50,
+      "controllableDays": -3.45,
+      "structuralDays": -0.39,
+      "complexityScore": 4,
+      "treated": false,
+      "dominantDriver": "Diagnostic Turnaround"
+    },
+    {
+      "id": "ADM_0031",
+      "date": "2024-02-10",
+      "primaryEntity": "Cardiology",
+      "category": "Observation",
+      "value": 36633,
+      "actualDelayDays": 6.2,
+      "predictedDelayDays": 1.5,
+      "counterfactualDelayDays": 3.8,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 2.04
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 1.05
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.66
+          "contributionDays": -3.46,
+          "kind": "controllable"
         },
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 0.57
+          "contributionDays": -1.11,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.67,
+          "kind": "structural"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.56,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.51,
+          "kind": "controllable"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.35
+          "contributionDays": -0.24,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0022",
-        "ADM-2024-0003",
-        "ADM-2024-0024"
-      ]
+        "ADM_0013",
+        "ADM_0017",
+        "ADM_0014"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 30,
+      "controllableDays": -5.88,
+      "structuralDays": -0.67,
+      "complexityScore": 1,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
     },
     {
-      "id": "ADM-2024-0009",
+      "id": "ADM_0032",
       "date": "2024-03-11",
       "primaryEntity": "Pulmonology",
-      "category": "Observation",
-      "value": 40727,
-      "actualDelayDays": 16.9,
-      "predictedDelayDays": 16.2,
-      "counterfactualDelayDays": 15.7,
+      "category": "Emergency",
+      "value": 6076,
+      "actualDelayDays": 10.3,
+      "predictedDelayDays": 14.4,
+      "counterfactualDelayDays": 8.8,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 1.7
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 1
+          "contributionDays": 2.21,
+          "kind": "controllable"
         },
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 0.57
+          "contributionDays": 1.33,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": 1.11,
+          "kind": "controllable"
         },
         {
           "label": "Case Complexity",
-          "contributionDays": 0.53
+          "contributionDays": 0.38,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.3,
+          "kind": "controllable"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.32
+          "contributionDays": 0.28,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0012",
-        "ADM-2024-0010",
-        "ADM-2024-0007"
-      ]
+        "ADM_0019",
+        "ADM_0005",
+        "ADM_0024"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 88,
+      "controllableDays": 5.23,
+      "structuralDays": 0.38,
+      "complexityScore": 8,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
     },
     {
-      "id": "ADM-2024-0010",
+      "id": "ADM_0033",
       "date": "2024-04-12",
-      "primaryEntity": "Cardiology",
-      "category": "Observation",
-      "value": 14945,
-      "actualDelayDays": 15.8,
-      "predictedDelayDays": 15.7,
-      "counterfactualDelayDays": 15.1,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.06
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.95
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.83
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 0.63
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.37
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0007",
-        "ADM-2024-0016",
-        "ADM-2024-0001"
-      ]
-    },
-    {
-      "id": "ADM-2024-0011",
-      "date": "2024-05-13",
-      "primaryEntity": "Pulmonology",
-      "category": "Observation",
-      "value": 68828,
-      "actualDelayDays": 14.6,
-      "predictedDelayDays": 14.7,
-      "counterfactualDelayDays": 13.7,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.29
-        },
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.23
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.52
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.5
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.25
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0019",
-        "ADM-2024-0001",
-        "ADM-2024-0014"
-      ]
-    },
-    {
-      "id": "ADM-2024-0012",
-      "date": "2024-06-14",
-      "primaryEntity": "Cardiology",
+      "primaryEntity": "Neurology",
       "category": "Transfer",
-      "value": 61035,
-      "actualDelayDays": 17.8,
-      "predictedDelayDays": 18.6,
-      "counterfactualDelayDays": 16.5,
+      "value": 62881,
+      "actualDelayDays": 3.7,
+      "predictedDelayDays": 4.3,
+      "counterfactualDelayDays": 2.7,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 1.91
+          "contributionDays": -1.37,
+          "kind": "controllable"
         },
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 1.11
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.46
+          "contributionDays": -1,
+          "kind": "controllable"
         },
         {
           "label": "Case Complexity",
-          "contributionDays": 0.42
+          "contributionDays": -0.73,
+          "kind": "structural"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.2
+          "contributionDays": -0.38,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.31,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.18,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0009",
-        "ADM-2024-0010",
-        "ADM-2024-0007"
-      ]
+        "ADM_0001",
+        "ADM_0023",
+        "ADM_0038"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 10,
+      "controllableDays": -3.24,
+      "structuralDays": -0.73,
+      "complexityScore": 8,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
     },
     {
-      "id": "ADM-2024-0013",
+      "id": "ADM_0034",
+      "date": "2024-05-13",
+      "primaryEntity": "Orthopedics",
+      "category": "Elective",
+      "value": 86280,
+      "actualDelayDays": 5.5,
+      "predictedDelayDays": 2.5,
+      "counterfactualDelayDays": 4.6,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.34,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -1.04,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -1.03,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.84,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.53,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.14,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0015",
+        "ADM_0014",
+        "ADM_0028"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 18,
+      "controllableDays": -4.08,
+      "structuralDays": -0.84,
+      "complexityScore": 2,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0035",
+      "date": "2024-06-14",
+      "primaryEntity": "Orthopedics",
+      "category": "Emergency",
+      "value": 37468,
+      "actualDelayDays": 2.6,
+      "predictedDelayDays": 2.8,
+      "counterfactualDelayDays": 1.3,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -1.84,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -1.02,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.77,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.45,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -0.4,
+          "kind": "controllable"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.38,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0023",
+        "ADM_0001",
+        "ADM_0033"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 3,
+      "controllableDays": -4.09,
+      "structuralDays": -0.77,
+      "complexityScore": 9,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0036",
       "date": "2024-01-15",
       "primaryEntity": "Pulmonology",
-      "category": "Emergency",
-      "value": 14789,
-      "actualDelayDays": 12,
-      "predictedDelayDays": 14.7,
-      "counterfactualDelayDays": 10.9,
+      "category": "Observation",
+      "value": 82530,
+      "actualDelayDays": 8.5,
+      "predictedDelayDays": 12.9,
+      "counterfactualDelayDays": 7.2,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 1.62
+          "contributionDays": 1.85,
+          "kind": "controllable"
         },
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 1.28
+          "contributionDays": 0.95,
+          "kind": "controllable"
         },
         {
           "label": "Downstream Bed Availability",
-          "contributionDays": 1.18
+          "contributionDays": 0.89,
+          "kind": "controllable"
         },
         {
           "label": "Case Complexity",
-          "contributionDays": 0.76
+          "contributionDays": 0.68,
+          "kind": "structural"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.27
+          "contributionDays": 0.23,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.22,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0005",
-        "ADM-2024-0006",
-        "ADM-2024-0020"
-      ]
+        "ADM_0008",
+        "ADM_0007",
+        "ADM_0004"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 63,
+      "controllableDays": 4.14,
+      "structuralDays": 0.68,
+      "complexityScore": 4,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
     },
     {
-      "id": "ADM-2024-0014",
+      "id": "ADM_0037",
       "date": "2024-02-16",
-      "primaryEntity": "Orthopedics",
-      "category": "Observation",
-      "value": 5053,
-      "actualDelayDays": 14.1,
-      "predictedDelayDays": 15.1,
-      "counterfactualDelayDays": 12.5,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 2.24
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 1.16
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.05
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.75
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.39
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0023",
-        "ADM-2024-0019",
-        "ADM-2024-0003"
-      ]
-    },
-    {
-      "id": "ADM-2024-0015",
-      "date": "2024-03-17",
-      "primaryEntity": "Pulmonology",
-      "category": "Transfer",
-      "value": 86726,
-      "actualDelayDays": 11,
-      "predictedDelayDays": 10.4,
-      "counterfactualDelayDays": 10.3,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 1.07
-        },
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 0.97
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 0.9
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.51
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.35
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0018",
-        "ADM-2024-0006",
-        "ADM-2024-0004"
-      ]
-    },
-    {
-      "id": "ADM-2024-0016",
-      "date": "2024-04-18",
-      "primaryEntity": "Neurology",
-      "category": "Observation",
-      "value": 41435,
-      "actualDelayDays": 15.1,
-      "predictedDelayDays": 14.6,
-      "counterfactualDelayDays": 14,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.61
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 1.13
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.06
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.76
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.27
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0001",
-        "ADM-2024-0007",
-        "ADM-2024-0011"
-      ]
-    },
-    {
-      "id": "ADM-2024-0017",
-      "date": "2024-05-19",
-      "primaryEntity": "Neurology",
-      "category": "Elective",
-      "value": 40452,
-      "actualDelayDays": 9.1,
-      "predictedDelayDays": 9.7,
-      "counterfactualDelayDays": 8.2,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.35
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.08
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.64
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.43
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.21
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0002",
-        "ADM-2024-0004",
-        "ADM-2024-0021"
-      ]
-    },
-    {
-      "id": "ADM-2024-0018",
-      "date": "2024-06-20",
-      "primaryEntity": "Orthopedics",
-      "category": "Transfer",
-      "value": 40971,
-      "actualDelayDays": 11.3,
-      "predictedDelayDays": 10.7,
-      "counterfactualDelayDays": 10.7,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 0.83
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.7
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.67
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 0.45
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.25
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0015",
-        "ADM-2024-0006",
-        "ADM-2024-0013"
-      ]
-    },
-    {
-      "id": "ADM-2024-0019",
-      "date": "2024-01-21",
-      "primaryEntity": "Pulmonology",
-      "category": "Elective",
-      "value": 55092,
-      "actualDelayDays": 14.4,
-      "predictedDelayDays": 14.1,
-      "counterfactualDelayDays": 12.9,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 2.09
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.03
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.8
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.64
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.22
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0011",
-        "ADM-2024-0014",
-        "ADM-2024-0023"
-      ]
-    },
-    {
-      "id": "ADM-2024-0020",
-      "date": "2024-02-22",
       "primaryEntity": "Cardiology",
-      "category": "Transfer",
-      "value": 80620,
-      "actualDelayDays": 12.3,
-      "predictedDelayDays": 13.6,
-      "counterfactualDelayDays": 10.3,
+      "category": "Elective",
+      "value": 19792,
+      "actualDelayDays": 11.4,
+      "predictedDelayDays": 12.3,
+      "counterfactualDelayDays": 9.5,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 2.91
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.8
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 0.64
+          "contributionDays": 2.67,
+          "kind": "controllable"
         },
         {
           "label": "Downstream Bed Availability",
-          "contributionDays": 0.63
+          "contributionDays": 0.57,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": 0.39,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": 0.39,
+          "kind": "structural"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.31,
+          "kind": "controllable"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.28
+          "contributionDays": 0.19,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0005",
-        "ADM-2024-0013",
-        "ADM-2024-0006"
-      ]
+        "ADM_0020",
+        "ADM_0006",
+        "ADM_0009"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 93,
+      "controllableDays": 4.13,
+      "structuralDays": 0.39,
+      "complexityScore": 7,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
     },
     {
-      "id": "ADM-2024-0021",
-      "date": "2024-03-23",
+      "id": "ADM_0038",
+      "date": "2024-03-17",
+      "primaryEntity": "Neurology",
+      "category": "Observation",
+      "value": 50211,
+      "actualDelayDays": 4.8,
+      "predictedDelayDays": 2.9,
+      "counterfactualDelayDays": 3.1,
+      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
+      "drivers": [
+        {
+          "label": "Specialist Assignment Latency",
+          "contributionDays": -2.36,
+          "kind": "controllable"
+        },
+        {
+          "label": "Downstream Bed Availability",
+          "contributionDays": -1.17,
+          "kind": "controllable"
+        },
+        {
+          "label": "Diagnostic Turnaround",
+          "contributionDays": -0.7,
+          "kind": "controllable"
+        },
+        {
+          "label": "Case Complexity",
+          "contributionDays": -0.33,
+          "kind": "structural"
+        },
+        {
+          "label": "Nurse Staffing Ratio",
+          "contributionDays": -0.31,
+          "kind": "controllable"
+        },
+        {
+          "label": "Medication Reconciliation",
+          "contributionDays": -0.2,
+          "kind": "controllable"
+        }
+      ],
+      "similarCaseIds": [
+        "ADM_0012",
+        "ADM_0034",
+        "ADM_0033"
+      ],
+      "populationAvg": 7.9,
+      "percentile": 13,
+      "controllableDays": -4.74,
+      "structuralDays": -0.33,
+      "complexityScore": 2,
+      "treated": false,
+      "dominantDriver": "Specialist Assignment Latency"
+    },
+    {
+      "id": "ADM_0039",
+      "date": "2024-04-18",
       "primaryEntity": "Orthopedics",
       "category": "Elective",
-      "value": 63173,
-      "actualDelayDays": 10.1,
-      "predictedDelayDays": 10.7,
-      "counterfactualDelayDays": 9.2,
+      "value": 58995,
+      "actualDelayDays": 9.1,
+      "predictedDelayDays": 11.4,
+      "counterfactualDelayDays": 7.8,
       "counterfactualLabel": "If the specialist consult had happened within 12 hours",
       "drivers": [
         {
           "label": "Specialist Assignment Latency",
-          "contributionDays": 1.22
+          "contributionDays": 1.8,
+          "kind": "controllable"
         },
         {
-          "label": "Case Complexity",
-          "contributionDays": 0.83
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 0.76
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.47
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.19
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0004",
-        "ADM-2024-0002",
-        "ADM-2024-0015"
-      ]
-    },
-    {
-      "id": "ADM-2024-0022",
-      "date": "2024-04-24",
-      "primaryEntity": "Pulmonology",
-      "category": "Transfer",
-      "value": 33516,
-      "actualDelayDays": 13.5,
-      "predictedDelayDays": 13.4,
-      "counterfactualDelayDays": 12,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 2.14
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.01
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.52
+          "label": "Medication Reconciliation",
+          "contributionDays": 0.49,
+          "kind": "controllable"
         },
         {
           "label": "Downstream Bed Availability",
-          "contributionDays": 0.49
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.47
-        }
-      ],
-      "similarCaseIds": [
-        "ADM-2024-0003",
-        "ADM-2024-0008",
-        "ADM-2024-0023"
-      ]
-    },
-    {
-      "id": "ADM-2024-0023",
-      "date": "2024-05-25",
-      "primaryEntity": "General Medicine",
-      "category": "Elective",
-      "value": 10315,
-      "actualDelayDays": 13.9,
-      "predictedDelayDays": 14.1,
-      "counterfactualDelayDays": 12.9,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.36
+          "contributionDays": 0.45,
+          "kind": "controllable"
         },
         {
           "label": "Diagnostic Turnaround",
-          "contributionDays": 1.23
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 1.02
+          "contributionDays": 0.41,
+          "kind": "controllable"
         },
         {
           "label": "Case Complexity",
-          "contributionDays": 0.8
+          "contributionDays": 0.33,
+          "kind": "structural"
         },
         {
           "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.22
+          "contributionDays": 0.32,
+          "kind": "controllable"
         }
       ],
       "similarCaseIds": [
-        "ADM-2024-0014",
-        "ADM-2024-0003",
-        "ADM-2024-0022"
-      ]
-    },
-    {
-      "id": "ADM-2024-0024",
-      "date": "2024-06-26",
-      "primaryEntity": "General Medicine",
-      "category": "Elective",
-      "value": 51673,
-      "actualDelayDays": 13.1,
-      "predictedDelayDays": 13.3,
-      "counterfactualDelayDays": 11.7,
-      "counterfactualLabel": "If the specialist consult had happened within 12 hours",
-      "drivers": [
-        {
-          "label": "Specialist Assignment Latency",
-          "contributionDays": 1.96
-        },
-        {
-          "label": "Diagnostic Turnaround",
-          "contributionDays": 1.18
-        },
-        {
-          "label": "Downstream Bed Availability",
-          "contributionDays": 0.94
-        },
-        {
-          "label": "Nurse Staffing Ratio",
-          "contributionDays": 0.4
-        },
-        {
-          "label": "Case Complexity",
-          "contributionDays": 0.37
-        }
+        "ADM_0029",
+        "ADM_0007",
+        "ADM_0018"
       ],
-      "similarCaseIds": [
-        "ADM-2024-0008",
-        "ADM-2024-0022",
-        "ADM-2024-0003"
-      ]
+      "populationAvg": 7.9,
+      "percentile": 70,
+      "controllableDays": 3.47,
+      "structuralDays": 0.33,
+      "complexityScore": 3,
+      "treated": true,
+      "dominantDriver": "Specialist Assignment Latency"
     }
   ]
 }

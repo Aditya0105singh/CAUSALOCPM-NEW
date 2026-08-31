@@ -9,6 +9,10 @@ export function buildContext(f: CausalFixture): string {
     `Outcome: ${f.scenario.outcomeVariable} in ${f.scenario.outcomeUnit}.`,
     `${f.scenario.totalEvents.toLocaleString()} events across ${f.scenario.objectTypes} object types, ${f.scenario.dataSources} data sources.`,
     `Discovery: precision ${f.discoveryMetrics.precision}, recall ${f.discoveryMetrics.recall}, F1 ${f.discoveryMetrics.f1}, ${f.discoveryMetrics.bootstrapRuns} bootstrap runs, SHD ${f.discoveryMetrics.shd}.`,
+    `Naive vs causal: naive correlation ${f.naiveEffect.naiveDays} ${f.scenario.outcomeUnit}, Double ML recovers ${f.naiveEffect.causalDays} (95% CI ${f.naiveEffect.ciLow}-${f.naiveEffect.ciHigh}); confounding bias removed ${f.naiveEffect.biasDays} ${f.scenario.outcomeUnit}.`,
+    `Primary causal chain: ${f.report.primaryChain.join(" -> ")}.`,
+    `Simulator baseline ${f.scenario.outcomeVariable} ${f.simulator.baselineOutcome} ${f.scenario.outcomeUnit}; achievable reduction ${f.report.achievableReductionPct}% to ${f.report.targetDays} ${f.scenario.outcomeUnit}.`,
+    `CATE by ${f.cate.segmentVar}: ${f.cate.segments.map((s) => `${s.label} ${s.effect}`).join(", ")} (ATE ${f.cate.ate}).`,
     `Recovered causal effects (days): ${f.effects
       .map((e) => `${e.label} ${e.effectDays} (naive ${e.baselineDays}, ${e.reductionPct}% was confounding, ${e.method})`)
       .join("; ")}.`,

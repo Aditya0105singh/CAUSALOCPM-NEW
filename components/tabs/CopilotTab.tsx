@@ -1,8 +1,15 @@
 "use client";
 import { useRef, useState } from "react";
-import { Send, Sparkles, User } from "lucide-react";
+import { AlertTriangle, BarChart3, FileText, FlaskConical, Send, Sparkles, User } from "lucide-react";
 import type { CausalFixture, DomainId } from "@/lib/engine/types";
 import { Card } from "@/components/ui";
+
+const CAP_ICON: Record<string, typeof Sparkles> = {
+  alert: AlertTriangle,
+  chart: BarChart3,
+  flask: FlaskConical,
+  doc: FileText,
+};
 
 interface Msg {
   role: "user" | "assistant";
@@ -83,6 +90,30 @@ export function CopilotTab({ f, domain }: { f: CausalFixture; domain: DomainId }
               </div>
             </div>
           ))}
+          {messages.length === 1 && (
+            <div className="grid gap-2 pt-1 sm:grid-cols-2">
+              {f.copilotCapabilities.map((cap) => {
+                const Icon = CAP_ICON[cap.icon] ?? Sparkles;
+                return (
+                  <button
+                    key={cap.title}
+                    onClick={() => send(cap.prompt)}
+                    className="rounded-xl border border-line bg-card p-3 text-left hover:border-forest/40 hover:bg-paper-2"
+                  >
+                    <div className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+                      <Icon size={14} className="text-forest" /> {cap.title}
+                    </div>
+                    <div className="mt-1 text-[11px] text-muted">{cap.detail}</div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {cap.tags.map((t) => (
+                        <span key={t} className="rounded-full bg-sage px-2 py-0.5 text-[10px] text-forest-deep">{t}</span>
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {loading && <div className="pl-10 text-sm text-muted">Copilot is thinking…</div>}
         </div>
 

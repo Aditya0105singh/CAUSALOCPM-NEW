@@ -71,9 +71,18 @@ const RecommendedAction = z.object({
   confidence: z.number(),
   lever: z.string(),
   maxShiftPct: z.number(),
+  reductionPct: z.number(),
+  effort: z.enum(["Low", "Medium", "High"]),
+  timeline: z.string(),
+  capex: z.number(),
+  evidence: z.enum(["MEASURED", "ILLUSTRATIVE"]),
 });
 
-const CaseDriver = z.object({ label: z.string(), contributionDays: z.number() });
+const CaseDriver = z.object({
+  label: z.string(),
+  contributionDays: z.number(),
+  kind: z.enum(["controllable", "structural"]),
+});
 
 const CaseRecord = z.object({
   id: z.string(),
@@ -87,9 +96,36 @@ const CaseRecord = z.object({
   counterfactualLabel: z.string(),
   drivers: z.array(CaseDriver),
   similarCaseIds: z.array(z.string()),
+  populationAvg: z.number(),
+  percentile: z.number(),
+  controllableDays: z.number(),
+  structuralDays: z.number(),
+  complexityScore: z.number(),
+  treated: z.boolean(),
+  dominantDriver: z.string(),
 });
 
 const TrendPoint = z.object({ period: z.string(), baseline: z.number(), withActions: z.number() });
+
+const Lever = z.object({
+  id: z.string(),
+  label: z.string(),
+  group: z.string(),
+  kind: z.enum(["slider", "toggle"]),
+  min: z.number(),
+  max: z.number(),
+  step: z.number(),
+  unit: z.string(),
+  baseline: z.number(),
+  /** outcome-days removed at full deflection of this lever */
+  maxEffectDays: z.number(),
+  mediator: z.string().optional(),
+  hint: z.string(),
+});
+
+const CoefficientRow = z.object({ edge: z.string(), estimated: z.number(), groundTruth: z.number() });
+
+const CateSegment = z.object({ label: z.string(), effect: z.number(), ciLow: z.number(), ciHigh: z.number() });
 
 export const CausalFixture = z.object({
   domain: DomainId,
@@ -108,12 +144,18 @@ export const CausalFixture = z.object({
     objectTypes: z.number(),
     causalLinks: z.number(),
     reliabilityPct: z.number(),
+    objectNames: z.array(z.string()),
+    baselineOutcome: z.number(),
   }),
   executiveSummary: z.object({
     headline: z.string(),
     confidence: z.enum(["HIGH CONFIDENCE", "MEDIUM CONFIDENCE", "LOW CONFIDENCE"]),
     bullets: z.array(z.string()),
     recommendedAction: z.string(),
+    alertOutcome: z.string(),
+    alertReductionPct: z.number(),
+    chain: z.array(z.string()),
+    riskSegment: z.string(),
   }),
   kpis: z.object({
     causalLinks: z.number(),
@@ -130,6 +172,34 @@ export const CausalFixture = z.object({
     variableList: z.array(Variable),
     sampleEvents: z.array(z.record(z.string(), z.union([z.string(), z.number()]))),
   }),
+  discovery: z.object({
+    totalEvents: z.number(),
+    treatedCases: z.number(),
+    treatedPct: z.number(),
+    avgOutcome: z.number(),
+    stdOutcome: z.number(),
+    objectInstances: z.number(),
+    coOccurrenceEdges: z.number(),
+    avgDegree: z.number(),
+    topResources: z.array(z.object({ label: z.string(), value: z.string() })),
+    correlationGroups: z.array(
+      z.object({
+        name: z.string(),
+        options: z.array(z.object({ label: z.string(), onTimePct: z.number(), delayedPct: z.number() })),
+      }),
+    ),
+    strongestRelationship: z.object({ from: z.string(), to: z.string(), coefficient: z.number() }),
+    domainKnowledge: z.object({
+      recallGainPct: z.number(),
+      missingEdgesRecovered: z.number(),
+      spuriousRemoved: z.number(),
+      validatedLinks: z.number(),
+      prePrecision: z.number(),
+      preRecall: z.number(),
+      postPrecision: z.number(),
+      postRecall: z.number(),
+    }),
+  }),
   causalGraph: z.object({
     nodes: z.array(GraphNode),
     edges: z.array(GraphEdge),
@@ -144,6 +214,23 @@ export const CausalFixture = z.object({
     edgeStability: z.array(z.object({ edge: z.string(), frequency: z.number() })),
   }),
   effects: z.array(Effect),
+  naiveEffect: z.object({
+    naiveDays: z.number(),
+    causalDays: z.number(),
+    biasDays: z.number(),
+    biasPct: z.number(),
+    ciLow: z.number(),
+    ciHigh: z.number(),
+    method: z.string(),
+  }),
+  coefficients: z.array(CoefficientRow),
+  cate: z.object({
+    driver: z.string(),
+    segmentVar: z.string(),
+    ate: z.number(),
+    segments: z.array(CateSegment),
+    note: z.string(),
+  }),
   effectAccuracy: z.array(AccuracyBucket),
   topDrivers: z.array(z.object({ label: z.string(), impactDays: z.number() })),
   recommendedActions: z.array(RecommendedAction),
@@ -152,6 +239,44 @@ export const CausalFixture = z.object({
     totalReductionDays: z.number(),
     trend: z.array(TrendPoint),
   }),
+  simulator: z.object({
+    baselineOutcome: z.number(),
+    throughputBaseline: z.number(),
+    riskBaseline: z.number(),
+    costPerDelayDay: z.number(),
+    annualVolume: z.number(),
+    mediators: z.array(z.object({ name: z.string(), baseline: z.number(), unit: z.string() })),
+    levers: z.array(Lever),
+  }),
+  report: z.object({
+    date: z.string(),
+    casesAnalysed: z.number(),
+    groundTruthEffect: z.number(),
+    confoundingRemoved: z.number(),
+    naiveDays: z.number(),
+    achievableReductionPct: z.number(),
+    baselineDays: z.number(),
+    targetDays: z.number(),
+    primaryChain: z.array(z.string()),
+    signCorrect: z.string(),
+    methodology: z.array(z.object({ phase: z.string(), detail: z.string() })),
+    actions: z.array(
+      z.object({
+        rank: z.number(),
+        action: z.string(),
+        impactPct: z.number(),
+        confidence: z.string(),
+        value: z.string(),
+        timeline: z.string(),
+      }),
+    ),
+    totalCapex: z.number(),
+    roiPayback: z.string(),
+    riskLevel: z.string(),
+  }),
+  copilotCapabilities: z.array(
+    z.object({ icon: z.string(), title: z.string(), detail: z.string(), tags: z.array(z.string()), prompt: z.string() }),
+  ),
   cases: z.array(CaseRecord),
 });
 
@@ -163,3 +288,4 @@ export type RecommendedAction = z.infer<typeof RecommendedAction>;
 export type CaseRecord = z.infer<typeof CaseRecord>;
 export type ObjectSummary = z.infer<typeof ObjectSummary>;
 export type Variable = z.infer<typeof Variable>;
+export type Lever = z.infer<typeof Lever>;

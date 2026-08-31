@@ -28,12 +28,12 @@ datasets are freshly designed here with planted ground truth.)_
 
 ### Views
 
-1. **Overview** — AI executive summary, KPIs, top driver, savings potential.
-2. **Data & Discovery** — datasets, variables, discovered causal links, data quality, causal-graph preview, OCEL-style sample events.
-3. **Model Performance** — DAG-recovery precision/recall/F1, bootstrap stability, causal-effect accuracy vs planted truth, confounding removed per driver.
-4. **Case Inspector** — per-case SHAP-style attribution, counterfactual estimate, similar cases.
-5. **Decision Intelligence** — ranked recommended actions with ROI, projected impact trend, an interactive impact simulator, action log.
-6. **Copilot** — grounded decision-intelligence assistant (live Claude when `ANTHROPIC_API_KEY` is set, deterministic grounded fallback otherwise).
+1. **Overview** — Causal Intelligence Alert band, AI executive summary, discovery-validation badges, top drivers, Traditional-PM-vs-CausalOCPM and competitive-positioning comparisons.
+2. **Data & Discovery** — a 6-step guided walkthrough (understand the event data → object interaction network → correlation view → recovered causal structure → validate discovery quality → domain-knowledge contribution), plus a collapsible raw-data preview and OCEL-style sample events.
+3. **Model Performance** — AI causal interpretation, naive-vs-Double-ML effect, an interactive **What-If Causal Simulator** with grouped intervention levers → predicted outcome, throughput, risk index, ROI payback, a causal-effect-decomposition waterfall and mediator-variable states; a target-driven recommended action plan; estimated-vs-ground-truth coefficients; CATE treatment-effect heterogeneity by segment.
+4. **Case Inspector** — executive interpretation, SHAP attribution waterfall, controllable-vs-structural contribution split, jump-to-highest-risk, percentile, counterfactual, similar cases.
+5. **Decision Intelligence** — ranked recommended actions with ROI/capex/timeline, projected-impact trend, a full **Executive Causal Analysis Report** (key findings, primary causal chain, action-plan table, methodology & confidence), action log.
+6. **Copilot** — grounded decision-intelligence assistant with capability cards (live Claude when `ANTHROPIC_API_KEY` is set, deterministic grounded fallback otherwise).
 7. **Settings** — scenario configuration and pipeline toggles.
 
 ---

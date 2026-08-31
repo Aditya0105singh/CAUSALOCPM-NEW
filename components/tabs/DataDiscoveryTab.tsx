@@ -1,134 +1,254 @@
 "use client";
 import { useState } from "react";
 import { clsx } from "clsx";
+import { Sparkles, ShieldCheck, AlertTriangle, ChevronDown, ArrowDown } from "lucide-react";
 import type { CausalFixture } from "@/lib/engine/types";
-import { Card, Stat, SectionTitle } from "@/components/ui";
+import { Card, Stat, SectionTitle, Pill, KeyVal } from "@/components/ui";
 import { CausalGraph, GraphLegend } from "@/components/CausalGraph";
 
-const SUB = ["Datasets", "Variables", "Causal Links", "Data Quality"] as const;
-
 export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
-  const [sub, setSub] = useState<(typeof SUB)[number]>("Datasets");
   const d = f.data;
+  const dv = f.discovery;
+  const m = f.discoveryMetrics;
+  const [rawOpen, setRawOpen] = useState(false);
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat value={d.datasets} label="Datasets integrated" accent />
-        <Stat value={d.variables} label="Variables total" />
-        <Stat value={d.causalLinks} label="Causal links discovered" accent />
-        <Stat value={`${d.qualityPct}%`} label="Data quality overall" />
+      {/* AI discovery summary */}
+      <Card className="border-forest/25 bg-sage/30">
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink">
+          <Sparkles size={15} className="text-forest" /> AI Discovery Summary
+          <Pill tone="forest">HIGH CONFIDENCE</Pill>
+        </div>
+        <ul className="space-y-1.5 text-sm text-ink-soft">
+          <li>Causal discovery recovered <b>{f.scenario.causalLinks} verified links</b> across {dv.totalEvents.toLocaleString()} events and {f.scenario.objectTypes} object types — validated against planted ground truth, not left as raw correlation.</li>
+          <li>Strongest measured relationship: <b>{dv.strongestRelationship.from} → {dv.strongestRelationship.to}</b> (coefficient {dv.strongestRelationship.coefficient}).</li>
+          <li>Bootstrap stability {Math.round(m.stability * 100)}% across {m.bootstrapRuns} resampled reruns — precision {m.precision.toFixed(2)}, recall {m.recall.toFixed(2)} before domain knowledge.</li>
+          <li>Domain knowledge recovered {dv.domainKnowledge.missingEdgesRecovered} missing edge(s), guaranteeing DAG validity without inventing relationships.</li>
+        </ul>
+      </Card>
+
+      <div className="grid gap-3 grid-cols-2 xl:grid-cols-4">
+        <Badge label="Bootstrap stability" value={`${Math.round(m.stability * 100)}%`} />
+        <Badge label="Precision" value={m.precision.toFixed(2)} />
+        <Badge label="Edge recall" value={m.recall.toFixed(2)} />
+        <Badge label="Recovery F1" value={m.f1.toFixed(2)} />
       </div>
 
-      <div className="flex gap-1 border-b border-line">
-        {SUB.map((s) => (
-          <button
-            key={s}
-            onClick={() => setSub(s)}
-            className={clsx(
-              "px-3 py-2 text-sm",
-              sub === s ? "tab-underline font-semibold text-ink" : "text-muted hover:text-ink",
-            )}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      <Step n={1} title="Understand the event data" hint="foundation for causal discovery">
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Stat value={dv.totalEvents.toLocaleString()} label="Total events" accent />
+          <Stat value={`${dv.treatedCases.toLocaleString()}`} label={`Treated cases · ${dv.treatedPct}%`} />
+          <Stat value={dv.avgOutcome.toFixed(1)} label={`Avg ${f.scenario.outcomeUnit}`} />
+          <Stat value={dv.stdOutcome.toFixed(1)} label={`Std dev (${f.scenario.outcomeUnit})`} />
+        </div>
+      </Step>
 
-      <div className="grid gap-5 lg:grid-cols-5">
-        <Card className="lg:col-span-3" pad={false}>
-          <div className="p-5 pb-2">
-            <SectionTitle>{sub}</SectionTitle>
+      <Step n={2} title="Explore object relationships" hint="object interaction network">
+        <div className="grid gap-5 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <p className="text-sm text-ink-soft">
+              This network shows how {f.scenario.objectNames.join(", ")} co-occur throughout the process. Higher
+              connectivity means richer interactions — the structural foundation causal discovery builds on.
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {dv.topResources.map((r) => (
+                <div key={r.label} className="rounded-lg border border-line bg-card p-2.5">
+                  <div className="text-[10px] uppercase tracking-wide text-muted">{r.label}</div>
+                  <div className="font-display text-base text-ink">{r.value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <MiniStat v={dv.objectInstances.toLocaleString()} l="Object instances" />
+              <MiniStat v={dv.coOccurrenceEdges.toLocaleString()} l="Co-occurrence edges" />
+              <MiniStat v={`${dv.avgDegree}`} l={`Avg degree · ${f.scenario.objectTypes} types`} />
+            </div>
           </div>
-          <div className="scroll-slim max-h-[420px] overflow-auto px-5 pb-5">
-            {sub === "Datasets" && (
-              <Table
-                head={["Name", "Records", "Missing", "Quality", "Updated"]}
-                rows={d.objects.map((o) => [
-                  o.name,
-                  o.records.toLocaleString(),
-                  `${o.missingPct}%`,
-                  `${o.qualityPct}%`,
-                  o.updated,
-                ])}
-              />
-            )}
-            {sub === "Variables" && (
-              <Table
-                head={["Variable", "Object", "Type", "Role", "Missing"]}
-                rows={d.variableList.map((v) => [v.name, v.object, v.type, v.role, `${v.missingPct}%`])}
-              />
-            )}
-            {sub === "Causal Links" && (
-              <Table
-                head={["Source", "Target", "Strength", "Weight", "Confidence"]}
-                rows={f.causalGraph.edges.map((e) => [
-                  label(f, e.source),
-                  label(f, e.target),
-                  e.strength,
-                  e.weight.toFixed(2),
-                  `${Math.round(e.confidence * 100)}%`,
-                ])}
-              />
-            )}
-            {sub === "Data Quality" && (
-              <Table
-                head={["Object", "Attributes", "Missing", "Quality"]}
-                rows={d.objects.map((o) => [o.name, String(o.attributes), `${o.missingPct}%`, `${o.qualityPct}%`])}
-              />
-            )}
+          <Card className="lg:col-span-2">
+            <CausalGraph graph={f.causalGraph} height={260} compact />
+            <GraphLegend />
+          </Card>
+        </div>
+      </Step>
+
+      <Step n={3} title="Observe process correlations" hint="correlation view — not yet causal">
+        <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber/30 bg-[#f7ecdd] p-3 text-[12px] text-amber">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          This view represents observed correlations only. True causal effects are estimated after removing confounding.
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {dv.correlationGroups.map((g) => (
+            <div key={g.name} className="rounded-lg border border-line bg-card p-3">
+              <div className="mb-2 text-[12px] font-medium text-ink">{g.name}</div>
+              {g.options.map((o) => (
+                <div key={o.label} className="mb-2">
+                  <div className="mb-1 flex justify-between text-[11px] text-muted">
+                    <span>{o.label}</span>
+                    <span>{o.delayedPct}% delayed</span>
+                  </div>
+                  <div className="flex h-2.5 overflow-hidden rounded-full bg-line-soft">
+                    <div className="bg-forest" style={{ width: `${o.onTimePct}%` }} />
+                    <div className="bg-amber" style={{ width: `${o.delayedPct}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </Step>
+
+      <Step n={4} title="Recovered causal structure" hint={`bootstrap edge confidence ${Math.round(m.stability * 100)}%`}>
+        <div className="rounded-lg border border-forest/25 bg-sage/30 p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-forest-deep">Key finding — observed causal pathway</div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 font-display text-lg text-ink">
+            {f.executiveSummary.chain.map((c, i) => (
+              <span key={c} className="flex items-center gap-2">
+                {c}
+                {i < f.executiveSummary.chain.length - 1 && <ArrowDown size={16} className="rotate-[-90deg] text-forest" />}
+              </span>
+            ))}
           </div>
-        </Card>
+          <p className="mt-2 text-sm text-ink-soft">
+            In plain terms: {f.executiveSummary.chain[0]} drives up {f.executiveSummary.chain[1]}, which in turn pushes{" "}
+            {f.executiveSummary.chain[2]} higher. This suggests operational mechanics, rather than raw assignments alone,
+            drive performance outcomes.
+          </p>
+        </div>
+        <div className="mt-4 grid gap-5 lg:grid-cols-2">
+          <Card>
+            <SectionTitle>Full discovered DAG</SectionTitle>
+            <CausalGraph graph={f.causalGraph} height={300} />
+            <GraphLegend />
+          </Card>
+          <Card pad={false}>
+            <div className="p-5 pb-2"><SectionTitle hint="bootstrap edge frequency">Edge stability</SectionTitle></div>
+            <div className="scroll-slim max-h-[320px] overflow-auto px-5 pb-5">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
+                    <th className="pb-2 pr-4 font-semibold">Edge</th>
+                    <th className="pb-2 font-semibold">Frequency</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {m.edgeStability.map((e) => (
+                    <tr key={e.edge} className="border-t border-line-soft text-ink-soft">
+                      <td className="py-2 pr-4">{e.edge}</td>
+                      <td className="py-2">{Math.round(e.frequency * 100)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      </Step>
 
-        <Card className="lg:col-span-2">
-          <SectionTitle hint="PC algorithm + domain constraints">Causal Graph Preview</SectionTitle>
-          <CausalGraph graph={f.causalGraph} height={300} compact />
-          <GraphLegend />
-        </Card>
-      </div>
+      <Step n={5} title="Validate discovery quality" hint="tested against resampled data & known ground truth">
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Stat value={`${Math.round(m.stability * 100)}%`} label={`Edges stable across ${m.bootstrapRuns} resampled graphs`} accent />
+          <Stat value={m.precision.toFixed(2)} label="Precision" />
+          <Stat value={m.recall.toFixed(2)} label="Edge recall" />
+          <Stat value={m.f1.toFixed(2)} label="Recovery F1" accent />
+        </div>
+      </Step>
 
+      <Step n={6} title="Evaluate domain-knowledge contribution" hint="with vs. without expert constraints">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Stat value={`+${dv.domainKnowledge.recallGainPct}%`} label="Recall gain" accent />
+          <Stat value={`${dv.domainKnowledge.missingEdgesRecovered}`} label="Missing edge(s) recovered" />
+          <Stat value={`−${dv.domainKnowledge.spuriousRemoved}`} label="Spurious links removed" />
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-ink-soft">
+          {["Removed spurious links", "Recovered missing causal edges", "Preserved DAG validity", "Improved causal recall"].map((x) => (
+            <div key={x} className="flex items-center gap-2"><ShieldCheck size={13} className="text-forest" /> {x}</div>
+          ))}
+        </div>
+        <p className="mt-3 text-[12px] text-muted">
+          Pre-DK: precision {dv.domainKnowledge.prePrecision.toFixed(2)} / recall {dv.domainKnowledge.preRecall.toFixed(2)} ·
+          Post-DK: precision {dv.domainKnowledge.postPrecision.toFixed(2)} / recall {dv.domainKnowledge.postRecall.toFixed(2)}
+          — resulting in {dv.domainKnowledge.validatedLinks} validated links.
+        </p>
+      </Step>
+
+      {/* raw data preview (collapsible) */}
       <Card pad={false}>
-        <div className="p-5 pb-2">
-          <SectionTitle hint="OCEL 2.0 event log">Sample Events</SectionTitle>
-        </div>
-        <div className="scroll-slim overflow-auto px-5 pb-5">
-          <Table
-            head={Object.keys(d.sampleEvents[0])}
-            rows={d.sampleEvents.map((e) => Object.values(e).map((v) => String(v)))}
-          />
-        </div>
+        <button onClick={() => setRawOpen((v) => !v)} className="flex w-full items-center justify-between p-5">
+          <SectionTitle>Raw data preview</SectionTitle>
+          <ChevronDown size={16} className={clsx("text-muted transition-transform", rawOpen && "rotate-180")} />
+        </button>
+        {rawOpen && (
+          <div className="space-y-6 px-5 pb-5">
+            <div className="grid gap-3 sm:grid-cols-4">
+              <KeyVal k="Datasets" v={d.datasets} />
+              <KeyVal k="Variables" v={d.variables} />
+              <KeyVal k="Causal links" v={d.causalLinks} />
+              <KeyVal k="Quality" v={`${d.qualityPct}%`} />
+            </div>
+            <RawTable head={["Object", "Records", "Attributes", "Missing", "Quality", "Updated"]} rows={d.objects.map((o) => [o.name, o.records.toLocaleString(), String(o.attributes), `${o.missingPct}%`, `${o.qualityPct}%`, o.updated])} />
+            <RawTable head={["Variable", "Object", "Type", "Role", "Missing"]} rows={d.variableList.map((v) => [v.name, v.object, v.type, v.role, `${v.missingPct}%`])} />
+            <RawTable head={Object.keys(d.sampleEvents[0])} rows={d.sampleEvents.map((e) => Object.values(e).map((v) => String(v)))} />
+          </div>
+        )}
       </Card>
     </div>
   );
 }
 
-function label(f: CausalFixture, id: string) {
-  return f.causalGraph.nodes.find((n) => n.id === id)?.label ?? id;
+function Step({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <Card>
+      <div className="mb-3 flex items-center gap-3">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-[13px] font-semibold text-white">{n}</span>
+        <div>
+          <div className="text-sm font-semibold text-ink">{title}</div>
+          {hint && <div className="text-[11px] text-muted">{hint}</div>}
+        </div>
+      </div>
+      {children}
+    </Card>
+  );
 }
 
-function Table({ head, rows }: { head: string[]; rows: (string | number)[][] }) {
+function MiniStat({ v, l }: { v: string; l: string }) {
   return (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
-          {head.map((h) => (
-            <th key={h} className="whitespace-nowrap pb-2 pr-4 font-semibold">
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r, i) => (
-          <tr key={i} className="border-t border-line-soft">
-            {r.map((c, j) => (
-              <td key={j} className="whitespace-nowrap py-2 pr-4 text-ink-soft">
-                {c}
-              </td>
-            ))}
+    <div className="rounded-lg border border-line bg-card p-2">
+      <div className="font-display text-base text-ink">{v}</div>
+      <div className="text-[10px] text-muted">{l}</div>
+    </div>
+  );
+}
+
+function Badge({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="card flex items-center gap-3 p-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sage text-forest"><ShieldCheck size={15} /></div>
+      <div>
+        <div className="font-display text-lg leading-none text-ink">{value}</div>
+        <div className="text-[10px] uppercase tracking-wide text-muted">{label}</div>
+      </div>
+    </div>
+  );
+}
+
+function RawTable({ head, rows }: { head: string[]; rows: (string | number)[][] }) {
+  return (
+    <div className="scroll-slim overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
+            {head.map((h) => <th key={h} className="whitespace-nowrap pb-2 pr-4 font-semibold">{h}</th>)}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className="border-t border-line-soft">
+              {r.map((c, j) => <td key={j} className="whitespace-nowrap py-2 pr-4 text-ink-soft">{c}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
