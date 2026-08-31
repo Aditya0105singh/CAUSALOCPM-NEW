@@ -1,16 +1,9 @@
 "use client";
 import { useState } from "react";
 import { clsx } from "clsx";
-import {
-  BarChart3,
-  Bot,
-  Database,
-  LayoutGrid,
-  Lightbulb,
-  Search,
-  Settings as SettingsIcon,
-} from "lucide-react";
+import { BarChart3, Bot, Database, LayoutGrid, Lightbulb, Search, Settings as SettingsIcon } from "lucide-react";
 import type { CausalFixture, DomainId } from "@/lib/engine/types";
+import { AnimatePresence, motion } from "@/components/motion";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { OverviewTab } from "./tabs/OverviewTab";
@@ -39,10 +32,10 @@ export function Console({ fixtures }: { fixtures: Record<DomainId, CausalFixture
   const f = fixtures[domain];
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-[1400px]">
+    <div className="mx-auto flex min-h-screen max-w-[1440px]">
       <Sidebar fixtures={fixtures} domain={domain} onDomain={setDomain} />
 
-      <main className="flex-1 px-5 py-6 sm:px-8">
+      <main className="min-w-0 flex-1 px-5 py-6 sm:px-8">
         <TopBar f={f} domain={domain} />
 
         {/* mobile domain switch */}
@@ -61,7 +54,7 @@ export function Console({ fixtures }: { fixtures: Record<DomainId, CausalFixture
           ))}
         </div>
 
-        <div className="scroll-slim -mx-1 mb-5 flex gap-1 overflow-x-auto border-b border-line px-1">
+        <div className="scroll-slim -mx-1 mb-5 flex gap-0.5 overflow-x-auto border-b border-line px-1">
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = t.id === tab;
@@ -69,32 +62,44 @@ export function Console({ fixtures }: { fixtures: Record<DomainId, CausalFixture
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={clsx(
-                  "flex shrink-0 items-center gap-2 px-3 py-2.5 text-left",
-                  active ? "tab-underline" : "",
-                )}
+                className="relative flex shrink-0 items-center gap-2 px-3 py-2.5 text-left transition-colors"
               >
-                <Icon size={15} className={active ? "text-forest" : "text-muted"} />
+                <Icon size={15} className={clsx("transition-colors", active ? "text-forest" : "text-muted")} />
                 <span>
-                  <span className={clsx("block text-[13px]", active ? "font-semibold text-ink" : "text-muted")}>
+                  <span className={clsx("block text-[13px] transition-colors", active ? "font-semibold text-ink" : "text-muted")}>
                     {t.label}
                   </span>
                   <span className="block text-[10px] text-muted">{t.sub}</span>
                 </span>
+                {active && (
+                  <motion.span
+                    layoutId="tab-underline"
+                    className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-forest"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
               </button>
             );
           })}
         </div>
 
-        <div key={domain + tab}>
-          {tab === "overview" && <OverviewTab f={f} />}
-          {tab === "data" && <DataDiscoveryTab f={f} />}
-          {tab === "model" && <ModelPerformanceTab f={f} />}
-          {tab === "case" && <CaseInspectorTab f={f} />}
-          {tab === "decision" && <DecisionIntelligenceTab f={f} />}
-          {tab === "copilot" && <CopilotTab f={f} domain={domain} />}
-          {tab === "settings" && <SettingsTab f={f} />}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={domain + tab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {tab === "overview" && <OverviewTab f={f} />}
+            {tab === "data" && <DataDiscoveryTab f={f} />}
+            {tab === "model" && <ModelPerformanceTab f={f} />}
+            {tab === "case" && <CaseInspectorTab f={f} />}
+            {tab === "decision" && <DecisionIntelligenceTab f={f} />}
+            {tab === "copilot" && <CopilotTab f={f} domain={domain} />}
+            {tab === "settings" && <SettingsTab f={f} />}
+          </motion.div>
+        </AnimatePresence>
 
         <footer className="mt-10 border-t border-line pt-4 text-[11px] text-muted">
           CausalOCPM · A Causal Audit Layer for Agentic AI Decisions · Object-Centric Process Mining × Structural Causal Models

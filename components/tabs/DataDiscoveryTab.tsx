@@ -5,6 +5,7 @@ import { Sparkles, ShieldCheck, AlertTriangle, ChevronDown, ArrowDown } from "lu
 import type { CausalFixture } from "@/lib/engine/types";
 import { Card, Stat, SectionTitle, Pill, KeyVal } from "@/components/ui";
 import { CausalGraph, GraphLegend } from "@/components/CausalGraph";
+import { motion } from "@/components/motion";
 
 export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
   const d = f.data;
@@ -198,16 +199,29 @@ export function DataDiscoveryTab({ f }: { f: CausalFixture }) {
 
 function Step({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <Card>
-      <div className="mb-3 flex items-center gap-3">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-[13px] font-semibold text-white">{n}</span>
-        <div>
-          <div className="text-sm font-semibold text-ink">{title}</div>
-          {hint && <div className="text-[11px] text-muted">{hint}</div>}
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Card hover className="relative">
+        <span className="absolute -left-3 top-5 hidden h-7 w-7 items-center justify-center rounded-full bg-forest text-[13px] font-semibold text-white shadow-[0_2px_8px_rgba(61,90,61,0.3)] sm:flex">
+          {n}
+        </span>
+        <div className="mb-3 flex items-center gap-3">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-[13px] font-semibold text-white sm:hidden">{n}</span>
+          <div>
+            <div className="text-sm font-semibold text-ink">
+              <span className="text-muted">Step {n} · </span>
+              {title}
+            </div>
+            {hint && <div className="text-[11px] text-muted">{hint}</div>}
+          </div>
         </div>
-      </div>
-      {children}
-    </Card>
+        {children}
+      </Card>
+    </motion.div>
   );
 }
 

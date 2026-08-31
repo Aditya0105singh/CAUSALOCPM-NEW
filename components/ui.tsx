@@ -1,17 +1,21 @@
+"use client";
 import { clsx } from "clsx";
 import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 
 export function Card({
   children,
   className,
   pad = true,
+  hover = false,
 }: {
   children: ReactNode;
   className?: string;
   pad?: boolean;
+  hover?: boolean;
 }) {
   return (
-    <div className={clsx("card", pad && "p-5", className)}>{children}</div>
+    <div className={clsx("card", hover && "card-hover", pad && "p-5", className)}>{children}</div>
   );
 }
 
@@ -91,12 +95,12 @@ export function Bar({
   const pct = Math.max(2, Math.min(100, (Math.abs(value) / max) * 100));
   return (
     <div className="h-2 w-full overflow-hidden rounded-full bg-line-soft">
-      <div
-        className={clsx(
-          "h-full rounded-full",
-          tone === "forest" ? "bg-forest" : "bg-muted",
-        )}
-        style={{ width: `${pct}%` }}
+      <motion.div
+        className={clsx("h-full rounded-full", tone === "forest" ? "bg-forest" : "bg-muted")}
+        initial={{ width: 0 }}
+        whileInView={{ width: `${pct}%` }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       />
     </div>
   );

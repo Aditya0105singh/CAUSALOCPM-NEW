@@ -8,6 +8,7 @@ import { EffectAccuracyChart, CoefficientChart, CateChart, SensitivitySweepChart
 import { Waterfall } from "@/components/Waterfall";
 import { CausalGraph, GraphLegend } from "@/components/CausalGraph";
 import { simulate, recommendPlan, defaultLeverValues, type LeverValues } from "@/lib/simulator";
+import { CountUp, LiveNumber } from "@/components/motion";
 import { fmtMoney } from "@/lib/format";
 
 export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
@@ -77,13 +78,13 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
         <SectionTitle hint="Double ML backdoor adjustment">Naive correlation vs. recovered causal effect</SectionTitle>
         <div className="flex flex-wrap items-end gap-6">
           <div>
-            <div className="font-display text-3xl text-amber">{ne.naiveDays}</div>
+            <div className="font-display text-3xl text-amber"><CountUp value={ne.naiveDays} decimals={2} /></div>
             <div className="text-[11px] text-muted">naive correlation ({unit})</div>
           </div>
           <div className="pb-2 text-sm text-muted">− {ne.biasDays} {unit} confounding bias →</div>
           <div>
-            <div className="font-display text-3xl text-forest">{ne.causalDays}</div>
-            <div className="text-[11px] text-muted">Double ML causal effect · 95% CI [{ne.ciLow}, {ne.ciHigh}]</div>
+            <div className="font-display text-3xl text-forest"><CountUp value={ne.causalDays} decimals={2} /></div>
+            <div className="text-[11px] text-muted">Double ML causal effect · 95% CI [{ne.ciLow}, {ne.ciHigh}] · planted {f.effects[0].groundTruthDays}</div>
           </div>
         </div>
       </Card>
@@ -165,7 +166,7 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
               <div className="flex-1 rounded-xl border border-forest/30 bg-sage/40 p-4">
                 <div className="text-[11px] text-muted">Predicted {f.scenario.outcomeVariable.toLowerCase()}</div>
                 <div className="font-display text-4xl text-forest">
-                  {sim.predicted} <span className="text-base text-muted">{unit}</span>
+                  <LiveNumber value={sim.predicted} decimals={1} /> <span className="text-base text-muted">{unit}</span>
                 </div>
                 <div className={clsx("text-[12px] font-medium", sim.improvementPct > 0 ? "text-forest" : "text-muted")}>
                   −{sim.improvementPct.toFixed(1)}% vs baseline · 95% CI [{sim.ciLow} – {sim.ciHigh}]
