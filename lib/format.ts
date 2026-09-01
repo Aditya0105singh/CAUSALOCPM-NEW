@@ -1,7 +1,9 @@
 export const fmtMoney = (n: number) =>
-  n >= 1000
-    ? `$${(n / 1000).toLocaleString("en-US", { maximumFractionDigits: n >= 100000 ? 0 : 1 })}K`
-    : `$${n}`;
+  n >= 1_000_000
+    ? `$${(n / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}M`
+    : n >= 1000
+      ? `$${(n / 1000).toLocaleString("en-US", { maximumFractionDigits: n >= 100000 ? 0 : 1 })}K`
+      : `$${n}`;
 
 export const fmtDays = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(2)} d`;
 

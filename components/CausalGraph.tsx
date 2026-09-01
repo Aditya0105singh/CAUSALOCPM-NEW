@@ -262,6 +262,19 @@ export function CausalGraph({
                     <path d="M-2.6 -2.6 L2.6 2.6 M2.6 -2.6 L-2.6 2.6" stroke="#c98b45" strokeWidth={1.4} />
                   </g>
                 )}
+                {st === "active" && (
+                  <circle r={3.4} fill="#3d5a3d">
+                    <animateMotion
+                      dur="1.5s"
+                      repeatCount="indefinite"
+                      keyPoints="0;1"
+                      keyTimes="0;1"
+                      calcMode="linear"
+                      path={`M ${a.x} ${a.y} Q ${mx} ${cy} ${b.x} ${b.y}`}
+                    />
+                    <animate attributeName="opacity" dur="1.5s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.15;0.7;1" />
+                  </circle>
+                )}
                 {!compact && !e.pruned && st !== "dim" && (
                   <text x={mx} y={cy + 5} textAnchor="middle" fontSize={8.5} fill="#8b887b" pointerEvents="none">
                     {e.coef > 0 ? "+" : ""}

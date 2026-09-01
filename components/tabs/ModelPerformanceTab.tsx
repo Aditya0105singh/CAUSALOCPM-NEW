@@ -7,7 +7,7 @@ import { Card, Stat, SectionTitle, Bar, KeyVal, Pill } from "@/components/ui";
 import { EffectAccuracyChart, CoefficientChart, CateChart, SensitivitySweepChart } from "@/components/Charts";
 import { Waterfall } from "@/components/Waterfall";
 import { CausalGraph, GraphLegend } from "@/components/CausalGraph";
-import { simulate, recommendPlan, defaultLeverValues, type LeverValues } from "@/lib/simulator";
+import { simulate, recommendPlan, defaultLeverValues, maxImpactValues, type LeverValues } from "@/lib/simulator";
 import { CountUp, LiveNumber } from "@/components/motion";
 import { fmtMoney } from "@/lib/format";
 
@@ -22,6 +22,41 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
   const sim = useMemo(() => simulate(f, values), [f, values]);
   const plan = useMemo(() => recommendPlan(f, target), [f, target]);
   const groups = useMemo(() => [...new Set(f.simulator.levers.map((l) => l.group))], [f]);
+
+  const presets = useMemo(
+    () => [
+      { key: "none", label: "Do nothing", values: defaultLeverValues(f) },
+      { key: "single", label: "Best single move", values: recommendPlan(f, 20).values },
+      { key: "push", label: "Push to −50%", values: recommendPlan(f, 50).values },
+      { key: "max", label: "Max impact", values: maxImpactValues(f) },
+    ],
+    [f],
+  );
+  const sameValues = (a: LeverValues, b: LeverValues) =>
+    f.simulator.levers.every((l) => (a[l.id] ?? l.baseline) === (b[l.id] ?? l.baseline));
+  const activePreset = presets.find((p) => sameValues(p.values, values))?.key ?? null;
+
+  // one-sentence summary of the current scenario
+  const activeLevers = f.simulator.levers.filter((l) => (values[l.id] ?? l.baseline) !== l.baseline);
+  const leverPhrase =
+    activeLevers.length <= 3
+      ? listAnd(activeLevers.map((l) => l.label))
+      : `${activeLevers.slice(0, 2).map((l) => l.label).join(", ")}, and ${activeLevers.length - 2} more levers`;
+  const payback =
+    sim.roiMonths === 0
+      ? ", payback immediate."
+      : sim.roiMonths
+        ? sim.roiMonths < 1
+          ? ", payback under a month."
+          : `, payback ~${Math.round(sim.roiMonths)} mo.`
+        : ".";
+  const headline =
+    activeLevers.length === 0
+      ? "All levers at baseline — pick a preset or drag a lever to model an intervention."
+      : `With ${leverPhrase}, ${f.scenario.outcomeVariable.toLowerCase()} ` +
+        `drops from ${f.simulator.baselineOutcome} to ${sim.predicted} ${unit} — ` +
+        (sim.annualSavings > 0 ? `~${fmtMoney(sim.annualSavings)}/yr` : "no modeled savings") +
+        payback;
 
   const [applied, setApplied] = useState(false);
   const set = (id: string, val: number) => setValues((s) => ({ ...s, [id]: val }));
@@ -114,6 +149,33 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
               <RotateCcw size={11} /> Reset
             </button>
           </div>
+        </div>
+
+        {/* plain-language summary of the current scenario */}
+        <div className="border-b border-line bg-sage/25 px-5 py-3 text-[13px] leading-snug text-ink-soft">
+          {headline}
+        </div>
+
+        {/* one-click scenarios */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">Scenarios</span>
+          {presets.map((p) => (
+            <button
+              key={p.key}
+              onClick={() => {
+                setValues(p.values);
+                setApplied(false);
+              }}
+              className={clsx(
+                "rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors",
+                activePreset === p.key
+                  ? "border-forest/50 bg-forest text-white"
+                  : "border-line bg-card text-ink-soft hover:border-forest/40 hover:text-forest",
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
 
         <div className="grid gap-5 p-5 lg:grid-cols-[1fr_1.15fr]">
@@ -406,6 +468,12 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
       </Card>
     </div>
   );
+}
+
+function listAnd(items: string[]) {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
 
 function MiniOut({ label, value, delta }: { label: string; value: string; delta: string }) {

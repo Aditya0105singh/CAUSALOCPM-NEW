@@ -22,6 +22,26 @@ export function defaultLeverValues(f: CausalFixture): LeverValues {
   return Object.fromEntries(f.simulator.levers.map((l) => [l.id, l.baseline]));
 }
 
+/** Each lever set to whichever setting reduces the outcome most — the best achievable combination. */
+export function maxImpactValues(f: CausalFixture): LeverValues {
+  const out = defaultLeverValues(f);
+  for (const l of f.simulator.levers) {
+    const candidates =
+      l.kind === "toggle" ? [0, 1] : l.kind === "mode" ? [l.min, l.max] : [l.min, l.max, l.baseline];
+    let best = l.baseline;
+    let bestPred = Infinity;
+    for (const c of candidates) {
+      const pred = simulate(f, { ...out, [l.id]: c }).predicted;
+      if (pred < bestPred) {
+        bestPred = pred;
+        best = c;
+      }
+    }
+    out[l.id] = best;
+  }
+  return out;
+}
+
 export function simulate(f: CausalFixture, v: LeverValues): SimResult {
   return f.domain === "manufacturing" ? computeMfg(f, v) : computeHc(f, v);
 }
