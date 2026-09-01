@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useRef, useState } from "react";
 import { clsx } from "clsx";
-import { BarChart3, Bot, Database, LayoutGrid, Lightbulb, Search, Settings as SettingsIcon } from "lucide-react";
+import { Activity, BarChart3, Bot, Database, LayoutGrid, Lightbulb, Search, Settings as SettingsIcon, ShieldCheck } from "lucide-react";
 import type { CausalFixture, DomainId } from "@/lib/engine/types";
 import { AnimatePresence, motion } from "@/components/motion";
 import { Sidebar } from "./Sidebar";
@@ -12,11 +12,15 @@ import { DataDiscoveryTab } from "./tabs/DataDiscoveryTab";
 import { ModelPerformanceTab } from "./tabs/ModelPerformanceTab";
 import { CaseInspectorTab } from "./tabs/CaseInspectorTab";
 import { DecisionIntelligenceTab } from "./tabs/DecisionIntelligenceTab";
+import { DecisionAuditTab } from "./tabs/DecisionAuditTab";
+import { LiveSupplyChainTab } from "./tabs/LiveSupplyChainTab";
 import { CopilotTab } from "./tabs/CopilotTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 
 const TABS = [
   { id: "overview", label: "Overview", sub: "Process summary", icon: LayoutGrid },
+  { id: "audit", label: "Decision Audit", sub: "Audit an AI decision", icon: ShieldCheck },
+  { id: "twin", label: "Live Supply Chain", sub: "Digital twin & queue", icon: Activity },
   { id: "data", label: "Data & Discovery", sub: "Explore your data", icon: Database },
   { id: "model", label: "Model Performance", sub: "Causal analysis", icon: BarChart3 },
   { id: "case", label: "Case Inspector", sub: "Drill into one case", icon: Search },
@@ -109,23 +113,22 @@ export function Console({ fixtures }: { fixtures: Record<DomainId, CausalFixture
           })}
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={domain + tab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {tab === "overview" && <OverviewTab f={f} />}
+        <motion.div
+          key={domain + tab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {tab === "overview" && <OverviewTab f={f} />}
+            {tab === "audit" && <DecisionAuditTab f={f} />}
+            {tab === "twin" && <LiveSupplyChainTab f={f} onAudit={() => setTab("audit")} />}
             {tab === "data" && <DataDiscoveryTab f={f} />}
             {tab === "model" && <ModelPerformanceTab f={f} />}
             {tab === "case" && <CaseInspectorTab f={f} />}
             {tab === "decision" && <DecisionIntelligenceTab f={f} />}
             {tab === "copilot" && <CopilotTab f={f} domain={domain} />}
             {tab === "settings" && <SettingsTab f={f} />}
-          </motion.div>
-        </AnimatePresence>
+        </motion.div>
 
         <footer className="mt-10 border-t border-line pt-4 text-[11px] text-muted">
           CausalOCPM · A Causal Audit Layer for Agentic AI Decisions · Object-Centric Process Mining × Structural Causal Models

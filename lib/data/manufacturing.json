@@ -2,6 +2,244 @@
   "domain": "manufacturing",
   "generatedAt": "2024-06-30T09:00:00.000Z",
   "spuriousEdgeReason": "",
+  "narrative": {
+    "agentName": "Procurement Agent",
+    "agentRole": "autonomously selects a supplier for each incoming order",
+    "decisionLabel": "Selected Supplier A",
+    "altLabel": "Supplier B",
+    "outcomeLabel": "Shipment delayed",
+    "agentSignals": [
+      {
+        "label": "Quoted unit cost",
+        "weight": 0.36
+      },
+      {
+        "label": "Stated capacity / availability",
+        "weight": 0.34
+      },
+      {
+        "label": "Historical on-time rate",
+        "weight": 0.22
+      },
+      {
+        "label": "Order complexity",
+        "weight": 0.08
+      }
+    ],
+    "agentBlindSpots": [
+      "Complex orders are routed to Supplier A and are slower regardless of supplier — a confounded path",
+      "Supplier A's effect runs through Material Lead Time, not visible in the quote",
+      "The historical on-time rate is itself confounded by which orders Supplier A gets"
+    ],
+    "stages": [
+      {
+        "id": "order",
+        "label": "Order"
+      },
+      {
+        "id": "supplier",
+        "label": "Supplier",
+        "agent": "Procurement Agent"
+      },
+      {
+        "id": "material",
+        "label": "Material"
+      },
+      {
+        "id": "factory",
+        "label": "Factory",
+        "agent": "Production Agent"
+      },
+      {
+        "id": "transport",
+        "label": "Transport",
+        "agent": "Logistics Agent"
+      },
+      {
+        "id": "customer",
+        "label": "Customer"
+      }
+    ],
+    "incident": {
+      "trigger": "Supplier A confirmed for a high-complexity order",
+      "steps": [
+        {
+          "stageId": "supplier",
+          "t": "10:42",
+          "note": "Procurement Agent selects Supplier A",
+          "sev": "warn"
+        },
+        {
+          "stageId": "material",
+          "t": "11:18",
+          "note": "Material lead time runs 7.4 d over baseline",
+          "sev": "warn"
+        },
+        {
+          "stageId": "factory",
+          "t": "13:05",
+          "note": "Production queue backs up",
+          "sev": "warn"
+        },
+        {
+          "stageId": "transport",
+          "t": "15:40",
+          "note": "Booked transport window missed",
+          "sev": "crit"
+        },
+        {
+          "stageId": "customer",
+          "t": "next day",
+          "note": "Shipment SLA breached — 7.1 d late",
+          "sev": "crit"
+        }
+      ]
+    }
+  },
+  "agentDecisions": [
+    {
+      "id": "AGT-PRC-4200",
+      "agent": "Procurement Agent",
+      "decisionLabel": "Selected Supplier A",
+      "confidence": 0.87,
+      "caseId": "ORD_0017",
+      "entity": "Fasteners",
+      "complexityScore": 8,
+      "outcomeDays": 14.7,
+      "counterfactualDays": 10,
+      "dominantDriver": "Supplier A Dependency",
+      "dominantContribution": 6.71,
+      "controllableDays": 10.18,
+      "structuralDays": 1.13,
+      "verdict": "aligned"
+    },
+    {
+      "id": "AGT-PRC-4217",
+      "agent": "Procurement Agent",
+      "decisionLabel": "Selected Supplier A",
+      "confidence": 0.87,
+      "caseId": "ORD_0029",
+      "entity": "Raw Metal",
+      "complexityScore": 10,
+      "outcomeDays": 13.9,
+      "counterfactualDays": 5.9,
+      "dominantDriver": "Supplier A Dependency",
+      "dominantContribution": 11.39,
+      "controllableDays": 14.86,
+      "structuralDays": 0.47,
+      "verdict": "aligned"
+    },
+    {
+      "id": "AGT-PRC-4234",
+      "agent": "Procurement Agent",
+      "decisionLabel": "Selected Supplier A",
+      "confidence": 0.89,
+      "caseId": "ORD_0035",
+      "entity": "Raw Metal",
+      "complexityScore": 8,
+      "outcomeDays": 13.1,
+      "counterfactualDays": 10.3,
+      "dominantDriver": "Supplier A Dependency",
+      "dominantContribution": 4.02,
+      "controllableDays": 8.33,
+      "structuralDays": 1.11,
+      "verdict": "over-confident"
+    },
+    {
+      "id": "AGT-PRC-4251",
+      "agent": "Procurement Agent",
+      "decisionLabel": "Selected Supplier A",
+      "confidence": 0.9,
+      "caseId": "ORD_0038",
+      "entity": "Assemblies",
+      "complexityScore": 6,
+      "outcomeDays": 11.6,
+      "counterfactualDays": 4.2,
+      "dominantDriver": "Supplier A Dependency",
+      "dominantContribution": 10.53,
+      "controllableDays": 13.59,
+      "structuralDays": 1.44,
+      "verdict": "over-confident"
+    },
+    {
+      "id": "AGT-PRC-4268",
+      "agent": "Procurement Agent",
+      "decisionLabel": "Selected Supplier A",
+      "confidence": 0.87,
+      "caseId": "ORD_0016",
+      "entity": "Raw Metal",
+      "complexityScore": 4,
+      "outcomeDays": 11.2,
+      "counterfactualDays": 7.2,
+      "dominantDriver": "Supplier A Dependency",
+      "dominantContribution": 5.67,
+      "controllableDays": 8.33,
+      "structuralDays": 0.63,
+      "verdict": "aligned"
+    },
+    {
+      "id": "AGT-PRC-4285",
+      "agent": "Procurement Agent",
+      "decisionLabel": "Selected Supplier A",
+      "confidence": 0.89,
+      "caseId": "ORD_0037",
+      "entity": "Assemblies",
+      "complexityScore": 9,
+      "outcomeDays": 11,
+      "counterfactualDays": 5.2,
+      "dominantDriver": "Supplier A Dependency",
+      "dominantContribution": 8.22,
+      "controllableDays": 12.77,
+      "structuralDays": 1.43,
+      "verdict": "over-confident"
+    }
+  ],
+  "causalAuditScore": {
+    "score": 87,
+    "status": "PROCEED",
+    "dimensions": [
+      {
+        "key": "Evidence completeness",
+        "score": 90,
+        "why": "96% data quality; ~4% of fields imputed"
+      },
+      {
+        "key": "Effect recovery",
+        "score": 95,
+        "why": "0.2% error vs the planted causal effect"
+      },
+      {
+        "key": "Causal confidence",
+        "score": 93,
+        "why": "95% CI width 0.12 days"
+      },
+      {
+        "key": "Discovery quality",
+        "score": 86,
+        "why": "autonomous discovery F1 0.94"
+      },
+      {
+        "key": "Confounding robustness",
+        "score": 89,
+        "why": "VanderWeele E-value 7.3"
+      },
+      {
+        "key": "Counterfactual stability",
+        "score": 90,
+        "why": "10-seed std 0.089 days"
+      },
+      {
+        "key": "Decision explainability",
+        "score": 74,
+        "why": "effect is mediated through a latent variable, not a direct edge the agent can inspect"
+      },
+      {
+        "key": "Intervention confidence",
+        "score": 82,
+        "why": "top action rated high confidence, measured"
+      }
+    ]
+  },
   "scenario": {
     "name": "Shipment Delay Analysis",
     "outcomeVariable": "Shipment Delay",

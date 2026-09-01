@@ -30,9 +30,11 @@ captured 2026-09-01.** The generated CSVs and the full validation report are in
 2. **"Is it real?" → "It's synthetic data with a known answer — that's the point."**
    You cannot validate causal inference on real data because you never observe the
    counterfactual.
-3. **Novelty in one line:** first framework to unify object-centric process mining
-   with structural causal models — discovery, confounding adjustment,
-   counterfactuals, and case attribution as one pipeline.
+3. **Novelty in one line:** a unified *causal audit workflow* for autonomous
+   decisions — reconstruct the decision from object-centric events, discover the
+   causal structure, estimate the true effect, replay the counterfactual, and
+   attribute the outcome. The novelty is the end-to-end audit loop, not any one
+   algorithm.
 
 ---
 
@@ -174,14 +176,23 @@ three are on screen so nothing is taken on trust.
 ## 4 · Product & scope
 
 ### What's genuinely novel here? · *Common*
-**Say first:** First framework to put object-centric process mining and
-structural causal models in one pipeline.
+**Say first:** The novelty is the *end-to-end causal audit loop* for autonomous
+decisions, not any single algorithm.
 
-Process mining tells you what happened across many interacting object types —
-orders, machines, workers, materials, shipments, not just a case ID. SCM tells
-you what causes what. Nobody had connected OCEL 2.0 logs → causal DAG →
-counterfactual simulation → case-level attribution as a single flow. Celonis does
-rule-based what-ifs; it has no causal discovery and no confounding adjustment.
+Object-centric process mining, causal discovery, and structural causal models all
+exist separately, and there is prior work on object-centric causal nets. What
+doesn't exist is a working audit workflow that takes an autonomous agent's
+decision, reconstructs it from object-centric events, discovers the causal
+structure, estimates the true effect free of confounding, *replays the
+counterfactual* ("what if the agent had chosen differently?"), attributes the
+outcome, and then validates its own answer. Traditional process mining explains
+where a process deviated; predictive tools say what will happen; CausalOCPM
+answers **what actually caused the outcome and whether the agent's decision
+deserves to be trusted.** Celonis does rule-based what-ifs — no causal discovery,
+no confounding adjustment.
+
+*(Do not say "we're the first to combine OCPM and SCM" — a technical judge can
+point to object-centric causal-net research. Lead with the audit loop.)*
 
 ### Does it generalise, or is it two hand-tuned demos? · *Likely*
 **Say first:** Same five phases, zero code changes, reproduces on manufacturing

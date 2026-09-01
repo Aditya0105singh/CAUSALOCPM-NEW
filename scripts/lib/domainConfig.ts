@@ -124,6 +124,26 @@ export interface DomainSpec {
   copilotSeed: { q: string; a: string }[];
 
   methodology: { phase: string; detail: string }[];
+
+  /** The agentic-AI framing: the autonomous decision this audit layer watches. */
+  narrative: {
+    agentName: string; // "Procurement Agent"
+    agentRole: string; // one-liner on what the agent does
+    decisionLabel: string; // "Selected Supplier A"
+    altLabel: string; // "Supplier B" — the counterfactual choice
+    outcomeLabel: string; // "Shipment delayed"
+    /** what the agent's inputs weighed (sums to ~1); the confounder is deliberately under-weighted */
+    agentSignals: { label: string; weight: number }[];
+    /** what the agent's inputs never captured — the causal structure */
+    agentBlindSpots: string[];
+    /** supply-chain / care-pathway stages for the live twin, in order */
+    stages: { id: string; label: string; agent?: string }[];
+    /** the incident that propagates through the twin */
+    incident: {
+      trigger: string;
+      steps: { stageId: string; t: string; note: string; sev: "ok" | "warn" | "crit" }[];
+    };
+  };
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -293,6 +313,43 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { phase: "Validation", detail: "Planted ground-truth coefficients · placebo-treatment & random-common-cause refuters · E-value · CATE across tertiles · 10-seed robustness (mean ± std)" },
       { phase: "Attribution", detail: "SCM-grounded SHAP on structural equations · features split into controllable vs. structural" },
     ],
+
+    narrative: {
+      agentName: "Procurement Agent",
+      agentRole: "autonomously selects a supplier for each incoming order",
+      decisionLabel: "Selected Supplier A",
+      altLabel: "Supplier B",
+      outcomeLabel: "Shipment delayed",
+      agentSignals: [
+        { label: "Quoted unit cost", weight: 0.36 },
+        { label: "Stated capacity / availability", weight: 0.34 },
+        { label: "Historical on-time rate", weight: 0.22 },
+        { label: "Order complexity", weight: 0.08 },
+      ],
+      agentBlindSpots: [
+        "Complex orders are routed to Supplier A and are slower regardless of supplier — a confounded path",
+        "Supplier A's effect runs through Material Lead Time, not visible in the quote",
+        "The historical on-time rate is itself confounded by which orders Supplier A gets",
+      ],
+      stages: [
+        { id: "order", label: "Order" },
+        { id: "supplier", label: "Supplier", agent: "Procurement Agent" },
+        { id: "material", label: "Material" },
+        { id: "factory", label: "Factory", agent: "Production Agent" },
+        { id: "transport", label: "Transport", agent: "Logistics Agent" },
+        { id: "customer", label: "Customer" },
+      ],
+      incident: {
+        trigger: "Supplier A confirmed for a high-complexity order",
+        steps: [
+          { stageId: "supplier", t: "10:42", note: "Procurement Agent selects Supplier A", sev: "warn" },
+          { stageId: "material", t: "11:18", note: "Material lead time runs 7.4 d over baseline", sev: "warn" },
+          { stageId: "factory", t: "13:05", note: "Production queue backs up", sev: "warn" },
+          { stageId: "transport", t: "15:40", note: "Booked transport window missed", sev: "crit" },
+          { stageId: "customer", t: "next day", note: "Shipment SLA breached — 7.1 d late", sev: "crit" },
+        ],
+      },
+    },
   },
 
   healthcare: {
@@ -460,5 +517,40 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { phase: "Validation", detail: "Planted ground-truth coefficients · placebo-treatment & random-common-cause refuters · E-value · CATE across tertiles · 10-seed robustness (mean ± std)" },
       { phase: "Attribution", detail: "SCM-grounded SHAP on structural equations · features split into controllable vs. structural" },
     ],
+
+    narrative: {
+      agentName: "Care Coordination Agent",
+      agentRole: "autonomously assigns a specialist consult for each admission",
+      decisionLabel: "Assigned a specialist",
+      altLabel: "no specialist / hospitalist pathway",
+      outcomeLabel: "Discharge delayed",
+      agentSignals: [
+        { label: "Presenting diagnosis severity", weight: 0.38 },
+        { label: "Specialist availability", weight: 0.29 },
+        { label: "Bed pressure on the ward", weight: 0.2 },
+        { label: "Patient comorbidity index", weight: 0.13 },
+      ],
+      agentBlindSpots: [
+        "Complex patients are both more likely to get a specialist and inherently stay longer — a confounded path",
+        "The specialist's effect runs through Treatment Duration, not the referral decision itself",
+        "Historical LOS for specialist patients is confounded by who gets referred",
+      ],
+      stages: [
+        { id: "admission", label: "Admission" },
+        { id: "triage", label: "Triage", agent: "Triage Agent" },
+        { id: "specialist", label: "Specialist", agent: "Care Coordination Agent" },
+        { id: "diagnostics", label: "Diagnostics" },
+        { id: "discharge", label: "Discharge", agent: "Discharge Agent" },
+      ],
+      incident: {
+        trigger: "Specialist consult ordered for a high-complexity admission",
+        steps: [
+          { stageId: "specialist", t: "Day 0 14:20", note: "Care Coordination Agent assigns cardiology consult", sev: "warn" },
+          { stageId: "diagnostics", t: "Day 1 09:10", note: "Treatment duration extends 6.2 d on the specialist arm", sev: "warn" },
+          { stageId: "discharge", t: "Day 2", note: "Downstream bed queue grows", sev: "warn" },
+          { stageId: "discharge", t: "Day 5", note: "Discharge slips — 5.3 d longer stay", sev: "crit" },
+        ],
+      },
+    },
   },
 };

@@ -116,10 +116,52 @@ const Lever = z.object({
 const CoefficientRow = z.object({ edge: z.string(), estimated: z.number(), groundTruth: z.number() });
 const CateSegment = z.object({ label: z.string(), effect: z.number(), ciLow: z.number(), ciHigh: z.number() });
 
+const StageSev = z.enum(["ok", "warn", "crit"]);
+
 export const CausalFixture = z.object({
   domain: DomainId,
   generatedAt: z.string(),
   spuriousEdgeReason: z.string(),
+
+  narrative: z.object({
+    agentName: z.string(),
+    agentRole: z.string(),
+    decisionLabel: z.string(),
+    altLabel: z.string(),
+    outcomeLabel: z.string(),
+    agentSignals: z.array(z.object({ label: z.string(), weight: z.number() })),
+    agentBlindSpots: z.array(z.string()),
+    stages: z.array(z.object({ id: z.string(), label: z.string(), agent: z.string().optional() })),
+    incident: z.object({
+      trigger: z.string(),
+      steps: z.array(z.object({ stageId: z.string(), t: z.string(), note: z.string(), sev: StageSev })),
+    }),
+  }),
+
+  agentDecisions: z.array(
+    z.object({
+      id: z.string(),
+      agent: z.string(),
+      decisionLabel: z.string(),
+      confidence: z.number(),
+      caseId: z.string(),
+      entity: z.string(),
+      complexityScore: z.number(),
+      outcomeDays: z.number(),
+      counterfactualDays: z.number(),
+      dominantDriver: z.string(),
+      dominantContribution: z.number(),
+      controllableDays: z.number(),
+      structuralDays: z.number(),
+      verdict: z.enum(["over-confident", "under-supported", "aligned"]),
+    }),
+  ),
+
+  causalAuditScore: z.object({
+    score: z.number(),
+    status: z.enum(["PROCEED", "MONITOR", "REVIEW RECOMMENDED"]),
+    dimensions: z.array(z.object({ key: z.string(), score: z.number(), why: z.string() })),
+  }),
 
   scenario: z.object({
     name: z.string(),

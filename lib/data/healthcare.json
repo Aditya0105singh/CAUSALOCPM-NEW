@@ -2,6 +2,234 @@
   "domain": "healthcare",
   "generatedAt": "2024-06-30T09:00:00.000Z",
   "spuriousEdgeReason": "approval wait and length of stay are strongly correlated through the shared mediated path, and PC oriented the edge the wrong way (LOS → approval wait). The constraint 'approval happens before discharge' flips it back.",
+  "narrative": {
+    "agentName": "Care Coordination Agent",
+    "agentRole": "autonomously assigns a specialist consult for each admission",
+    "decisionLabel": "Assigned a specialist",
+    "altLabel": "no specialist / hospitalist pathway",
+    "outcomeLabel": "Discharge delayed",
+    "agentSignals": [
+      {
+        "label": "Presenting diagnosis severity",
+        "weight": 0.38
+      },
+      {
+        "label": "Specialist availability",
+        "weight": 0.29
+      },
+      {
+        "label": "Bed pressure on the ward",
+        "weight": 0.2
+      },
+      {
+        "label": "Patient comorbidity index",
+        "weight": 0.13
+      }
+    ],
+    "agentBlindSpots": [
+      "Complex patients are both more likely to get a specialist and inherently stay longer — a confounded path",
+      "The specialist's effect runs through Treatment Duration, not the referral decision itself",
+      "Historical LOS for specialist patients is confounded by who gets referred"
+    ],
+    "stages": [
+      {
+        "id": "admission",
+        "label": "Admission"
+      },
+      {
+        "id": "triage",
+        "label": "Triage",
+        "agent": "Triage Agent"
+      },
+      {
+        "id": "specialist",
+        "label": "Specialist",
+        "agent": "Care Coordination Agent"
+      },
+      {
+        "id": "diagnostics",
+        "label": "Diagnostics"
+      },
+      {
+        "id": "discharge",
+        "label": "Discharge",
+        "agent": "Discharge Agent"
+      }
+    ],
+    "incident": {
+      "trigger": "Specialist consult ordered for a high-complexity admission",
+      "steps": [
+        {
+          "stageId": "specialist",
+          "t": "Day 0 14:20",
+          "note": "Care Coordination Agent assigns cardiology consult",
+          "sev": "warn"
+        },
+        {
+          "stageId": "diagnostics",
+          "t": "Day 1 09:10",
+          "note": "Treatment duration extends 6.2 d on the specialist arm",
+          "sev": "warn"
+        },
+        {
+          "stageId": "discharge",
+          "t": "Day 2",
+          "note": "Downstream bed queue grows",
+          "sev": "warn"
+        },
+        {
+          "stageId": "discharge",
+          "t": "Day 5",
+          "note": "Discharge slips — 5.3 d longer stay",
+          "sev": "crit"
+        }
+      ]
+    }
+  },
+  "agentDecisions": [
+    {
+      "id": "AGT-CCA-4200",
+      "agent": "Care Coordination Agent",
+      "decisionLabel": "Assigned a specialist",
+      "confidence": 0.93,
+      "caseId": "ADM_0023",
+      "entity": "Day Case",
+      "complexityScore": 5,
+      "outcomeDays": 10.9,
+      "counterfactualDays": 6.8,
+      "dominantDriver": "Specialist Assignment",
+      "dominantContribution": 5.83,
+      "controllableDays": 10.11,
+      "structuralDays": 0.58,
+      "verdict": "over-confident"
+    },
+    {
+      "id": "AGT-CCA-4217",
+      "agent": "Care Coordination Agent",
+      "decisionLabel": "Assigned a specialist",
+      "confidence": 0.93,
+      "caseId": "ADM_0003",
+      "entity": "Maternity",
+      "complexityScore": 8,
+      "outcomeDays": 10.8,
+      "counterfactualDays": 6.9,
+      "dominantDriver": "Specialist Assignment",
+      "dominantContribution": 5.55,
+      "controllableDays": 11.01,
+      "structuralDays": 0.38,
+      "verdict": "over-confident"
+    },
+    {
+      "id": "AGT-CCA-4234",
+      "agent": "Care Coordination Agent",
+      "decisionLabel": "Assigned a specialist",
+      "confidence": 0.91,
+      "caseId": "ADM_0019",
+      "entity": "Elective",
+      "complexityScore": 7,
+      "outcomeDays": 10.8,
+      "counterfactualDays": 7.1,
+      "dominantDriver": "Specialist Assignment",
+      "dominantContribution": 5.23,
+      "controllableDays": 8.81,
+      "structuralDays": 0.78,
+      "verdict": "over-confident"
+    },
+    {
+      "id": "AGT-CCA-4251",
+      "agent": "Care Coordination Agent",
+      "decisionLabel": "Assigned a specialist",
+      "confidence": 0.85,
+      "caseId": "ADM_0039",
+      "entity": "Emergency",
+      "complexityScore": 4,
+      "outcomeDays": 10.6,
+      "counterfactualDays": 7.6,
+      "dominantDriver": "Specialist Assignment",
+      "dominantContribution": 4.29,
+      "controllableDays": 8.52,
+      "structuralDays": 0.72,
+      "verdict": "aligned"
+    },
+    {
+      "id": "AGT-CCA-4268",
+      "agent": "Care Coordination Agent",
+      "decisionLabel": "Assigned a specialist",
+      "confidence": 0.87,
+      "caseId": "ADM_0015",
+      "entity": "Maternity",
+      "complexityScore": 6,
+      "outcomeDays": 10.4,
+      "counterfactualDays": 9,
+      "dominantDriver": "Treatment Duration",
+      "dominantContribution": 2.03,
+      "controllableDays": 5.66,
+      "structuralDays": 0.39,
+      "verdict": "aligned"
+    },
+    {
+      "id": "AGT-CCA-4285",
+      "agent": "Care Coordination Agent",
+      "decisionLabel": "Assigned a specialist",
+      "confidence": 0.87,
+      "caseId": "ADM_0018",
+      "entity": "Emergency",
+      "complexityScore": 4,
+      "outcomeDays": 10.3,
+      "counterfactualDays": 8.8,
+      "dominantDriver": "Specialist Assignment",
+      "dominantContribution": 2.08,
+      "controllableDays": 6.03,
+      "structuralDays": 0.77,
+      "verdict": "aligned"
+    }
+  ],
+  "causalAuditScore": {
+    "score": 85,
+    "status": "MONITOR",
+    "dimensions": [
+      {
+        "key": "Evidence completeness",
+        "score": 90,
+        "why": "96% data quality; ~4% of fields imputed"
+      },
+      {
+        "key": "Effect recovery",
+        "score": 94,
+        "why": "0.4% error vs the planted causal effect"
+      },
+      {
+        "key": "Causal confidence",
+        "score": 91,
+        "why": "95% CI width 0.18 days"
+      },
+      {
+        "key": "Discovery quality",
+        "score": 76,
+        "why": "autonomous discovery F1 0.83"
+      },
+      {
+        "key": "Confounding robustness",
+        "score": 88,
+        "why": "VanderWeele E-value 7.1"
+      },
+      {
+        "key": "Counterfactual stability",
+        "score": 90,
+        "why": "10-seed std 0.072 days"
+      },
+      {
+        "key": "Decision explainability",
+        "score": 71,
+        "why": "effect is mediated through a latent variable, not a direct edge the agent can inspect"
+      },
+      {
+        "key": "Intervention confidence",
+        "score": 82,
+        "why": "top action rated high confidence, measured"
+      }
+    ]
+  },
   "scenario": {
     "name": "Length-of-Stay Analysis",
     "outcomeVariable": "Length of Stay",

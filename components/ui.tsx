@@ -109,6 +109,58 @@ export function Bar({
   );
 }
 
+/**
+ * Provenance tag — every headline number should say where it comes from.
+ *   measured = a raw output of the reference pipeline
+ *   derived  = computed from measured values (e.g. reduction % from an effect)
+ *   assumed  = a configurable business parameter, not a measurement
+ */
+export type Provenance = "measured" | "derived" | "assumed";
+
+export function ProvTag({ kind, note }: { kind: Provenance; note?: string }) {
+  const label = { measured: "MEASURED", derived: "DERIVED", assumed: "ASSUMED" }[kind];
+  return (
+    <span
+      title={note}
+      className={clsx(
+        "inline-flex select-none items-center gap-1 rounded-[4px] px-1.5 py-[1px] text-[9px] font-semibold uppercase tracking-[0.08em]",
+        kind === "measured" && "bg-sage text-forest-deep",
+        kind === "derived" && "border border-line bg-paper-2 text-ink-soft",
+        kind === "assumed" && "bg-[#f4ead9] text-amber",
+        note && "cursor-help",
+      )}
+    >
+      {label}
+      {note ? <span className="opacity-60">ⓘ</span> : null}
+    </span>
+  );
+}
+
+/** A number + its provenance tag, laid out together. */
+export function Figure({
+  value,
+  unit,
+  prov,
+  note,
+  size = "lg",
+}: {
+  value: ReactNode;
+  unit?: string;
+  prov: Provenance;
+  note?: string;
+  size?: "sm" | "lg";
+}) {
+  return (
+    <span className="inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+      <span className={clsx("font-display leading-none text-ink", size === "lg" ? "text-2xl" : "text-base")}>
+        {value}
+        {unit ? <span className="ml-1 text-[0.6em] text-muted">{unit}</span> : null}
+      </span>
+      <ProvTag kind={prov} note={note} />
+    </span>
+  );
+}
+
 export function KeyVal({ k, v }: { k: string; v: ReactNode }) {
   return (
     <div className="flex items-center justify-between border-b border-line-soft py-2 text-sm last:border-0">
