@@ -63,7 +63,8 @@ function computeMfg(f: CausalFixture, v: LeverValues): SimResult {
 
   const predicted = Math.max(0.5, BL_DEL + d_sup + d_ltmode + d_machine + d_appr + d_carrier + d_batch);
   const improvementPct = ((BL_DEL - predicted) / BL_DEL) * 100;
-  const throughput = Math.min(160, 100 * (1 + 0.3 * (1 - mql_val / BL_MQL)));
+  // faster shipments + a shorter machine queue both lift daily throughput
+  const throughput = Math.min(160, Math.max(60, 100 * (1 + 0.45 * (improvementPct / 100) + 0.12 * (1 - mql_val / BL_MQL))));
   const riskIndex = 45 * (predicted / BL_DEL);
 
   const implCost =
@@ -143,7 +144,8 @@ function computeHc(f: CausalFixture, v: LeverValues): SimResult {
     baseline: BL,
     predicted,
     improvementPct,
-    throughput: Math.min(160, 100 * (1 - d_bed * 0.5)),
+    // shorter stays free up beds → higher daily patient throughput
+    throughput: Math.min(160, Math.max(60, 100 * (1 + 0.5 * (improvementPct / 100) - d_bed * 0.3))),
     riskIndex: 45 * (predicted / BL),
     implCost,
     annualSavings,
@@ -227,7 +229,7 @@ export function recommendPlan(f: CausalFixture, targetPct: number) {
     reductionPct: Math.round(res.improvementPct),
     implCost: res.implCost,
     annualSavings: res.annualSavings,
-    paybackMonths: res.roiMonths ?? 0,
+    paybackMonths: res.roiMonths, // number | null (0 = no capex)
     levers: chosen,
     values: applied,
   };

@@ -23,9 +23,18 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
   const plan = useMemo(() => recommendPlan(f, target), [f, target]);
   const groups = useMemo(() => [...new Set(f.simulator.levers.map((l) => l.group))], [f]);
 
+  const [applied, setApplied] = useState(false);
   const set = (id: string, val: number) => setValues((s) => ({ ...s, [id]: val }));
-  const reset = () => setValues(defaultLeverValues(f));
-  const applyPlan = () => setValues(plan.values);
+  const reset = () => {
+    setValues(defaultLeverValues(f));
+    setApplied(false);
+  };
+  const applyPlan = () => {
+    setValues(plan.values);
+    setApplied(true);
+    document.getElementById("tour-sim")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => setApplied(false), 2600);
+  };
 
   // active-edge set for the live graph, from lever deltas
   const activeEdges = useMemo(() => {
@@ -185,7 +194,7 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
             <div className="grid grid-cols-3 gap-2">
               <MiniOut label="Throughput" value={`${sim.throughput}/day`} delta={`${sim.throughput - 100 >= 0 ? "+" : ""}${sim.throughput - 100}`} />
               <MiniOut label="Risk index" value={`${sim.riskIndex}`} delta={`${sim.riskIndex - 45 >= 0 ? "+" : ""}${(sim.riskIndex - 45).toFixed(1)}`} />
-              <MiniOut label="ROI payback" value={sim.roiMonths === null ? "—" : sim.roiMonths === 0 ? "0 mo" : `${sim.roiMonths} mo`} delta="" />
+              <MiniOut label="ROI payback" value={sim.roiMonths === null ? "—" : sim.roiMonths === 0 ? "Immediate" : `${sim.roiMonths} mo`} delta="" />
             </div>
             <div className="rounded-lg border border-line bg-card p-3 text-sm">
               <div className="flex justify-between"><span className="text-muted">Annual savings</span><b className="text-forest">{sim.annualSavings > 0 ? `~${fmtMoney(sim.annualSavings)}` : "—"}</b></div>
@@ -266,9 +275,9 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
           <b className="text-forest">{plan.predicted} {unit}</b> (−{plan.reductionPct}% vs {f.simulator.baselineOutcome} {unit} baseline)
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <KeyVal k="Impl. cost" v={fmtMoney(plan.implCost)} />
+          <KeyVal k="Impl. cost" v={plan.implCost > 0 ? fmtMoney(plan.implCost) : "$0 (process change)"} />
           <KeyVal k="Annual savings" v={plan.annualSavings > 0 ? `~${fmtMoney(plan.annualSavings)}` : "—"} />
-          <KeyVal k="Payback" v={plan.paybackMonths ? `${plan.paybackMonths} mo` : "0 mo"} />
+          <KeyVal k="Payback" v={plan.paybackMonths == null ? "—" : plan.paybackMonths === 0 ? "Immediate" : `${plan.paybackMonths} mo`} />
         </div>
         <ul className="mt-3 space-y-1.5 text-sm">
           {plan.levers.length === 0 && <li className="text-muted">Baseline already meets the target.</li>}
@@ -278,8 +287,17 @@ export function ModelPerformanceTab({ f }: { f: CausalFixture }) {
             </li>
           ))}
         </ul>
-        <button onClick={applyPlan} className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-forest px-3 py-1.5 text-sm font-medium text-white">
-          <Gauge size={14} /> Apply this plan to the levers
+        <button
+          onClick={applyPlan}
+          disabled={plan.levers.length === 0}
+          className={clsx(
+            "mt-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors",
+            applied ? "bg-forest-deep" : "bg-forest hover:bg-forest-deep",
+            plan.levers.length === 0 && "opacity-40",
+          )}
+        >
+          {applied ? <Check size={14} /> : <Gauge size={14} />}
+          {applied ? "Applied — simulator updated above" : "Apply this plan to the simulator"}
         </button>
       </Card>
 
