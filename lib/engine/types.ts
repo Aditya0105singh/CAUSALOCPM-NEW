@@ -138,6 +138,60 @@ export const CausalFixture = z.object({
     }),
   }),
 
+  story: z.object({
+    incidentId: z.string(),
+    caseId: z.string(),
+    trigger: z.string(),
+    outcomeVariable: z.string(),
+    outcomeUnit: z.string(),
+    agent: z.object({
+      name: z.string(),
+      role: z.string(),
+      decision: z.string(),
+      alt: z.string(),
+      confidencePct: z.number(),
+      signals: z.array(z.object({ label: z.string(), weight: z.number() })),
+      blindSpots: z.array(z.string()),
+    }),
+    ripple: z.object({
+      stages: z.array(z.object({ id: z.string(), label: z.string(), agent: z.string().optional() })),
+      steps: z.array(z.object({ stageId: z.string(), t: z.string(), note: z.string(), sev: StageSev })),
+      finalDelayDays: z.number(),
+    }),
+    cause: z.object({
+      path: z.array(z.string()),
+      effectDays: z.number(),
+      naiveDays: z.number(),
+      trueDays: z.number(),
+      confounderLabel: z.string(),
+      confoundingDays: z.number(),
+      confoundingPct: z.number(),
+      drivers: z.array(z.object({ label: z.string(), days: z.number() })),
+    }),
+    whatIf: z.object({
+      actualLabel: z.string(),
+      actualDays: z.number(),
+      cfLabel: z.string(),
+      cfDays: z.number(),
+      savedDays: z.number(),
+      reductionPct: z.number(),
+    }),
+    confidenceGap: z.object({ agentPct: z.number(), causalPct: z.number(), note: z.string() }),
+    trust: z.object({
+      verdict: z.string(),
+      checks: z.array(z.object({ label: z.string(), detail: z.string(), pass: z.boolean() })),
+      evidence: z.array(z.object({ k: z.string(), v: z.string() })),
+    }),
+    action: z.object({
+      title: z.string(),
+      detail: z.string(),
+      annualSavings: z.number(),
+      payback: z.string(),
+      confidence: z.string(),
+      reductionPct: z.number(),
+    }),
+  }),
+
   agentDecisions: z.array(
     z.object({
       id: z.string(),

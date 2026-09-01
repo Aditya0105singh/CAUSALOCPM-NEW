@@ -86,6 +86,206 @@
       ]
     }
   },
+  "story": {
+    "incidentId": "ADM-7731",
+    "caseId": "ADM_0023",
+    "trigger": "Specialist consult ordered for a high-complexity admission",
+    "outcomeVariable": "Length of Stay",
+    "outcomeUnit": "days",
+    "agent": {
+      "name": "Care Coordination Agent",
+      "role": "autonomously assigns a specialist consult for each admission",
+      "decision": "Assigned a specialist",
+      "alt": "no specialist / hospitalist pathway",
+      "confidencePct": 93,
+      "signals": [
+        {
+          "label": "Presenting diagnosis severity",
+          "weight": 0.38
+        },
+        {
+          "label": "Specialist availability",
+          "weight": 0.29
+        },
+        {
+          "label": "Bed pressure on the ward",
+          "weight": 0.2
+        },
+        {
+          "label": "Patient comorbidity index",
+          "weight": 0.13
+        }
+      ],
+      "blindSpots": [
+        "Complex patients are both more likely to get a specialist and inherently stay longer — a confounded path",
+        "The specialist's effect runs through Treatment Duration, not the referral decision itself",
+        "Historical LOS for specialist patients is confounded by who gets referred"
+      ]
+    },
+    "ripple": {
+      "stages": [
+        {
+          "id": "admission",
+          "label": "Admission"
+        },
+        {
+          "id": "triage",
+          "label": "Triage",
+          "agent": "Triage Agent"
+        },
+        {
+          "id": "specialist",
+          "label": "Specialist",
+          "agent": "Care Coordination Agent"
+        },
+        {
+          "id": "diagnostics",
+          "label": "Diagnostics"
+        },
+        {
+          "id": "discharge",
+          "label": "Discharge",
+          "agent": "Discharge Agent"
+        }
+      ],
+      "steps": [
+        {
+          "stageId": "specialist",
+          "t": "Day 0 14:20",
+          "note": "Care Coordination Agent assigns cardiology consult",
+          "sev": "warn"
+        },
+        {
+          "stageId": "diagnostics",
+          "t": "Day 1 09:10",
+          "note": "Treatment duration extends 6.2 d on the specialist arm",
+          "sev": "warn"
+        },
+        {
+          "stageId": "discharge",
+          "t": "Day 2",
+          "note": "Downstream bed queue grows",
+          "sev": "warn"
+        },
+        {
+          "stageId": "discharge",
+          "t": "Day 5",
+          "note": "Discharge slips — 5.3 d longer stay",
+          "sev": "crit"
+        }
+      ],
+      "finalDelayDays": 10.9
+    },
+    "cause": {
+      "path": [
+        "Patient Complexity",
+        "Specialist Assignment",
+        "Treatment Duration",
+        "Length of Stay"
+      ],
+      "effectDays": 5.25,
+      "naiveDays": 6.01,
+      "trueDays": 5.27,
+      "confounderLabel": "Patient Complexity",
+      "confoundingDays": 0.76,
+      "confoundingPct": 12.6,
+      "drivers": [
+        {
+          "label": "Specialist Assignment",
+          "days": 5.25
+        },
+        {
+          "label": "Treatment Duration",
+          "days": 3.12
+        },
+        {
+          "label": "Insurance Expedited",
+          "days": 1.98
+        },
+        {
+          "label": "Patient Complexity",
+          "days": 0.65
+        },
+        {
+          "label": "Approval Wait",
+          "days": 0.36
+        }
+      ]
+    },
+    "whatIf": {
+      "actualLabel": "Assigned a specialist",
+      "actualDays": 10.9,
+      "cfLabel": "no specialist / hospitalist pathway",
+      "cfDays": 6.8,
+      "savedDays": 4.1,
+      "reductionPct": 38
+    },
+    "confidenceGap": {
+      "agentPct": 93,
+      "causalPct": 87,
+      "note": "The agent was 93% confident. Only 87% of the observed Specialist Assignment → length of stay association survives as a causal effect once patient complexity is adjusted out — the rest was confounding."
+    },
+    "trust": {
+      "verdict": "HIGH CONFIDENCE",
+      "checks": [
+        {
+          "label": "Ground truth recovered",
+          "detail": "planted 5.27 → recovered 5.25 days · 0.4% error",
+          "pass": true
+        },
+        {
+          "label": "Confounding accounted for",
+          "detail": "naive 6.01 → causal 5.25 days · 12.6% was confounding",
+          "pass": true
+        },
+        {
+          "label": "Placebo test passed",
+          "detail": "permuted-treatment effect 0.02 ≈ 0",
+          "pass": true
+        },
+        {
+          "label": "Hidden-factor stress test passed",
+          "detail": "VanderWeele E-value 7.1 — an unmeasured confounder would need that strength on both sides",
+          "pass": true
+        },
+        {
+          "label": "Repeated simulations agree",
+          "detail": "10-seed range [5.12, 5.38] days",
+          "pass": true
+        }
+      ],
+      "evidence": [
+        {
+          "k": "Recovered effect",
+          "v": "5.25 days"
+        },
+        {
+          "k": "Recovery error",
+          "v": "0.4%"
+        },
+        {
+          "k": "Discovery F1",
+          "v": "0.83"
+        },
+        {
+          "k": "Bootstrap stability",
+          "v": "86%"
+        },
+        {
+          "k": "E-value",
+          "v": "7.1"
+        }
+      ]
+    },
+    "action": {
+      "title": "Guarantee specialist consult within 12 hours of request",
+      "detail": "Specialist assignment latency drives Treatment Duration on the critical path. A 12-hour consult SLA on the top three services removes most of the avoidable wait.",
+      "annualSavings": 610000,
+      "payback": "2.3 months",
+      "confidence": "High",
+      "reductionPct": 17.1
+    }
+  },
   "agentDecisions": [
     {
       "id": "AGT-CCA-4200",

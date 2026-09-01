@@ -7,10 +7,12 @@ export function TopBar({
   f,
   domain,
   rightSlot,
+  compact = false,
 }: {
   f: CausalFixture;
   domain: DomainId;
   rightSlot?: React.ReactNode;
+  compact?: boolean;
 }) {
   const DomainIcon = domain === "manufacturing" ? Factory : HeartPulse;
 
@@ -58,7 +60,7 @@ export function TopBar({
       </div>
 
       {/* KPI strip */}
-      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className={`mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4 ${compact ? "hidden" : ""}`}>
         <Kpi Icon={Link2} bg="bg-sage" value={<CountUp value={f.kpis.causalLinks} />} label="Cause-and-Effect Links" sub="Causal intelligence" />
         <Kpi Icon={Target} bg="bg-[#efe6d6]" value={f.kpis.target} label="Target" sub="Business impact" />
         <Kpi Icon={ShieldCheck} bg="bg-sage" value={<CountUp value={f.kpis.expertRules} />} label="Expert Rules Applied" sub="Validated & interpretable" />

@@ -96,6 +96,216 @@
       ]
     }
   },
+  "story": {
+    "incidentId": "SC-20481",
+    "caseId": "ORD_0017",
+    "trigger": "Supplier A confirmed for a high-complexity order",
+    "outcomeVariable": "Shipment Delay",
+    "outcomeUnit": "days",
+    "agent": {
+      "name": "Procurement Agent",
+      "role": "autonomously selects a supplier for each incoming order",
+      "decision": "Selected Supplier A",
+      "alt": "Supplier B",
+      "confidencePct": 87,
+      "signals": [
+        {
+          "label": "Quoted unit cost",
+          "weight": 0.36
+        },
+        {
+          "label": "Stated capacity / availability",
+          "weight": 0.34
+        },
+        {
+          "label": "Historical on-time rate",
+          "weight": 0.22
+        },
+        {
+          "label": "Order complexity",
+          "weight": 0.08
+        }
+      ],
+      "blindSpots": [
+        "Complex orders are routed to Supplier A and are slower regardless of supplier — a confounded path",
+        "Supplier A's effect runs through Material Lead Time, not visible in the quote",
+        "The historical on-time rate is itself confounded by which orders Supplier A gets"
+      ]
+    },
+    "ripple": {
+      "stages": [
+        {
+          "id": "order",
+          "label": "Order"
+        },
+        {
+          "id": "supplier",
+          "label": "Supplier",
+          "agent": "Procurement Agent"
+        },
+        {
+          "id": "material",
+          "label": "Material"
+        },
+        {
+          "id": "factory",
+          "label": "Factory",
+          "agent": "Production Agent"
+        },
+        {
+          "id": "transport",
+          "label": "Transport",
+          "agent": "Logistics Agent"
+        },
+        {
+          "id": "customer",
+          "label": "Customer"
+        }
+      ],
+      "steps": [
+        {
+          "stageId": "supplier",
+          "t": "10:42",
+          "note": "Procurement Agent selects Supplier A",
+          "sev": "warn"
+        },
+        {
+          "stageId": "material",
+          "t": "11:18",
+          "note": "Material lead time runs 7.4 d over baseline",
+          "sev": "warn"
+        },
+        {
+          "stageId": "factory",
+          "t": "13:05",
+          "note": "Production queue backs up",
+          "sev": "warn"
+        },
+        {
+          "stageId": "transport",
+          "t": "15:40",
+          "note": "Booked transport window missed",
+          "sev": "crit"
+        },
+        {
+          "stageId": "customer",
+          "t": "next day",
+          "note": "Shipment SLA breached — 7.1 d late",
+          "sev": "crit"
+        }
+      ],
+      "finalDelayDays": 14.7
+    },
+    "cause": {
+      "path": [
+        "Order Complexity",
+        "Supplier A",
+        "Material Lead Time",
+        "Shipment Delay"
+      ],
+      "effectDays": 6.65,
+      "naiveDays": 8.78,
+      "trueDays": 6.66,
+      "confounderLabel": "Order Complexity",
+      "confoundingDays": 2.13,
+      "confoundingPct": 24.3,
+      "drivers": [
+        {
+          "label": "Supplier A Dependency",
+          "days": 6.65
+        },
+        {
+          "label": "Material Lead Time",
+          "days": 2.88
+        },
+        {
+          "label": "Express Carrier",
+          "days": 1.9
+        },
+        {
+          "label": "Approval Duration",
+          "days": 1.12
+        },
+        {
+          "label": "Order Complexity",
+          "days": 0.7
+        }
+      ]
+    },
+    "whatIf": {
+      "actualLabel": "Selected Supplier A",
+      "actualDays": 14.7,
+      "cfLabel": "Supplier B",
+      "cfDays": 10,
+      "savedDays": 4.7,
+      "reductionPct": 32
+    },
+    "confidenceGap": {
+      "agentPct": 87,
+      "causalPct": 76,
+      "note": "The agent was 87% confident. Only 76% of the observed Supplier A Dependency → shipment delay association survives as a causal effect once order complexity is adjusted out — the rest was confounding."
+    },
+    "trust": {
+      "verdict": "HIGH CONFIDENCE",
+      "checks": [
+        {
+          "label": "Ground truth recovered",
+          "detail": "planted 6.66 → recovered 6.65 days · 0.2% error",
+          "pass": true
+        },
+        {
+          "label": "Confounding accounted for",
+          "detail": "naive 8.78 → causal 6.65 days · 24.3% was confounding",
+          "pass": true
+        },
+        {
+          "label": "Placebo test passed",
+          "detail": "permuted-treatment effect 0.02 ≈ 0",
+          "pass": true
+        },
+        {
+          "label": "Hidden-factor stress test passed",
+          "detail": "VanderWeele E-value 7.3 — an unmeasured confounder would need that strength on both sides",
+          "pass": true
+        },
+        {
+          "label": "Repeated simulations agree",
+          "detail": "10-seed range [6.43, 6.78] days",
+          "pass": true
+        }
+      ],
+      "evidence": [
+        {
+          "k": "Recovered effect",
+          "v": "6.65 days"
+        },
+        {
+          "k": "Recovery error",
+          "v": "0.2%"
+        },
+        {
+          "k": "Discovery F1",
+          "v": "0.94"
+        },
+        {
+          "k": "Bootstrap stability",
+          "v": "86%"
+        },
+        {
+          "k": "E-value",
+          "v": "7.3"
+        }
+      ]
+    },
+    "action": {
+      "title": "Shift ~25% procurement from Supplier A to Supplier B",
+      "detail": "Supplier A dependency is the dominant causal driver via Material Lead Time. Re-routing a quarter of volume to Supplier B cuts exposure without breaching capacity.",
+      "annualSavings": 479000,
+      "payback": "3.7 months",
+      "confidence": "High",
+      "reductionPct": 20.5
+    }
+  },
   "agentDecisions": [
     {
       "id": "AGT-PRC-4200",
