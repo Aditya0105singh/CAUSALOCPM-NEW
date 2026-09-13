@@ -1,0 +1,66 @@
+======================================================================
+ATLAS PRECISION AEROSTRUCTURES — VALIDATION REPORT
+rows=20000  seed=71831  captured=2026-09-13
+======================================================================
+
+[1] NAIVE GROUP-MEAN DIFFERENCE (Halcyon Forge vs. rest)
+    naive effect            = 7.605 days
+
+[2] BOOTSTRAPPED PC DISCOVERY (Fisher-Z, alpha=0.05, 20 subsamples x 2000 rows)
+    precision=1.0  recall=0.889  F1=0.941
+    true positives=8  false positives=0  false negatives=1
+    missed edges: [('Halcyon Forge Dependency', 'Spec Complexity')]
+    spurious edges: []
+    edge stability (planted pairs):
+      Approval Duration          -- Line-Side Delivery Delay    100.0%
+      Express Carrier            -- Line-Side Delivery Delay     80.0%
+      Export Flag                -- Approval Duration           100.0%
+      Halcyon Forge Dependency   -- Material Lead Time          100.0%
+      Machine Queue Length       -- Approval Duration           100.0%
+      Material Lead Time         -- Line-Side Delivery Delay    100.0%
+      Spec Complexity            -- Halcyon Forge Dependency     30.0%
+      Spec Complexity            -- Line-Side Delivery Delay    100.0%
+      Spec Complexity            -- Machine Queue Length        100.0%
+
+[3] DOUBLE ML EFFECT ESTIMATION (5-fold cross-fit, GBM nuisance, sandwich SE)
+    planted true effect     = 5.780 days
+    Double ML estimate      = 6.175 days  (95% CI [6.077, 6.272])
+    recovery error          = 6.83%
+    naive vs causal gap     = 1.430 days  (18.8% of naive)
+
+[4] REFUTATION TESTS
+    placebo (permuted treatment) effect = -0.009 days  (expect ~0)
+    random-common-cause re-estimate      = 6.169 days  (expect stable near 6.17)
+    VanderWeele E-value                  = 5.72
+
+[5] CATE BY SPEC-COMPLEXITY TERTILE
+    Low (1.0–2.6)    effect=+6.371  CI=[+6.212, +6.530]
+    Mid (2.6–4.8)    effect=+6.105  CI=[+5.938, +6.272]
+    High (4.8–10.0)  effect=+7.506  CI=[+7.359, +7.653]
+
+[6] STRUCTURAL COEFFICIENT RECOVERY
+    outcome model 5-fold CV-R2           = 0.734
+    avg structural-coefficient error     = 3.15%
+
+[7] CONFOUNDING SENSITIVITY SWEEP
+    assumed hidden-confounder strength 0.05  ->  estimate 5.61 days
+    assumed hidden-confounder strength 0.10  ->  estimate 5.37 days
+    assumed hidden-confounder strength 0.15  ->  estimate 5.01 days
+    assumed hidden-confounder strength 0.20  ->  estimate 4.82 days
+    assumed hidden-confounder strength 0.25  ->  estimate 4.63 days
+    assumed hidden-confounder strength 0.30  ->  estimate 4.60 days
+
+[8] 10-SEED ROBUSTNESS (fresh dataset regenerated 10x, full estimation rerun)
+    causal estimate  = 6.104 +/- 0.039  range [6.055, 6.18]
+    naive estimate range = [7.433, 7.564]
+
+======================================================================
+SUMMARY
+======================================================================
+Planted true effect:     5.780 days
+Naive dashboard:         7.605 days
+Double ML recovered:     6.175 days  (6.83% error)
+Discovery F1:            0.941  (precision 1.0, recall 0.889)
+E-value:                 5.72
+Placebo:                 -0.009
+10-seed:                 6.104 +/- 0.039

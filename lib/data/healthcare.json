@@ -1609,10 +1609,10 @@
       "precision": 1,
       "recall": 0.89,
       "f1": 0.94,
-      "naive": 8.78,
-      "causal": 6.65,
-      "planted": 6.66,
-      "eValue": 7.3
+      "naive": 7.61,
+      "causal": 6.18,
+      "planted": 5.78,
+      "eValue": 5.7
     },
     {
       "domain": "Healthcare",

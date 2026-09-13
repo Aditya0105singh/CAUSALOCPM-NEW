@@ -231,8 +231,8 @@ function build(spec: DomainSpec) {
   // ── discovery walkthrough numbers ───────────────────────────────────
   const totalEvents = spec.totalEvents;
   const treatedCases = Math.round((totalEvents * spec.treatedPct) / 100);
-  const objectInstances = spec.id === "manufacturing" ? 30025 : 41180;
-  const coOccurrenceEdges = spec.id === "manufacturing" ? 105166 : 138420;
+  const objectInstances = spec.id === "manufacturing" ? 40033 : 41180;
+  const coOccurrenceEdges = spec.id === "manufacturing" ? 140215 : 138420;
   const discovery = {
     totalEvents,
     treatedCases,
