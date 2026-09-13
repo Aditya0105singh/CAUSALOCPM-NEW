@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { clsx } from "clsx";
+import { motion } from "framer-motion";
 import { Minus, Plus, RotateCcw, Route } from "lucide-react";
 import type { CausalFixture } from "@/lib/engine/types";
 
@@ -15,6 +16,14 @@ const ROLE_COLOR: Record<string, string> = {
   exogenous: "#9a9683",
   outcome: "#2f4630",
 };
+
+/** lighten a #rrggbb hex toward white by `amt` (0-1), for glossy gradient stops */
+function lighten(hex: string, amt: number) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const mix = (c: number) => Math.round(c + (255 - c) * amt);
+  return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
+}
 const ROLE_LABEL: Record<string, string> = {
   confounder: "Confounder — biases both treatment and outcome",
   treatment: "Treatment — the intervention we estimate",
@@ -217,6 +226,23 @@ export function CausalGraph({
               <path d="M0 0 L10 5 L0 10 z" fill={["#9a9683", "#3d5a3d", "#c98b45", "#2c452e"][k]} />
             </marker>
           ))}
+          {Object.entries(ROLE_COLOR).map(([role, color]) => (
+            <radialGradient key={role} id={`cg-grad-${role}`} cx="35%" cy="28%" r="75%">
+              <stop offset="0%" stopColor={lighten(color, 0.55)} />
+              <stop offset="60%" stopColor={color} />
+              <stop offset="100%" stopColor={color} />
+            </radialGradient>
+          ))}
+          <filter id="cg-node-shadow" x="-60%" y="-60%" width="220%" height="220%">
+            <feDropShadow dx="0" dy="1.5" stdDeviation="1.8" floodColor="#1c2617" floodOpacity="0.28" />
+          </filter>
+          <filter id="cg-glow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="3.2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         <g transform={`translate(${view.x} ${view.y}) scale(${view.z})`}>
@@ -235,20 +261,38 @@ export function CausalGraph({
             const marker =
               st === "active" || st === "focus" ? "url(#cg-arw-a)" :
               st === "backdoor" || st === "pruned" ? "url(#cg-arw-b)" : "url(#cg-arw)";
+            const d = `M ${a.x} ${a.y} Q ${mx} ${cy} ${b.x} ${b.y}`;
+            const lit = st === "active" || st === "focus";
             return (
               <g key={i} opacity={st === "dim" ? 0.16 : st === "pruned" ? 0.6 : 1}>
-                <path
-                  d={`M ${a.x} ${a.y} Q ${mx} ${cy} ${b.x} ${b.y}`}
+                {lit && (
+                  <motion.path
+                    d={d}
+                    fill="none"
+                    stroke={stroke}
+                    strokeWidth={w + 3}
+                    strokeOpacity={0.35}
+                    filter="url(#cg-glow)"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.7, delay: i * 0.035, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                )}
+                <motion.path
+                  d={d}
                   fill="none"
                   stroke={stroke}
                   strokeWidth={w}
                   strokeDasharray={e.pruned || !e.discovered ? "5 4" : undefined}
                   markerEnd={marker}
                   className={st === "active" ? "flow-dash" : undefined}
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 0.7, delay: i * 0.035, ease: [0.22, 1, 0.36, 1] }}
                 />
                 {/* fat invisible hit area */}
                 <path
-                  d={`M ${a.x} ${a.y} Q ${mx} ${cy} ${b.x} ${b.y}`}
+                  d={d}
                   fill="none"
                   stroke="transparent"
                   strokeWidth={12}
@@ -262,19 +306,28 @@ export function CausalGraph({
                     <path d="M-2.6 -2.6 L2.6 2.6 M2.6 -2.6 L-2.6 2.6" stroke="#c98b45" strokeWidth={1.4} />
                   </g>
                 )}
-                {st === "active" && (
-                  <circle r={3.4} fill="#3d5a3d">
-                    <animateMotion
-                      dur="1.5s"
-                      repeatCount="indefinite"
-                      keyPoints="0;1"
-                      keyTimes="0;1"
-                      calcMode="linear"
-                      path={`M ${a.x} ${a.y} Q ${mx} ${cy} ${b.x} ${b.y}`}
-                    />
-                    <animate attributeName="opacity" dur="1.5s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;0.15;0.7;1" />
-                  </circle>
-                )}
+                {st === "active" &&
+                  [0, 0.28, 0.52].map((offset, k) => (
+                    <circle key={k} r={3.4 - k * 0.9} fill="#3d5a3d" opacity={1 - k * 0.32} filter="url(#cg-glow)">
+                      <animateMotion
+                        dur="1.6s"
+                        begin={`${offset * 1.6}s`}
+                        repeatCount="indefinite"
+                        keyPoints="0;1"
+                        keyTimes="0;1"
+                        calcMode="linear"
+                        path={d}
+                      />
+                      <animate
+                        attributeName="opacity"
+                        dur="1.6s"
+                        begin={`${offset * 1.6}s`}
+                        repeatCount="indefinite"
+                        values={`0;${1 - k * 0.32};${1 - k * 0.32};0`}
+                        keyTimes="0;0.12;0.72;1"
+                      />
+                    </circle>
+                  ))}
                 {!compact && !e.pruned && st !== "dim" && (
                   <text x={mx} y={cy + 5} textAnchor="middle" fontSize={8.5} fill="#8b887b" pointerEvents="none">
                     {e.coef > 0 ? "+" : ""}
@@ -285,10 +338,11 @@ export function CausalGraph({
             );
           })}
 
-          {graph.nodes.map((n) => {
+          {graph.nodes.map((n, ni) => {
             const p = P(n.id);
             const r = n.role === "outcome" ? 13 : n.role === "treatment" ? 11 : 9;
             const isSel = selected === n.id;
+            const isOutcome = n.role === "outcome";
             return (
               <g
                 key={n.id}
@@ -303,9 +357,30 @@ export function CausalGraph({
                   setSelected((s) => (s === n.id ? null : n.id));
                 }}
               >
+                {isOutcome && (
+                  <motion.circle
+                    r={r + 8}
+                    fill="none"
+                    stroke={ROLE_COLOR[n.role]}
+                    strokeWidth={1.2}
+                    initial={{ opacity: 0.5, scale: 0.9 }}
+                    animate={{ opacity: [0.35, 0, 0.35], scale: [0.9, 1.6, 0.9] }}
+                    transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                )}
                 {isSel && <circle r={r + 6} fill="none" stroke={ROLE_COLOR[n.role]} strokeWidth={1.5} opacity={0.5} />}
-                <circle r={r} fill={ROLE_COLOR[n.role]} stroke="#fcfbf6" strokeWidth={2.5} />
-                <text
+                <motion.circle
+                  r={r}
+                  fill={`url(#cg-grad-${n.role})`}
+                  stroke="#fcfbf6"
+                  strokeWidth={2.5}
+                  filter="url(#cg-node-shadow)"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 18, delay: ni * 0.045 }}
+                  style={{ transformBox: "fill-box", transformOrigin: "center" }}
+                />
+                <motion.text
                   x={0}
                   y={r + 12}
                   textAnchor="middle"
@@ -313,9 +388,12 @@ export function CausalGraph({
                   fill="#55534a"
                   fontWeight={n.role === "outcome" || n.role === "treatment" ? 700 : 500}
                   pointerEvents="none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: ni * 0.045 + 0.15 }}
                 >
                   {n.label}
-                </text>
+                </motion.text>
               </g>
             );
           })}
