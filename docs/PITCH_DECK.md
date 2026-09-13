@@ -184,13 +184,15 @@ Say: *"The agent was 93% confident, but the causal evidence supports the decisio
 `Dashboard 6.01` · `CausalOCPM 5.25` · `Planted truth 5.27` → **0.4% error**
 
 *Precision Manufacturing — Atlas Precision Aerostructures, Halcyon Forge dependency → Line-Side Delivery Delay:*
-`Dashboard 8.78` · `CausalOCPM 6.65` · `Planted truth 6.66` → **0.2% error**
+`Dashboard 7.59` · `CausalOCPM 6.18` · `Planted truth 5.78` → **6.8% error**
 
 **Payoff:** Same system. Different domain.
 
 **Note (say, don't put on slide):** "Real-world data does not tell us the true counterfactual answer. Creating data with a known causal answer gives us a controlled way to test whether the system can recover it."
 
-**SPEAKER NOTES (~40s):** "We deliberately created data with a known causal answer and asked the system to recover it. In healthcare, the true effect was 5.27 days; we recovered 5.25 — off by 0.4%. We ran the exact same pipeline, unchanged, on precision manufacturing — Atlas Precision Aerostructures, where tight-tolerance titanium parts get routed to one forge and look like the bottleneck — planted 6.66, recovered 6.65, off by 0.2%. Same system, different domain, zero code changes."
+**Note on the two error rates (say if asked):** "0.4% and 6.8% are both real, independently-run results — we're not showing you our best case. The manufacturing scenario has a harder-to-detect confounder by design, and Double ML still lands within 7% of a ground truth it never saw. A method that's only accurate when the confounder is easy is not a method you can trust."
+
+**SPEAKER NOTES (~40s):** "We deliberately created data with a known causal answer and asked the system to recover it. In healthcare, the true effect was 5.27 days; we recovered 5.25 — off by 0.4%. We ran the exact same pipeline, unchanged, on precision manufacturing — Atlas Precision Aerostructures, where tight-tolerance titanium parts get routed to one forge and look like the bottleneck — planted 5.78, recovered 6.18, off by 6.8%. Same system, different domain, zero code changes."
 
 ---
 
@@ -210,18 +212,18 @@ Say: *"The agent was 93% confident, but the causal evidence supports the decisio
 CARE COORDINATION AGENT              SOURCING AGENT — ATLAS PRECISION
 40 decisions audited                 40 decisions audited
 
-Causal support        87%            Causal support        76%
-Would be blocked        0%           Would be blocked       50%
+Causal support        87%            Causal support        81%
+Would be blocked        0%           Would be blocked       23%
 
-SCORE   74/100                       SCORE   23/100
+SCORE   74/100                       SCORE   44/100
 🟡 SUPERVISED                        🔴 RESTRICTED
-keep a human in the loop             not one decision cleared
-                                      the gate unreviewed
+keep a human in the loop             reduce autonomy until
+                                      the confounding is addressed
 ```
 
 **Payoff:** Don't ask only: how confident is the AI? Ask: how often does its reasoning hold up?
 
-**SPEAKER NOTES (~40s):** "This is a future concept, not a deployed control system — but we ran it on our own benchmark. Score every decision an agent makes, and you get a trust profile. Care Coordination scores 74 — supervised, keep humans in the loop. The Sourcing Agent at Atlas scores 23 — restricted, not one decision cleared the gate without review. Don't ask only how confident the AI is. Ask how often its reasoning actually holds up."
+**SPEAKER NOTES (~40s):** "This is a future concept, not a deployed control system — but we ran it on our own benchmark. Score every decision an agent makes, and you get a trust profile. Care Coordination scores 74 — supervised, keep humans in the loop. The Sourcing Agent at Atlas scores 44 — restricted: nearly a quarter of its decisions would be blocked outright, and two out of three ran meaningfully more confident than the causal evidence supported. Don't ask only how confident the AI is. Ask how often its reasoning actually holds up."
 
 ---
 
@@ -259,7 +261,7 @@ AI should not earn autonomy from confidence alone. It should earn autonomy from 
 
 - Causal discovery assumes no unmeasured confounders; clinical judgment / unrecorded severity is not in the event log and cannot be ruled out.
 - The benchmark is synthetic — it tests whether the method recovers a known truth when its assumptions hold, not whether those assumptions hold on any given real dataset.
-- VanderWeele E-value 7.1 (healthcare) / 7.3 (manufacturing): an unmeasured confounder would need a risk-ratio association above ~7 with both treatment and outcome to overturn the result.
+- VanderWeele E-value 7.1 (healthcare) / 5.7 (manufacturing): an unmeasured confounder would need a risk-ratio association above ~5.7–7.1 with both treatment and outcome to overturn the result — strong, though manufacturing's margin is real, not padded.
 - Method stack (say only if asked): object-centric event reconstruction → bootstrapped PC (Fisher-Z, α 0.05, 20 subsamples, ≥60% edge stability) → mixed structural causal model (logistic + gradient boosting) → Double ML (5-fold cross-fitting, GBM nuisance, sandwich SEs) → placebo / random-common-cause refuters → 10-seed robustness.
 - "Is the demo live?" — the console renders validated results from the Python engine; the what-if simulator re-solves the structural equations live. Be explicit about the split.
 - "How is this different from Signavio/Celonis?" — conformance checking + rule-based what-ifs vs. a fitted causal model with confounding removed and a real counterfactual. Correlation vs. causation.

@@ -1,18 +1,44 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { clsx } from "clsx";
 import { motion } from "framer-motion";
 import { PanelsTopLeft } from "lucide-react";
 import type { CausalFixture } from "@/lib/engine/types";
 import { SCENES, SCENE_LABELS } from "./scenes";
+import { MiniStatusStrip } from "./StoryChain";
 
 const SPEEDS = [1, 2, 4];
+
+// what the persistent status strip shows at each scene, so the incident's
+// state carries across screens instead of resetting on every scene change.
+// null = hide the strip entirely (scene 1 already has its own full ripple).
+const STRIP_CAPTIONS = [
+  "Before the decision",
+  null,
+  "Investigating the decision that caused this",
+  "Replaying both outcomes",
+  "Same incident — testing an intervention",
+  "Fix applied — network recovering",
+  "Verifying the fix holds up",
+] as const;
 
 export function Investigation({ f, onOpenConsole }: { f: CausalFixture; onOpenConsole: () => void }) {
   const [i, setI] = useState(0);
   const [speed, setSpeed] = useState(1);
   const Scene = SCENES[i];
   const last = i === SCENES.length - 1;
+
+  // final severity the incident reaches, per stage — the strip shows this
+  // once the story has moved past the ripple scene
+  const incidentSev = useMemo(() => {
+    const sev: Record<string, "ok" | "warn" | "crit"> = {};
+    for (const step of f.narrative.incident.steps) sev[step.stageId] = step.sev;
+    return sev;
+  }, [f]);
+  const decisionStageId = useMemo(
+    () => f.narrative.stages.find((s) => s.agent === f.narrative.agentName)?.id,
+    [f],
+  );
 
   const next = useCallback(() => setI((v) => Math.min(SCENES.length - 1, v + 1)), []);
   const prev = useCallback(() => setI((v) => Math.max(0, v - 1)), []);
@@ -99,6 +125,17 @@ export function Investigation({ f, onOpenConsole }: { f: CausalFixture; onOpenCo
             </button>
           </div>
         </div>
+
+        {/* persistent incident status — carries the story's state across scenes */}
+        {STRIP_CAPTIONS[i] && (
+          <MiniStatusStrip
+            stages={f.narrative.stages}
+            sev={i === 0 ? {} : incidentSev}
+            activeId={i === 0 ? decisionStageId : undefined}
+            resolved={i >= 5}
+            caption={STRIP_CAPTIONS[i] ?? undefined}
+          />
+        )}
 
         {/* scene */}
         <motion.div

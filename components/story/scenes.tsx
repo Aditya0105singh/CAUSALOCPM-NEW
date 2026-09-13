@@ -235,7 +235,20 @@ export function WhatIfScene({ f, speed, onNext }: SceneProps) {
       </div>
 
       {done && (
-        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="mt-6 rounded-2xl border border-forest/30 bg-sage/50 p-5 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            boxShadow: [
+              "0 0 0 0 rgba(61,90,61,0.18)",
+              "0 0 0 10px rgba(61,90,61,0)",
+              "0 0 0 0 rgba(61,90,61,0)",
+            ],
+          }}
+          transition={{ boxShadow: { duration: 2.2, repeat: Infinity, repeatDelay: 0.6 } }}
+          className="mt-6 rounded-2xl border border-forest/30 bg-sage/50 p-5 text-center"
+        >
           <div className="font-display text-4xl text-forest">
             <CountUp value={w.savedDays} decimals={1} /> {f.story.outcomeUnit} could have been saved
           </div>
@@ -345,8 +358,8 @@ export function ActionScene({ f, onNext }: SceneProps) {
         <h3 className="mt-1 font-display text-2xl text-ink">{a.title}</h3>
         <p className="mt-2 text-[14px] text-ink-soft">{a.detail}</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Metric show label="Delay reduction" value={`~${a.reductionPct}%`} tone="forest" />
-          <Metric show label="Modeled savings" value={`~${fmtMoney(a.annualSavings)}`} unit="/ yr" tone="forest" />
+          <Metric show label="Delay reduction" value={<>~<CountUp value={a.reductionPct} decimals={0} />%</>} tone="forest" />
+          <Metric show label="Modeled savings" value={<CountUp value={a.annualSavings} prefix="~$" />} unit="/ yr" tone="forest" />
           <Metric show label="Payback" value={a.payback} tone="ink" />
         </div>
         <p className="mt-3 text-[11px] text-muted">
@@ -449,7 +462,7 @@ function Metric({
 }: {
   show: boolean;
   label: string;
-  value: string;
+  value: React.ReactNode;
   unit?: string;
   tone?: "ink" | "muted" | "forest" | "amber";
 }) {
