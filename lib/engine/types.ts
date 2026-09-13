@@ -118,6 +118,17 @@ const CateSegment = z.object({ label: z.string(), effect: z.number(), ciLow: z.n
 
 const StageSev = z.enum(["ok", "warn", "crit"]);
 
+/** Causal Decision Gate — three checks, one verdict, attached to every decision. */
+const GateResult = z.object({
+  trustGap: z.number(),          // stated confidence − causal support, in points
+  causalSupportPct: z.number(),  // share of the observed association that survives adjustment
+  counterfactualCost: z.number(),
+  coverage: z.enum(["well-covered", "moderate", "sparse"]),
+  segmentCiWidth: z.number(),
+  status: z.enum(["PASS", "REVIEW", "HOLD"]),
+  reason: z.string(),
+});
+
 export const CausalFixture = z.object({
   domain: DomainId,
   generatedAt: z.string(),
@@ -207,9 +218,43 @@ export const CausalFixture = z.object({
       dominantContribution: z.number(),
       controllableDays: z.number(),
       structuralDays: z.number(),
+      gate: GateResult,
       verdict: z.enum(["over-confident", "under-supported", "aligned"]),
     }),
   ),
+
+  dashboardTruth: z.array(
+    z.object({
+      label: z.string(),
+      reported: z.number(),
+      causal: z.number(),
+      hidden: z.number(),
+      hiddenPct: z.number(),
+    }),
+  ),
+
+  agentHealth: z.object({
+    agent: z.string(),
+    audited: z.number(),
+    populationDecisions: z.number(),
+    pctPass: z.number(),
+    pctReview: z.number(),
+    pctHold: z.number(),
+    pctOverConfident: z.number(),
+    avgDashboardBiasPct: z.number(),
+    mostConfoundedRelationship: z.string(),
+    avgAvoidableDays: z.number(),
+    avoidableAnnualImpact: z.number(),
+  }),
+
+  causalAutonomyScore: z.object({
+    agent: z.string(),
+    currentAutonomy: z.string(),
+    score: z.number(),
+    band: z.enum(["READY", "SUPERVISED", "RESTRICTED"]),
+    recommendation: z.string(),
+    inputs: z.array(z.object({ label: z.string(), value: z.string(), note: z.string() })),
+  }),
 
   causalAuditScore: z.object({
     score: z.number(),

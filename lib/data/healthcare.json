@@ -301,6 +301,15 @@
       "dominantContribution": 5.83,
       "controllableDays": 10.11,
       "structuralDays": 0.58,
+      "gate": {
+        "trustGap": 6,
+        "causalSupportPct": 87,
+        "counterfactualCost": 4.1,
+        "coverage": "well-covered",
+        "segmentCiWidth": 1.44,
+        "status": "REVIEW",
+        "reason": "Stated confidence runs 6 points above causal support."
+      },
       "verdict": "over-confident"
     },
     {
@@ -317,6 +326,15 @@
       "dominantContribution": 5.55,
       "controllableDays": 11.01,
       "structuralDays": 0.38,
+      "gate": {
+        "trustGap": 6,
+        "causalSupportPct": 87,
+        "counterfactualCost": 3.9,
+        "coverage": "sparse",
+        "segmentCiWidth": 1.54,
+        "status": "REVIEW",
+        "reason": "Stated confidence runs 6 points above causal support."
+      },
       "verdict": "over-confident"
     },
     {
@@ -333,6 +351,15 @@
       "dominantContribution": 5.23,
       "controllableDays": 8.81,
       "structuralDays": 0.78,
+      "gate": {
+        "trustGap": 4,
+        "causalSupportPct": 87,
+        "counterfactualCost": 3.7,
+        "coverage": "well-covered",
+        "segmentCiWidth": 1.44,
+        "status": "REVIEW",
+        "reason": "Stated confidence runs 4 points above causal support."
+      },
       "verdict": "over-confident"
     },
     {
@@ -349,6 +376,15 @@
       "dominantContribution": 4.29,
       "controllableDays": 8.52,
       "structuralDays": 0.72,
+      "gate": {
+        "trustGap": -2,
+        "causalSupportPct": 87,
+        "counterfactualCost": 3,
+        "coverage": "well-covered",
+        "segmentCiWidth": 1.38,
+        "status": "PASS",
+        "reason": "Confidence is within causal support and the counterfactual cost is low."
+      },
       "verdict": "aligned"
     },
     {
@@ -365,6 +401,15 @@
       "dominantContribution": 2.03,
       "controllableDays": 5.66,
       "structuralDays": 0.39,
+      "gate": {
+        "trustGap": 0,
+        "causalSupportPct": 87,
+        "counterfactualCost": 1.4,
+        "coverage": "well-covered",
+        "segmentCiWidth": 1.44,
+        "status": "PASS",
+        "reason": "Confidence is within causal support and the counterfactual cost is low."
+      },
       "verdict": "aligned"
     },
     {
@@ -381,9 +426,90 @@
       "dominantContribution": 2.08,
       "controllableDays": 6.03,
       "structuralDays": 0.77,
+      "gate": {
+        "trustGap": 0,
+        "causalSupportPct": 87,
+        "counterfactualCost": 1.5,
+        "coverage": "well-covered",
+        "segmentCiWidth": 1.38,
+        "status": "PASS",
+        "reason": "Confidence is within causal support and the counterfactual cost is low."
+      },
       "verdict": "aligned"
     }
   ],
+  "dashboardTruth": [
+    {
+      "label": "Specialist Assignment",
+      "reported": 6.01,
+      "causal": 5.25,
+      "hidden": 0.76,
+      "hiddenPct": 12.6
+    },
+    {
+      "label": "Treatment Duration",
+      "reported": 3.34,
+      "causal": 3.12,
+      "hidden": 0.22,
+      "hiddenPct": 6.6
+    },
+    {
+      "label": "Insurance Expedited",
+      "reported": 2.1,
+      "causal": 1.98,
+      "hidden": 0.12,
+      "hiddenPct": 5.7
+    },
+    {
+      "label": "Patient Complexity",
+      "reported": 0.65,
+      "causal": 0.65,
+      "hidden": 0,
+      "hiddenPct": 0
+    }
+  ],
+  "agentHealth": {
+    "agent": "Care Coordination Agent v4.2",
+    "audited": 40,
+    "populationDecisions": 8100,
+    "pctPass": 50,
+    "pctReview": 50,
+    "pctHold": 0,
+    "pctOverConfident": 22.5,
+    "avgDashboardBiasPct": 12.6,
+    "mostConfoundedRelationship": "Specialist Assignment → Length of Stay",
+    "avgAvoidableDays": 2.9,
+    "avoidableAnnualImpact": 653950
+  },
+  "causalAutonomyScore": {
+    "agent": "Care Coordination Agent v4.2",
+    "currentAutonomy": "AUTO-ASSIGN",
+    "score": 74,
+    "band": "SUPERVISED",
+    "recommendation": "Keep human review at the current threshold; the confidence–evidence gap is real but bounded.",
+    "inputs": [
+      {
+        "label": "Causal support",
+        "value": "87.4%",
+        "note": "share of the observed effect that survives confounding adjustment"
+      },
+      {
+        "label": "Over-confidence rate",
+        "value": "22.5%",
+        "note": "decisions where stated confidence ran ≥6 pts above causal support"
+      },
+      {
+        "label": "Hold rate",
+        "value": "0%",
+        "note": "decisions the gate would block outright"
+      },
+      {
+        "label": "Dashboard bias in its domain",
+        "value": "12.6%",
+        "note": "of the headline metric it optimises against"
+      }
+    ]
+  },
   "causalAuditScore": {
     "score": 85,
     "status": "MONITOR",
@@ -1479,7 +1605,7 @@
   },
   "crossDomain": [
     {
-      "domain": "Manufacturing",
+      "domain": "Precision Manufacturing",
       "precision": 1,
       "recall": 0.89,
       "f1": 0.94,

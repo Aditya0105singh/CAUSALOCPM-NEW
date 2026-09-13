@@ -3,11 +3,11 @@
   "generatedAt": "2024-06-30T09:00:00.000Z",
   "spuriousEdgeReason": "",
   "narrative": {
-    "agentName": "Procurement Agent",
-    "agentRole": "autonomously selects a supplier for each incoming order",
-    "decisionLabel": "Selected Supplier A",
-    "altLabel": "Supplier B",
-    "outcomeLabel": "Shipment delayed",
+    "agentName": "Sourcing Agent",
+    "agentRole": "autonomously selects a forge for each incoming precision order",
+    "decisionLabel": "Selected Halcyon Forge",
+    "altLabel": "Meridian Tool & Die",
+    "outcomeLabel": "Delivery delayed",
     "agentSignals": [
       {
         "label": "Quoted unit cost",
@@ -22,14 +22,14 @@
         "weight": 0.22
       },
       {
-        "label": "Order complexity",
+        "label": "Spec complexity",
         "weight": 0.08
       }
     ],
     "agentBlindSpots": [
-      "Complex orders are routed to Supplier A and are slower regardless of supplier — a confounded path",
-      "Supplier A's effect runs through Material Lead Time, not visible in the quote",
-      "The historical on-time rate is itself confounded by which orders Supplier A gets"
+      "Tight-tolerance orders are routed to Halcyon Forge and are slower regardless of supplier — a confounded path",
+      "Halcyon's effect runs through Material Lead Time, not visible in the quote",
+      "The historical on-time rate is itself confounded by which orders Halcyon gets"
     ],
     "stages": [
       {
@@ -38,8 +38,8 @@
       },
       {
         "id": "supplier",
-        "label": "Supplier",
-        "agent": "Procurement Agent"
+        "label": "Forge",
+        "agent": "Sourcing Agent"
       },
       {
         "id": "material",
@@ -57,16 +57,16 @@
       },
       {
         "id": "customer",
-        "label": "Customer"
+        "label": "Line-Side"
       }
     ],
     "incident": {
-      "trigger": "Supplier A confirmed for a high-complexity order",
+      "trigger": "Halcyon Forge confirmed for a tight-tolerance order",
       "steps": [
         {
           "stageId": "supplier",
           "t": "10:42",
-          "note": "Procurement Agent selects Supplier A",
+          "note": "Sourcing Agent selects Halcyon Forge",
           "sev": "warn"
         },
         {
@@ -90,7 +90,7 @@
         {
           "stageId": "customer",
           "t": "next day",
-          "note": "Shipment SLA breached — 7.1 d late",
+          "note": "Line-side delivery SLA breached — 7.1 d late",
           "sev": "crit"
         }
       ]
@@ -99,14 +99,14 @@
   "story": {
     "incidentId": "SC-20481",
     "caseId": "ORD_0017",
-    "trigger": "Supplier A confirmed for a high-complexity order",
-    "outcomeVariable": "Shipment Delay",
+    "trigger": "Halcyon Forge confirmed for a tight-tolerance order",
+    "outcomeVariable": "Line-Side Delivery Delay",
     "outcomeUnit": "days",
     "agent": {
-      "name": "Procurement Agent",
-      "role": "autonomously selects a supplier for each incoming order",
-      "decision": "Selected Supplier A",
-      "alt": "Supplier B",
+      "name": "Sourcing Agent",
+      "role": "autonomously selects a forge for each incoming precision order",
+      "decision": "Selected Halcyon Forge",
+      "alt": "Meridian Tool & Die",
       "confidencePct": 87,
       "signals": [
         {
@@ -122,14 +122,14 @@
           "weight": 0.22
         },
         {
-          "label": "Order complexity",
+          "label": "Spec complexity",
           "weight": 0.08
         }
       ],
       "blindSpots": [
-        "Complex orders are routed to Supplier A and are slower regardless of supplier — a confounded path",
-        "Supplier A's effect runs through Material Lead Time, not visible in the quote",
-        "The historical on-time rate is itself confounded by which orders Supplier A gets"
+        "Tight-tolerance orders are routed to Halcyon Forge and are slower regardless of supplier — a confounded path",
+        "Halcyon's effect runs through Material Lead Time, not visible in the quote",
+        "The historical on-time rate is itself confounded by which orders Halcyon gets"
       ]
     },
     "ripple": {
@@ -140,8 +140,8 @@
         },
         {
           "id": "supplier",
-          "label": "Supplier",
-          "agent": "Procurement Agent"
+          "label": "Forge",
+          "agent": "Sourcing Agent"
         },
         {
           "id": "material",
@@ -159,14 +159,14 @@
         },
         {
           "id": "customer",
-          "label": "Customer"
+          "label": "Line-Side"
         }
       ],
       "steps": [
         {
           "stageId": "supplier",
           "t": "10:42",
-          "note": "Procurement Agent selects Supplier A",
+          "note": "Sourcing Agent selects Halcyon Forge",
           "sev": "warn"
         },
         {
@@ -190,7 +190,7 @@
         {
           "stageId": "customer",
           "t": "next day",
-          "note": "Shipment SLA breached — 7.1 d late",
+          "note": "Line-side delivery SLA breached — 7.1 d late",
           "sev": "crit"
         }
       ],
@@ -198,20 +198,20 @@
     },
     "cause": {
       "path": [
-        "Order Complexity",
-        "Supplier A",
+        "Spec Complexity",
+        "Halcyon Forge",
         "Material Lead Time",
-        "Shipment Delay"
+        "Line-Side Delivery Delay"
       ],
       "effectDays": 6.65,
       "naiveDays": 8.78,
       "trueDays": 6.66,
-      "confounderLabel": "Order Complexity",
+      "confounderLabel": "Spec Complexity",
       "confoundingDays": 2.13,
       "confoundingPct": 24.3,
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "days": 6.65
         },
         {
@@ -227,15 +227,15 @@
           "days": 1.12
         },
         {
-          "label": "Order Complexity",
+          "label": "Spec Complexity",
           "days": 0.7
         }
       ]
     },
     "whatIf": {
-      "actualLabel": "Selected Supplier A",
+      "actualLabel": "Selected Halcyon Forge",
       "actualDays": 14.7,
-      "cfLabel": "Supplier B",
+      "cfLabel": "Meridian Tool & Die",
       "cfDays": 10,
       "savedDays": 4.7,
       "reductionPct": 32
@@ -243,7 +243,7 @@
     "confidenceGap": {
       "agentPct": 87,
       "causalPct": 76,
-      "note": "The agent was 87% confident. Only 76% of the observed Supplier A Dependency → shipment delay association survives as a causal effect once order complexity is adjusted out — the rest was confounding."
+      "note": "The agent was 87% confident. Only 76% of the observed Halcyon Forge Dependency → line-side delivery delay association survives as a causal effect once spec complexity is adjusted out — the rest was confounding."
     },
     "trust": {
       "verdict": "HIGH CONFIDENCE",
@@ -298,8 +298,8 @@
       ]
     },
     "action": {
-      "title": "Shift ~25% procurement from Supplier A to Supplier B",
-      "detail": "Supplier A dependency is the dominant causal driver via Material Lead Time. Re-routing a quarter of volume to Supplier B cuts exposure without breaching capacity.",
+      "title": "Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die",
+      "detail": "Halcyon Forge dependency is the dominant causal driver via Material Lead Time. Re-routing a quarter of volume to Meridian Tool & Die cuts exposure without breaching capacity.",
       "annualSavings": 479000,
       "payback": "3.7 months",
       "confidence": "High",
@@ -309,101 +309,227 @@
   "agentDecisions": [
     {
       "id": "AGT-PRC-4200",
-      "agent": "Procurement Agent",
-      "decisionLabel": "Selected Supplier A",
+      "agent": "Sourcing Agent",
+      "decisionLabel": "Selected Halcyon Forge",
       "confidence": 0.87,
       "caseId": "ORD_0017",
-      "entity": "Fasteners",
+      "entity": "Titanium Forgings",
       "complexityScore": 8,
       "outcomeDays": 14.7,
       "counterfactualDays": 10,
-      "dominantDriver": "Supplier A Dependency",
+      "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 6.71,
       "controllableDays": 10.18,
       "structuralDays": 1.13,
+      "gate": {
+        "trustGap": 11,
+        "causalSupportPct": 76,
+        "counterfactualCost": 4.7,
+        "coverage": "sparse",
+        "segmentCiWidth": 1.62,
+        "status": "REVIEW",
+        "reason": "Stated confidence runs 11 points above causal support."
+      },
       "verdict": "aligned"
     },
     {
       "id": "AGT-PRC-4217",
-      "agent": "Procurement Agent",
-      "decisionLabel": "Selected Supplier A",
+      "agent": "Sourcing Agent",
+      "decisionLabel": "Selected Halcyon Forge",
       "confidence": 0.87,
       "caseId": "ORD_0029",
-      "entity": "Raw Metal",
+      "entity": "Fastener Sets",
       "complexityScore": 10,
       "outcomeDays": 13.9,
       "counterfactualDays": 5.9,
-      "dominantDriver": "Supplier A Dependency",
+      "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 11.39,
       "controllableDays": 14.86,
       "structuralDays": 0.47,
+      "gate": {
+        "trustGap": 11,
+        "causalSupportPct": 76,
+        "counterfactualCost": 8,
+        "coverage": "sparse",
+        "segmentCiWidth": 1.62,
+        "status": "HOLD",
+        "reason": "Stated confidence runs 11 points above causal support, and the alternative saves 8 days — in a segment where the estimate is sparse."
+      },
       "verdict": "aligned"
     },
     {
       "id": "AGT-PRC-4234",
-      "agent": "Procurement Agent",
-      "decisionLabel": "Selected Supplier A",
+      "agent": "Sourcing Agent",
+      "decisionLabel": "Selected Halcyon Forge",
       "confidence": 0.89,
       "caseId": "ORD_0035",
-      "entity": "Raw Metal",
+      "entity": "Fastener Sets",
       "complexityScore": 8,
       "outcomeDays": 13.1,
       "counterfactualDays": 10.3,
-      "dominantDriver": "Supplier A Dependency",
+      "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 4.02,
       "controllableDays": 8.33,
       "structuralDays": 1.11,
+      "gate": {
+        "trustGap": 13,
+        "causalSupportPct": 76,
+        "counterfactualCost": 2.8,
+        "coverage": "sparse",
+        "segmentCiWidth": 1.62,
+        "status": "REVIEW",
+        "reason": "Stated confidence runs 13 points above causal support."
+      },
       "verdict": "over-confident"
     },
     {
       "id": "AGT-PRC-4251",
-      "agent": "Procurement Agent",
-      "decisionLabel": "Selected Supplier A",
+      "agent": "Sourcing Agent",
+      "decisionLabel": "Selected Halcyon Forge",
       "confidence": 0.9,
       "caseId": "ORD_0038",
-      "entity": "Assemblies",
+      "entity": "Composite Panels",
       "complexityScore": 6,
       "outcomeDays": 11.6,
       "counterfactualDays": 4.2,
-      "dominantDriver": "Supplier A Dependency",
+      "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 10.53,
       "controllableDays": 13.59,
       "structuralDays": 1.44,
+      "gate": {
+        "trustGap": 14,
+        "causalSupportPct": 76,
+        "counterfactualCost": 7.4,
+        "coverage": "well-covered",
+        "segmentCiWidth": 1.5,
+        "status": "HOLD",
+        "reason": "Stated confidence runs 14 points above causal support, and the alternative saves 7.4 days — in a segment where the estimate is well-covered."
+      },
       "verdict": "over-confident"
     },
     {
       "id": "AGT-PRC-4268",
-      "agent": "Procurement Agent",
-      "decisionLabel": "Selected Supplier A",
+      "agent": "Sourcing Agent",
+      "decisionLabel": "Selected Halcyon Forge",
       "confidence": 0.87,
       "caseId": "ORD_0016",
-      "entity": "Raw Metal",
+      "entity": "Fastener Sets",
       "complexityScore": 4,
       "outcomeDays": 11.2,
       "counterfactualDays": 7.2,
-      "dominantDriver": "Supplier A Dependency",
+      "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 5.67,
       "controllableDays": 8.33,
       "structuralDays": 0.63,
+      "gate": {
+        "trustGap": 11,
+        "causalSupportPct": 76,
+        "counterfactualCost": 4,
+        "coverage": "well-covered",
+        "segmentCiWidth": 1.44,
+        "status": "REVIEW",
+        "reason": "Stated confidence runs 11 points above causal support."
+      },
       "verdict": "aligned"
     },
     {
       "id": "AGT-PRC-4285",
-      "agent": "Procurement Agent",
-      "decisionLabel": "Selected Supplier A",
+      "agent": "Sourcing Agent",
+      "decisionLabel": "Selected Halcyon Forge",
       "confidence": 0.89,
       "caseId": "ORD_0037",
-      "entity": "Assemblies",
+      "entity": "Composite Panels",
       "complexityScore": 9,
       "outcomeDays": 11,
       "counterfactualDays": 5.2,
-      "dominantDriver": "Supplier A Dependency",
+      "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 8.22,
       "controllableDays": 12.77,
       "structuralDays": 1.43,
+      "gate": {
+        "trustGap": 13,
+        "causalSupportPct": 76,
+        "counterfactualCost": 5.8,
+        "coverage": "sparse",
+        "segmentCiWidth": 1.62,
+        "status": "HOLD",
+        "reason": "Stated confidence runs 13 points above causal support, and the alternative saves 5.8 days — in a segment where the estimate is sparse."
+      },
       "verdict": "over-confident"
     }
   ],
+  "dashboardTruth": [
+    {
+      "label": "Halcyon Forge Dependency",
+      "reported": 8.78,
+      "causal": 6.65,
+      "hidden": 2.13,
+      "hiddenPct": 24.3
+    },
+    {
+      "label": "Material Lead Time",
+      "reported": 2.9,
+      "causal": 2.88,
+      "hidden": 0.02,
+      "hiddenPct": 0.7
+    },
+    {
+      "label": "Express Carrier",
+      "reported": 2.15,
+      "causal": 1.9,
+      "hidden": 0.25,
+      "hiddenPct": 11.6
+    },
+    {
+      "label": "Approval Duration",
+      "reported": 1.17,
+      "causal": 1.12,
+      "hidden": 0.05,
+      "hiddenPct": 4.3
+    }
+  ],
+  "agentHealth": {
+    "agent": "Sourcing Agent v4.2",
+    "audited": 40,
+    "populationDecisions": 8100,
+    "pctPass": 0,
+    "pctReview": 50,
+    "pctHold": 50,
+    "pctOverConfident": 100,
+    "avgDashboardBiasPct": 24.3,
+    "mostConfoundedRelationship": "Halcyon Forge Dependency → Line-Side Delivery Delay",
+    "avgAvoidableDays": 4.6,
+    "avoidableAnnualImpact": 1311552
+  },
+  "causalAutonomyScore": {
+    "agent": "Sourcing Agent v4.2",
+    "currentAutonomy": "AUTO-EXECUTE",
+    "score": 23,
+    "band": "RESTRICTED",
+    "recommendation": "Reduce autonomy — route every decision through review until the confounding is addressed.",
+    "inputs": [
+      {
+        "label": "Causal support",
+        "value": "75.7%",
+        "note": "share of the observed effect that survives confounding adjustment"
+      },
+      {
+        "label": "Over-confidence rate",
+        "value": "100%",
+        "note": "decisions where stated confidence ran ≥6 pts above causal support"
+      },
+      {
+        "label": "Hold rate",
+        "value": "50%",
+        "note": "decisions the gate would block outright"
+      },
+      {
+        "label": "Dashboard bias in its domain",
+        "value": "24.3%",
+        "note": "of the headline metric it optimises against"
+      }
+    ]
+  },
   "causalAuditScore": {
     "score": 87,
     "status": "PROCEED",
@@ -451,21 +577,21 @@
     ]
   },
   "scenario": {
-    "name": "Shipment Delay Analysis",
-    "outcomeVariable": "Shipment Delay",
+    "name": "Line-Side Delivery Delay Analysis",
+    "outcomeVariable": "Line-Side Delivery Delay",
     "outcomeUnit": "days",
-    "treatmentLabel": "Supplier A Dependency",
-    "confounderLabel": "Order Complexity",
-    "moderatorLabel": "Order Complexity",
-    "org": "Northwind Components Co.",
-    "domainLabel": "Manufacturing",
+    "treatmentLabel": "Halcyon Forge Dependency",
+    "confounderLabel": "Spec Complexity",
+    "moderatorLabel": "Spec Complexity",
+    "org": "Atlas Precision Aerostructures",
+    "domainLabel": "Precision Manufacturing",
     "timeRange": "Jan 2023 – Apr 2024",
     "totalEvents": 15000,
     "treatedCases": 8100,
     "treatedPct": 54,
     "dataSources": 8,
     "lastUpdated": "2 hours ago",
-    "description": "Traditional process mining would read Supplier A's raw correlation with delay and re-source away from it. But complex orders are preferentially routed to Supplier A and are inherently slower — a confounding path. CausalOCPM isolates the true causal effect of Supplier A dependency on shipment delay.",
+    "description": "Traditional process mining would read Halcyon Forge's raw correlation with delay and re-source away from it. But tight-tolerance orders are preferentially routed to Halcyon — the only forge qualified for them — and are inherently slower to machine, regardless of supplier. CausalOCPM isolates the true causal effect of Halcyon Forge dependency on line-side delivery delay.",
     "objectTypes": 5,
     "causalLinks": 9,
     "reliabilityPct": 86,
@@ -481,28 +607,28 @@
     "outcomeStd": 4.44
   },
   "executiveSummary": {
-    "headline": "Supplier A dependency is the dominant causal driver of shipment delay — statistically validated, not just correlated.",
+    "headline": "Halcyon Forge dependency is the dominant causal driver of line-side delivery delay — statistically validated, not just correlated.",
     "confidence": "HIGH CONFIDENCE",
     "bullets": [
       "Recovered causal effect 6.65 days via Double ML vs a planted ground truth of 6.66 — recovery error 0.2%. A naive dashboard would have reported 8.78; confounding accounts for 2.13 of that.",
       "Autonomous bootstrapped-PC discovery: F1 0.94 (8 of 9 planted edges, no spurious edges). Domain knowledge then recovers the 1 missed edge — never inventing a relationship.",
-      "Recommended action: Shift ~25% procurement from Supplier A to Supplier B → ~$479K/yr expected savings, payback 3.7 months",
+      "Recommended action: Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die → ~$479K/yr expected savings, payback 3.7 months",
       "Robust to hidden confounding: VanderWeele E-value ≈ 7.3, placebo test +0.02 ≈ 0, stable across 10 regenerated datasets"
     ],
-    "recommendedAction": "Shift ~25% procurement from Supplier A to Supplier B",
-    "alertOutcome": "Shipment Delay",
+    "recommendedAction": "Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die",
+    "alertOutcome": "Line-Side Delivery Delay",
     "alertReductionPct": 20.5,
     "chain": [
-      "Order Complexity",
-      "Supplier A",
+      "Spec Complexity",
+      "Halcyon Forge",
       "Material Lead Time",
-      "Shipment Delay"
+      "Line-Side Delivery Delay"
     ],
-    "riskSegment": "Supplier A · high-complexity orders"
+    "riskSegment": "Halcyon Forge · tight-tolerance orders"
   },
   "kpis": {
     "causalLinks": 9,
-    "target": "Shipment Delay",
+    "target": "Line-Side Delivery Delay",
     "expertRules": 9,
     "reliabilityPct": 86
   },
@@ -518,31 +644,31 @@
     "falseNegatives": 1,
     "edgeStability": [
       {
-        "edge": "Order Complexity → Supplier A Dependency",
+        "edge": "Spec Complexity → Halcyon Forge Dependency",
         "frequency": 0.31,
         "discovered": false,
         "pruned": false
       },
       {
-        "edge": "Order Complexity → Machine Queue Length",
+        "edge": "Spec Complexity → Machine Queue Length",
         "frequency": 0.94,
         "discovered": true,
         "pruned": false
       },
       {
-        "edge": "Order Complexity → Shipment Delay",
+        "edge": "Spec Complexity → Line-Side Delivery Delay",
         "frequency": 0.72,
         "discovered": true,
         "pruned": false
       },
       {
-        "edge": "Supplier A Dependency → Material Lead Time",
+        "edge": "Halcyon Forge Dependency → Material Lead Time",
         "frequency": 0.99,
         "discovered": true,
         "pruned": false
       },
       {
-        "edge": "Material Lead Time → Shipment Delay",
+        "edge": "Material Lead Time → Line-Side Delivery Delay",
         "frequency": 0.98,
         "discovered": true,
         "pruned": false
@@ -560,13 +686,13 @@
         "pruned": false
       },
       {
-        "edge": "Approval Duration → Shipment Delay",
+        "edge": "Approval Duration → Line-Side Delivery Delay",
         "frequency": 0.78,
         "discovered": true,
         "pruned": false
       },
       {
-        "edge": "Express Carrier → Shipment Delay",
+        "edge": "Express Carrier → Line-Side Delivery Delay",
         "frequency": 0.66,
         "discovered": true,
         "pruned": false
@@ -699,7 +825,7 @@
         "event_id": "E-00001",
         "case_id": "ORD_0000",
         "activity": "order_placed",
-        "resource": "Supplier C",
+        "resource": "Vantage Alloys",
         "timestamp": "2024-01-02T08:15:00Z",
         "duration_hrs": 21.7
       },
@@ -707,7 +833,7 @@
         "event_id": "E-00002",
         "case_id": "ORD_0001",
         "activity": "material_received",
-        "resource": "Supplier B",
+        "resource": "Meridian Tool & Die",
         "timestamp": "2024-02-03T09:15:00Z",
         "duration_hrs": 19.7
       },
@@ -715,7 +841,7 @@
         "event_id": "E-00003",
         "case_id": "ORD_0002",
         "activity": "production_started",
-        "resource": "Supplier B",
+        "resource": "Meridian Tool & Die",
         "timestamp": "2024-03-04T10:15:00Z",
         "duration_hrs": 8.7
       },
@@ -723,7 +849,7 @@
         "event_id": "E-00004",
         "case_id": "ORD_0003",
         "activity": "quality_check",
-        "resource": "Supplier D",
+        "resource": "Solaris Components",
         "timestamp": "2024-04-05T11:15:00Z",
         "duration_hrs": 26
       },
@@ -731,7 +857,7 @@
         "event_id": "E-00005",
         "case_id": "ORD_0004",
         "activity": "shipment_dispatched",
-        "resource": "Supplier A",
+        "resource": "Halcyon Forge",
         "timestamp": "2024-05-06T12:15:00Z",
         "duration_hrs": 4.7
       },
@@ -739,7 +865,7 @@
         "event_id": "E-00006",
         "case_id": "ORD_0005",
         "activity": "order_placed",
-        "resource": "Supplier D",
+        "resource": "Solaris Components",
         "timestamp": "2024-06-07T13:15:00Z",
         "duration_hrs": 7.1
       },
@@ -747,7 +873,7 @@
         "event_id": "E-00007",
         "case_id": "ORD_0006",
         "activity": "material_received",
-        "resource": "Supplier D",
+        "resource": "Solaris Components",
         "timestamp": "2024-01-08T14:15:00Z",
         "duration_hrs": 26.7
       },
@@ -755,7 +881,7 @@
         "event_id": "E-00008",
         "case_id": "ORD_0007",
         "activity": "production_started",
-        "resource": "Supplier C",
+        "resource": "Vantage Alloys",
         "timestamp": "2024-02-09T15:15:00Z",
         "duration_hrs": 12.3
       },
@@ -763,7 +889,7 @@
         "event_id": "E-00009",
         "case_id": "ORD_0008",
         "activity": "quality_check",
-        "resource": "Supplier C",
+        "resource": "Vantage Alloys",
         "timestamp": "2024-03-10T16:15:00Z",
         "duration_hrs": 29.6
       },
@@ -771,7 +897,7 @@
         "event_id": "E-00010",
         "case_id": "ORD_0009",
         "activity": "shipment_dispatched",
-        "resource": "Supplier D",
+        "resource": "Solaris Components",
         "timestamp": "2024-04-11T17:15:00Z",
         "duration_hrs": 9
       },
@@ -779,7 +905,7 @@
         "event_id": "E-00011",
         "case_id": "ORD_0010",
         "activity": "order_placed",
-        "resource": "Supplier D",
+        "resource": "Solaris Components",
         "timestamp": "2024-05-12T08:15:00Z",
         "duration_hrs": 15.6
       },
@@ -787,7 +913,7 @@
         "event_id": "E-00012",
         "case_id": "ORD_0011",
         "activity": "material_received",
-        "resource": "Supplier A",
+        "resource": "Halcyon Forge",
         "timestamp": "2024-06-13T09:15:00Z",
         "duration_hrs": 7
       },
@@ -795,7 +921,7 @@
         "event_id": "E-00013",
         "case_id": "ORD_0012",
         "activity": "production_started",
-        "resource": "Supplier C",
+        "resource": "Vantage Alloys",
         "timestamp": "2024-01-14T10:15:00Z",
         "duration_hrs": 4.3
       },
@@ -803,7 +929,7 @@
         "event_id": "E-00014",
         "case_id": "ORD_0013",
         "activity": "quality_check",
-        "resource": "Supplier D",
+        "resource": "Solaris Components",
         "timestamp": "2024-02-15T11:15:00Z",
         "duration_hrs": 28.7
       }
@@ -837,12 +963,12 @@
         "name": "Supplier",
         "options": [
           {
-            "label": "Supplier A",
+            "label": "Halcyon Forge",
             "onTimePct": 55,
             "delayedPct": 45
           },
           {
-            "label": "Supplier B",
+            "label": "Meridian Tool & Die",
             "onTimePct": 82,
             "delayedPct": 18
           }
@@ -865,7 +991,7 @@
       }
     ],
     "strongestRelationship": {
-      "from": "Supplier A",
+      "from": "Halcyon Forge",
       "to": "Material Lead Time",
       "coefficient": 7.4
     }
@@ -874,14 +1000,14 @@
     "nodes": [
       {
         "id": "order_complexity",
-        "label": "Order Complexity",
+        "label": "Spec Complexity",
         "role": "confounder",
         "x": 0,
         "y": 2.6
       },
       {
         "id": "supplier_a",
-        "label": "Supplier A Dependency",
+        "label": "Halcyon Forge Dependency",
         "role": "treatment",
         "x": 0,
         "y": 0
@@ -923,7 +1049,7 @@
       },
       {
         "id": "shipment_delay",
-        "label": "Shipment Delay",
+        "label": "Line-Side Delivery Delay",
         "role": "outcome",
         "x": 7.8,
         "y": 1.8
@@ -1016,7 +1142,7 @@
   "effects": [
     {
       "driver": "supplier_a",
-      "label": "Supplier A Dependency",
+      "label": "Halcyon Forge Dependency",
       "effectDays": 6.65,
       "ciLow": 6.59,
       "ciHigh": 6.71,
@@ -1056,7 +1182,7 @@
     },
     {
       "driver": "order_complexity",
-      "label": "Order Complexity",
+      "label": "Spec Complexity",
       "effectDays": 0.7,
       "ciLow": 0.59,
       "ciHigh": 0.81,
@@ -1077,27 +1203,27 @@
   },
   "coefficients": [
     {
-      "edge": "Order Complexity → Supplier A Dependency",
+      "edge": "Spec Complexity → Halcyon Forge Dependency",
       "estimated": 0.66,
       "groundTruth": 0.7
     },
     {
-      "edge": "Order Complexity → Machine Queue Length",
+      "edge": "Spec Complexity → Machine Queue Length",
       "estimated": 0.73,
       "groundTruth": 0.8
     },
     {
-      "edge": "Order Complexity → Shipment Delay",
+      "edge": "Spec Complexity → Line-Side Delivery Delay",
       "estimated": 0.22,
       "groundTruth": 0.2
     },
     {
-      "edge": "Supplier A Dependency → Material Lead Time",
+      "edge": "Halcyon Forge Dependency → Material Lead Time",
       "estimated": 7.03,
       "groundTruth": 7.4
     },
     {
-      "edge": "Material Lead Time → Shipment Delay",
+      "edge": "Material Lead Time → Line-Side Delivery Delay",
       "estimated": 0.92,
       "groundTruth": 0.9
     },
@@ -1112,19 +1238,19 @@
       "groundTruth": 2
     },
     {
-      "edge": "Approval Duration → Shipment Delay",
+      "edge": "Approval Duration → Line-Side Delivery Delay",
       "estimated": 0.35,
       "groundTruth": 0.35
     },
     {
-      "edge": "Express Carrier → Shipment Delay",
+      "edge": "Express Carrier → Line-Side Delivery Delay",
       "estimated": -0.57,
       "groundTruth": -0.6
     }
   ],
   "cate": {
-    "driver": "Supplier A Dependency",
-    "segmentVar": "Order Complexity",
+    "driver": "Halcyon Forge Dependency",
+    "segmentVar": "Spec Complexity",
     "ate": 0.05,
     "segments": [
       {
@@ -1146,7 +1272,7 @@
         "ciHigh": 0.96
       }
     ],
-    "note": "This is the binary treatment's direct within-tertile effect (mediators held fixed), so it is small; the headline 6.65 days is the full path effect through Material Lead Time. What matters here is the trend: the effect grows monotonically with order complexity, so targeted re-sourcing returns most in the high-complexity segment."
+    "note": "This is the binary treatment's direct within-tertile effect (mediators held fixed), so it is small; the headline 6.65 days is the full path effect through Material Lead Time. What matters here is the trend: the effect grows monotonically with spec complexity, so targeted re-sourcing returns most on the tightest-tolerance segment — and any supplier's apparent edge on easy work is untested on hard work until this trend is checked."
   },
   "sensitivity": {
     "placeboEffect": 0.02,
@@ -1206,7 +1332,7 @@
   ],
   "topDrivers": [
     {
-      "label": "Supplier A Dependency",
+      "label": "Halcyon Forge Dependency",
       "impactDays": 6.65
     },
     {
@@ -1222,15 +1348,15 @@
       "impactDays": 1.12
     },
     {
-      "label": "Order Complexity",
+      "label": "Spec Complexity",
       "impactDays": 0.7
     }
   ],
   "recommendedActions": [
     {
       "id": "act-1",
-      "title": "Shift ~25% procurement from Supplier A to Supplier B",
-      "detail": "Supplier A dependency is the dominant causal driver via Material Lead Time. Re-routing a quarter of volume to Supplier B cuts exposure without breaching capacity.",
+      "title": "Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die",
+      "detail": "Halcyon Forge dependency is the dominant causal driver via Material Lead Time. Re-routing a quarter of volume to Meridian Tool & Die cuts exposure without breaching capacity.",
       "deltaDays": 1.68,
       "reductionPct": 20.5,
       "annualSavings": 479000,
@@ -1311,7 +1437,7 @@
   },
   "simulator": {
     "baselineOutcome": 8.2,
-    "outcomeLabel": "Shipment Delay",
+    "outcomeLabel": "Line-Side Delivery Delay",
     "throughputBaseline": 100,
     "riskBaseline": 45,
     "costPerDelayDay": 960,
@@ -1336,20 +1462,20 @@
     "levers": [
       {
         "id": "supplier_reliability_pct",
-        "label": "Supplier B Allocation",
-        "group": "Supplier & Procurement",
+        "label": "Meridian Tool & Die Allocation",
+        "group": "Sourcing",
         "kind": "slider",
         "min": 0,
         "max": 100,
         "step": 5,
         "unit": "%",
         "baseline": 40,
-        "hint": "60% of volume currently goes to Supplier A. Shift more to Supplier B."
+        "hint": "60% of volume currently goes to Halcyon Forge. Shift more to Meridian Tool & Die."
       },
       {
         "id": "export_flag_reduction",
         "label": "Streamline Export Documentation",
-        "group": "Supplier & Procurement",
+        "group": "Sourcing",
         "kind": "toggle",
         "min": 0,
         "max": 1,
@@ -1448,10 +1574,10 @@
     "baselineDays": 8.2,
     "targetDays": 6.52,
     "primaryChain": [
-      "Order Complexity",
-      "Supplier A",
+      "Spec Complexity",
+      "Halcyon Forge",
       "Material Lead Time",
-      "Shipment Delay"
+      "Line-Side Delivery Delay"
     ],
     "signConsistency": "9/9 coefficients sign-certain",
     "methodology": [
@@ -1479,7 +1605,7 @@
     "actions": [
       {
         "rank": 1,
-        "action": "Shift ~25% procurement from Supplier A to Supplier B",
+        "action": "Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die",
         "impactPct": 20.5,
         "confidence": "High",
         "value": "$479K / yr",
@@ -1508,7 +1634,7 @@
   },
   "crossDomain": [
     {
-      "domain": "Manufacturing",
+      "domain": "Precision Manufacturing",
       "precision": 1,
       "recall": 0.89,
       "f1": 0.94,
@@ -1655,16 +1781,16 @@
     {
       "id": "ORD_0000",
       "date": "2024-01-03",
-      "primaryEntity": "Supplier A",
-      "category": "Raw Metal",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Fastener Sets",
       "value": 22394,
       "actualDelayDays": 7.1,
       "predictedDelayDays": -5.8,
       "counterfactualDelayDays": 0.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -10.66,
           "kind": "controllable"
         },
@@ -1695,21 +1821,21 @@
       "structuralDays": -1.39,
       "complexityScore": 1,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0001",
       "date": "2024-02-04",
-      "primaryEntity": "Supplier C",
-      "category": "Electronics",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Turbine Brackets",
       "value": 40453,
       "actualDelayDays": 9.6,
       "predictedDelayDays": 19,
       "counterfactualDelayDays": 6.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 4.78,
           "kind": "controllable"
         },
@@ -1740,21 +1866,21 @@
       "structuralDays": 1.07,
       "complexityScore": 9,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0002",
       "date": "2024-03-05",
-      "primaryEntity": "Supplier D",
-      "category": "Packaging",
+      "primaryEntity": "Solaris Components",
+      "category": "Avionics Housings",
       "value": 62582,
       "actualDelayDays": 7.4,
       "predictedDelayDays": 0.6,
       "counterfactualDelayDays": 4,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -4.89,
           "kind": "controllable"
         },
@@ -1785,21 +1911,21 @@
       "structuralDays": -0.36,
       "complexityScore": 6,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0003",
       "date": "2024-04-06",
-      "primaryEntity": "Supplier A",
-      "category": "Raw Metal",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Fastener Sets",
       "value": 7895,
       "actualDelayDays": 10.9,
       "predictedDelayDays": 23.2,
       "counterfactualDelayDays": 2.9,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 11.47,
           "kind": "controllable"
         },
@@ -1830,21 +1956,21 @@
       "structuralDays": 1.29,
       "complexityScore": 6,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0004",
       "date": "2024-05-07",
-      "primaryEntity": "Supplier C",
-      "category": "Raw Metal",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Fastener Sets",
       "value": 55419,
       "actualDelayDays": 10,
       "predictedDelayDays": 23.2,
       "counterfactualDelayDays": 4.2,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 8.27,
           "kind": "controllable"
         },
@@ -1875,21 +2001,21 @@
       "structuralDays": 1.06,
       "complexityScore": 6,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0005",
       "date": "2024-06-08",
-      "primaryEntity": "Supplier A",
-      "category": "Raw Metal",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Fastener Sets",
       "value": 56171,
       "actualDelayDays": 10.8,
       "predictedDelayDays": 19.5,
       "counterfactualDelayDays": 7.6,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 4.62,
           "kind": "controllable"
         },
@@ -1920,21 +2046,21 @@
       "structuralDays": 1.35,
       "complexityScore": 8,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0006",
       "date": "2024-01-09",
-      "primaryEntity": "Supplier B",
-      "category": "Packaging",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Avionics Housings",
       "value": 38229,
       "actualDelayDays": 6.1,
       "predictedDelayDays": -4,
       "counterfactualDelayDays": 0.8,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -7.64,
           "kind": "controllable"
         },
@@ -1965,21 +2091,21 @@
       "structuralDays": -0.54,
       "complexityScore": 6,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0007",
       "date": "2024-02-10",
-      "primaryEntity": "Supplier C",
-      "category": "Raw Metal",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Fastener Sets",
       "value": 17429,
       "actualDelayDays": 7.8,
       "predictedDelayDays": 2.2,
       "counterfactualDelayDays": 6.2,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -2.23,
           "kind": "controllable"
         },
@@ -2010,21 +2136,21 @@
       "structuralDays": -0.39,
       "complexityScore": 9,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0008",
       "date": "2024-03-11",
-      "primaryEntity": "Supplier B",
-      "category": "Electronics",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Turbine Brackets",
       "value": 83817,
       "actualDelayDays": 5.6,
       "predictedDelayDays": 0.7,
       "counterfactualDelayDays": 2.8,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -4.06,
           "kind": "controllable"
         },
@@ -2055,21 +2181,21 @@
       "structuralDays": -0.79,
       "complexityScore": 7,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0009",
       "date": "2024-04-12",
-      "primaryEntity": "Supplier C",
-      "category": "Electronics",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Turbine Brackets",
       "value": 59141,
       "actualDelayDays": 7.9,
       "predictedDelayDays": -3.4,
       "counterfactualDelayDays": 2.6,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -7.6,
           "kind": "controllable"
         },
@@ -2100,21 +2226,21 @@
       "structuralDays": -0.8,
       "complexityScore": 1,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0010",
       "date": "2024-05-13",
-      "primaryEntity": "Supplier D",
-      "category": "Assemblies",
+      "primaryEntity": "Solaris Components",
+      "category": "Composite Panels",
       "value": 47436,
       "actualDelayDays": 7.7,
       "predictedDelayDays": -3.7,
       "counterfactualDelayDays": 2.5,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -7.45,
           "kind": "controllable"
         },
@@ -2145,21 +2271,21 @@
       "structuralDays": -1.09,
       "complexityScore": 2,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0011",
       "date": "2024-06-14",
-      "primaryEntity": "Supplier C",
-      "category": "Assemblies",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Composite Panels",
       "value": 49178,
       "actualDelayDays": 6.3,
       "predictedDelayDays": -3.6,
       "counterfactualDelayDays": 3.1,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -4.52,
           "kind": "controllable"
         },
@@ -2190,21 +2316,21 @@
       "structuralDays": -0.74,
       "complexityScore": 3,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0012",
       "date": "2024-01-15",
-      "primaryEntity": "Supplier D",
-      "category": "Raw Metal",
+      "primaryEntity": "Solaris Components",
+      "category": "Fastener Sets",
       "value": 82872,
       "actualDelayDays": 9.6,
       "predictedDelayDays": 19.5,
       "counterfactualDelayDays": 4,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 8.06,
           "kind": "controllable"
         },
@@ -2235,21 +2361,21 @@
       "structuralDays": 0.76,
       "complexityScore": 4,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0013",
       "date": "2024-02-16",
-      "primaryEntity": "Supplier B",
-      "category": "Assemblies",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Composite Panels",
       "value": 45146,
       "actualDelayDays": 10.7,
       "predictedDelayDays": 19.7,
       "counterfactualDelayDays": 5.6,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 7.31,
           "kind": "controllable"
         },
@@ -2280,21 +2406,21 @@
       "structuralDays": 0.51,
       "complexityScore": 8,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0014",
       "date": "2024-03-17",
-      "primaryEntity": "Supplier B",
-      "category": "Packaging",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Avionics Housings",
       "value": 4416,
       "actualDelayDays": 8.7,
       "predictedDelayDays": 19.9,
       "counterfactualDelayDays": 4.5,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 5.97,
           "kind": "controllable"
         },
@@ -2325,21 +2451,21 @@
       "structuralDays": 1.06,
       "complexityScore": 9,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0015",
       "date": "2024-04-18",
-      "primaryEntity": "Supplier C",
-      "category": "Electronics",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Turbine Brackets",
       "value": 40079,
       "actualDelayDays": 7.4,
       "predictedDelayDays": -3.5,
       "counterfactualDelayDays": 2.1,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -7.64,
           "kind": "controllable"
         },
@@ -2370,21 +2496,21 @@
       "structuralDays": -0.54,
       "complexityScore": 5,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0016",
       "date": "2024-05-19",
-      "primaryEntity": "Supplier B",
-      "category": "Raw Metal",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Fastener Sets",
       "value": 86578,
       "actualDelayDays": 11.2,
       "predictedDelayDays": 17.2,
       "counterfactualDelayDays": 7.2,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 5.67,
           "kind": "controllable"
         },
@@ -2415,21 +2541,21 @@
       "structuralDays": 0.63,
       "complexityScore": 4,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0017",
       "date": "2024-06-20",
-      "primaryEntity": "Supplier C",
-      "category": "Fasteners",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Titanium Forgings",
       "value": 33463,
       "actualDelayDays": 14.7,
       "predictedDelayDays": 19.3,
       "counterfactualDelayDays": 10,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 6.71,
           "kind": "controllable"
         },
@@ -2460,21 +2586,21 @@
       "structuralDays": 1.13,
       "complexityScore": 8,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0018",
       "date": "2024-01-21",
-      "primaryEntity": "Supplier B",
-      "category": "Packaging",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Avionics Housings",
       "value": 49366,
       "actualDelayDays": 9.4,
       "predictedDelayDays": 19.1,
       "counterfactualDelayDays": 4.8,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 6.64,
           "kind": "controllable"
         },
@@ -2505,21 +2631,21 @@
       "structuralDays": 1.1,
       "complexityScore": 7,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0019",
       "date": "2024-02-22",
-      "primaryEntity": "Supplier A",
-      "category": "Assemblies",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Composite Panels",
       "value": 27594,
       "actualDelayDays": 10.5,
       "predictedDelayDays": 23,
       "counterfactualDelayDays": 4.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 8.8,
           "kind": "controllable"
         },
@@ -2550,21 +2676,21 @@
       "structuralDays": 0.65,
       "complexityScore": 3,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0020",
       "date": "2024-03-23",
-      "primaryEntity": "Supplier A",
-      "category": "Fasteners",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Titanium Forgings",
       "value": 4166,
       "actualDelayDays": 9.6,
       "predictedDelayDays": 15.5,
       "counterfactualDelayDays": 7.2,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 3.45,
           "kind": "controllable"
         },
@@ -2595,21 +2721,21 @@
       "structuralDays": 0.84,
       "complexityScore": 3,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0021",
       "date": "2024-04-24",
-      "primaryEntity": "Supplier D",
-      "category": "Fasteners",
+      "primaryEntity": "Solaris Components",
+      "category": "Titanium Forgings",
       "value": 40231,
       "actualDelayDays": 6.9,
       "predictedDelayDays": 0.7,
       "counterfactualDelayDays": 4.4,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -3.59,
           "kind": "controllable"
         },
@@ -2640,21 +2766,21 @@
       "structuralDays": -1.22,
       "complexityScore": 5,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0022",
       "date": "2024-05-25",
-      "primaryEntity": "Supplier D",
-      "category": "Packaging",
+      "primaryEntity": "Solaris Components",
+      "category": "Avionics Housings",
       "value": 59191,
       "actualDelayDays": 9.1,
       "predictedDelayDays": 15.6,
       "counterfactualDelayDays": 6.6,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 3.52,
           "kind": "controllable"
         },
@@ -2685,21 +2811,21 @@
       "structuralDays": 1.03,
       "complexityScore": 8,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0023",
       "date": "2024-06-26",
-      "primaryEntity": "Supplier B",
-      "category": "Packaging",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Avionics Housings",
       "value": 64088,
       "actualDelayDays": 0.9,
       "predictedDelayDays": -4.9,
       "counterfactualDelayDays": 0.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -8.05,
           "kind": "controllable"
         },
@@ -2730,21 +2856,21 @@
       "structuralDays": -1.11,
       "complexityScore": 1,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0024",
       "date": "2024-01-03",
-      "primaryEntity": "Supplier D",
-      "category": "Packaging",
+      "primaryEntity": "Solaris Components",
+      "category": "Avionics Housings",
       "value": 39687,
       "actualDelayDays": 8.5,
       "predictedDelayDays": 16.9,
       "counterfactualDelayDays": 5.8,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 3.85,
           "kind": "controllable"
         },
@@ -2775,21 +2901,21 @@
       "structuralDays": 1.42,
       "complexityScore": 10,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0025",
       "date": "2024-02-04",
-      "primaryEntity": "Supplier A",
-      "category": "Packaging",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Avionics Housings",
       "value": 12848,
       "actualDelayDays": 7.8,
       "predictedDelayDays": -7.3,
       "counterfactualDelayDays": 0.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -11.04,
           "kind": "controllable"
         },
@@ -2820,21 +2946,21 @@
       "structuralDays": -0.37,
       "complexityScore": 1,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0026",
       "date": "2024-03-05",
-      "primaryEntity": "Supplier D",
-      "category": "Raw Metal",
+      "primaryEntity": "Solaris Components",
+      "category": "Fastener Sets",
       "value": 28281,
       "actualDelayDays": 9.2,
       "predictedDelayDays": 22.1,
       "counterfactualDelayDays": 3.5,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 8.19,
           "kind": "controllable"
         },
@@ -2865,21 +2991,21 @@
       "structuralDays": 0.97,
       "complexityScore": 3,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0027",
       "date": "2024-04-06",
-      "primaryEntity": "Supplier D",
-      "category": "Raw Metal",
+      "primaryEntity": "Solaris Components",
+      "category": "Fastener Sets",
       "value": 77869,
       "actualDelayDays": 5.8,
       "predictedDelayDays": -4.7,
       "counterfactualDelayDays": 1,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -6.91,
           "kind": "controllable"
         },
@@ -2910,21 +3036,21 @@
       "structuralDays": -1.17,
       "complexityScore": 5,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0028",
       "date": "2024-05-07",
-      "primaryEntity": "Supplier C",
-      "category": "Fasteners",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Titanium Forgings",
       "value": 51671,
       "actualDelayDays": 10.7,
       "predictedDelayDays": 17.5,
       "counterfactualDelayDays": 6.9,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 5.43,
           "kind": "controllable"
         },
@@ -2955,21 +3081,21 @@
       "structuralDays": 0.48,
       "complexityScore": 10,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0029",
       "date": "2024-06-08",
-      "primaryEntity": "Supplier A",
-      "category": "Raw Metal",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Fastener Sets",
       "value": 89615,
       "actualDelayDays": 13.9,
       "predictedDelayDays": 23.4,
       "counterfactualDelayDays": 5.9,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 11.39,
           "kind": "controllable"
         },
@@ -3000,21 +3126,21 @@
       "structuralDays": 0.47,
       "complexityScore": 10,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0030",
       "date": "2024-01-09",
-      "primaryEntity": "Supplier A",
-      "category": "Electronics",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Turbine Brackets",
       "value": 46694,
       "actualDelayDays": 5.5,
       "predictedDelayDays": -4.5,
       "counterfactualDelayDays": 0.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -8.14,
           "kind": "controllable"
         },
@@ -3045,21 +3171,21 @@
       "structuralDays": -0.66,
       "complexityScore": 2,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0031",
       "date": "2024-02-10",
-      "primaryEntity": "Supplier D",
-      "category": "Assemblies",
+      "primaryEntity": "Solaris Components",
+      "category": "Composite Panels",
       "value": 50044,
       "actualDelayDays": 9.7,
       "predictedDelayDays": 21.2,
       "counterfactualDelayDays": 3.9,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 8.27,
           "kind": "controllable"
         },
@@ -3090,21 +3216,21 @@
       "structuralDays": 0.53,
       "complexityScore": 4,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0032",
       "date": "2024-03-11",
-      "primaryEntity": "Supplier C",
-      "category": "Electronics",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Turbine Brackets",
       "value": 59089,
       "actualDelayDays": 10,
       "predictedDelayDays": 21.1,
       "counterfactualDelayDays": 4.4,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 8.01,
           "kind": "controllable"
         },
@@ -3135,21 +3261,21 @@
       "structuralDays": 0.68,
       "complexityScore": 4,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0033",
       "date": "2024-04-12",
-      "primaryEntity": "Supplier C",
-      "category": "Packaging",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Avionics Housings",
       "value": 15975,
       "actualDelayDays": 10.6,
       "predictedDelayDays": 17.2,
       "counterfactualDelayDays": 6.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 6.12,
           "kind": "controllable"
         },
@@ -3180,21 +3306,21 @@
       "structuralDays": 0.99,
       "complexityScore": 7,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0034",
       "date": "2024-05-13",
-      "primaryEntity": "Supplier B",
-      "category": "Electronics",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Turbine Brackets",
       "value": 21742,
       "actualDelayDays": 4.3,
       "predictedDelayDays": -3.5,
       "counterfactualDelayDays": 0.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -7.1,
           "kind": "controllable"
         },
@@ -3225,21 +3351,21 @@
       "structuralDays": -1.22,
       "complexityScore": 1,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0035",
       "date": "2024-06-14",
-      "primaryEntity": "Supplier A",
-      "category": "Raw Metal",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Fastener Sets",
       "value": 19789,
       "actualDelayDays": 13.1,
       "predictedDelayDays": 17.7,
       "counterfactualDelayDays": 10.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 4.02,
           "kind": "controllable"
         },
@@ -3270,21 +3396,21 @@
       "structuralDays": 1.11,
       "complexityScore": 8,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0036",
       "date": "2024-01-15",
-      "primaryEntity": "Supplier C",
-      "category": "Assemblies",
+      "primaryEntity": "Vantage Alloys",
+      "category": "Composite Panels",
       "value": 19183,
       "actualDelayDays": 8.6,
       "predictedDelayDays": 21,
       "counterfactualDelayDays": 3.3,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 7.56,
           "kind": "controllable"
         },
@@ -3315,21 +3441,21 @@
       "structuralDays": 1.14,
       "complexityScore": 8,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0037",
       "date": "2024-02-16",
-      "primaryEntity": "Supplier B",
-      "category": "Assemblies",
+      "primaryEntity": "Meridian Tool & Die",
+      "category": "Composite Panels",
       "value": 26544,
       "actualDelayDays": 11,
       "predictedDelayDays": 23.4,
       "counterfactualDelayDays": 5.2,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 8.22,
           "kind": "controllable"
         },
@@ -3360,21 +3486,21 @@
       "structuralDays": 1.43,
       "complexityScore": 9,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0038",
       "date": "2024-03-17",
-      "primaryEntity": "Supplier A",
-      "category": "Assemblies",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Composite Panels",
       "value": 58201,
       "actualDelayDays": 11.6,
       "predictedDelayDays": 23.3,
       "counterfactualDelayDays": 4.2,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": 10.53,
           "kind": "controllable"
         },
@@ -3405,21 +3531,21 @@
       "structuralDays": 1.44,
       "complexityScore": 6,
       "treated": false,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     },
     {
       "id": "ORD_0039",
       "date": "2024-04-18",
-      "primaryEntity": "Supplier A",
-      "category": "Fasteners",
+      "primaryEntity": "Halcyon Forge",
+      "category": "Titanium Forgings",
       "value": 26026,
       "actualDelayDays": 7.6,
       "predictedDelayDays": -5.2,
       "counterfactualDelayDays": 2,
-      "counterfactualLabel": "If procurement had been re-routed to Supplier B",
+      "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
         {
-          "label": "Supplier A Dependency",
+          "label": "Halcyon Forge Dependency",
           "contributionDays": -8.04,
           "kind": "controllable"
         },
@@ -3450,7 +3576,7 @@
       "structuralDays": -0.53,
       "complexityScore": 2,
       "treated": true,
-      "dominantDriver": "Supplier A Dependency"
+      "dominantDriver": "Halcyon Forge Dependency"
     }
   ]
 }

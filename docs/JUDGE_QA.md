@@ -14,8 +14,8 @@ captured 2026-09-01.** The generated CSVs and the full validation report are in
 ## The 30-second answer
 
 > Traditional process mining confuses correlation with causation. A factory sees
-> Supplier A next to long delays and drops it — and the delays don't move, because
-> the real reason was that complex orders were routed to Supplier A and are just
+> Halcyon Forge next to long delays and drops it — and the delays don't move, because
+> the real reason was that complex orders were routed to Halcyon Forge and are just
 > slower. CausalOCPM builds the causal graph from the event log, removes that
 > confounding with Double Machine Learning, and recovers the true effect: **6.65
 > days**, not the **8.78** a dashboard reports. Then it simulates what actually
@@ -43,11 +43,11 @@ captured 2026-09-01.** The generated CSVs and the full validation report are in
 ### Why can't you just use correlation to find the root cause? · *Common*
 **Say first:** Correlation carries the effect of everything you didn't measure.
 
-In our manufacturing log, complex orders are preferentially routed to Supplier A
+In our manufacturing log, complex orders are preferentially routed to Halcyon Forge
 *and* take longer regardless of supplier. That shared cause — order complexity —
-inflates the raw Supplier A → delay estimate to 8.78 days, when the true causal
+inflates the raw Halcyon Forge → delay estimate to 8.78 days, when the true causal
 effect is 6.65 — confounding is **24% of the naive figure** (32% above the truth).
-Act on 8.78, drop Supplier A, and the delay barely moves, because you treated a
+Act on 8.78, drop Halcyon Forge, and the delay barely moves, because you treated a
 symptom. CausalOCPM finds that confounding path and adjusts it out.
 
 ### Why the PC algorithm for causal discovery? · *Likely*
@@ -146,7 +146,7 @@ hand-added is circular, and a "1.000" on this step *is* that circular number.
 6.61 ± 0.09 across 10 fresh random seeds.
 
 The E-value ≈ 7 (from the standardized effect) means an unmeasured confounder
-would need a risk-ratio association above 7 with *both* Supplier A and delay to
+would need a risk-ratio association above 7 with *both* Halcyon Forge and delay to
 explain the effect away — implausibly strong. Permuting the treatment (placebo)
 gives +0.02 ≈ 0, as it should. Adding a random noise confounder re-estimates 6.73.
 And regenerating the dataset 10 times with new seeds gives 6.61 ± 0.09, range

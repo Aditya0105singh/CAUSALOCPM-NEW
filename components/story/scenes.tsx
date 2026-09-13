@@ -49,7 +49,7 @@ export function IncidentScene({ f, onNext }: SceneProps) {
         <AlertTriangle size={13} /> Flagged for causal review
       </motion.div>
       <motion.h2 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mt-4 font-display text-3xl text-ink sm:text-4xl">
-        {f.domain === "manufacturing" ? "Shipment" : "Admission"} {s.incidentId}
+        {f.domain === "manufacturing" ? "Order" : "Admission"} {s.incidentId}
       </motion.h2>
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mt-2 text-[15px] text-ink-soft">
         An autonomous {s.agent.name.toLowerCase()} made a decision. Something went wrong downstream.
@@ -167,7 +167,7 @@ export function CauseScene({ f, speed, onNext }: SceneProps) {
     <div className="mx-auto max-w-3xl">
       <SceneHead kicker="What caused it" title="The same events, re-drawn as cause and effect" />
       <p className="mt-1 text-[13px] text-muted">
-        A dashboard stops at &ldquo;Supplier A appears next to delays.&rdquo; We test whether it actually caused them.
+        A dashboard stops at &ldquo;{f.scenario.treatmentLabel} appears next to the outcome.&rdquo; We test whether it actually caused it.
       </p>
 
       <div className="mt-4 rounded-2xl border border-line bg-card p-4 shadow-sm">

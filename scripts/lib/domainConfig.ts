@@ -4,7 +4,7 @@
  * The causal structure mirrors the reference CausalOCPM pipeline's planted DAGs
  * (data/generate_data.py + generate_healthcare.py): a confounder driving both
  * treatment selection and the outcome, plus a mediated true causal path.
- * No PRIHIR — the manufacturing tenant is "Northwind Components Co.".
+ * No PRIHIR — the manufacturing tenant is "Atlas Precision Aerostructures".
  */
 
 export type NodeRole = "confounder" | "treatment" | "mediator" | "exogenous" | "outcome";
@@ -127,10 +127,10 @@ export interface DomainSpec {
 
   /** The agentic-AI framing: the autonomous decision this audit layer watches. */
   narrative: {
-    agentName: string; // "Procurement Agent"
+    agentName: string; // "Sourcing Agent"
     agentRole: string; // one-liner on what the agent does
-    decisionLabel: string; // "Selected Supplier A"
-    altLabel: string; // "Supplier B" — the counterfactual choice
+    decisionLabel: string; // "Selected Halcyon Forge"
+    altLabel: string; // "Meridian Tool & Die" — the counterfactual choice
     outcomeLabel: string; // "Shipment delayed"
     /** what the agent's inputs weighed (sums to ~1); the confounder is deliberately under-weighted */
     agentSignals: { label: string; weight: number }[];
@@ -151,17 +151,17 @@ export interface DomainSpec {
 export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
   manufacturing: {
     id: "manufacturing",
-    domainLabel: "Manufacturing",
-    org: "Northwind Components Co.",
-    scenarioName: "Shipment Delay Analysis",
-    outcomeVariable: "Shipment Delay",
+    domainLabel: "Precision Manufacturing",
+    org: "Atlas Precision Aerostructures",
+    scenarioName: "Line-Side Delivery Delay Analysis",
+    outcomeVariable: "Line-Side Delivery Delay",
     outcomeUnit: "days",
-    treatmentLabel: "Supplier A Dependency",
-    confounderLabel: "Order Complexity",
-    moderatorLabel: "Order Complexity",
+    treatmentLabel: "Halcyon Forge Dependency",
+    confounderLabel: "Spec Complexity",
+    moderatorLabel: "Spec Complexity",
     timeRange: "Jan 2023 – Apr 2024",
     description:
-      "Traditional process mining would read Supplier A's raw correlation with delay and re-source away from it. But complex orders are preferentially routed to Supplier A and are inherently slower — a confounding path. CausalOCPM isolates the true causal effect of Supplier A dependency on shipment delay.",
+      "Traditional process mining would read Halcyon Forge's raw correlation with delay and re-source away from it. But tight-tolerance orders are preferentially routed to Halcyon — the only forge qualified for them — and are inherently slower to machine, regardless of supplier. CausalOCPM isolates the true causal effect of Halcyon Forge dependency on line-side delivery delay.",
     totalEvents: 15000,
     treatedPct: 54,
     outcomeMean: 6.24,
@@ -177,14 +177,14 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     dmlCiHigh: 6.71,
 
     nodes: [
-      { id: "order_complexity", label: "Order Complexity", role: "confounder", x: 0, y: 2.6 },
-      { id: "supplier_a", label: "Supplier A Dependency", role: "treatment", x: 0, y: 0 },
+      { id: "order_complexity", label: "Spec Complexity", role: "confounder", x: 0, y: 2.6 },
+      { id: "supplier_a", label: "Halcyon Forge Dependency", role: "treatment", x: 0, y: 0 },
       { id: "material_lead_time", label: "Material Lead Time", role: "mediator", x: 2.6, y: 0 },
       { id: "machine_queue_length", label: "Machine Queue Length", role: "mediator", x: 2.6, y: 2.6 },
       { id: "export_flag", label: "Export Flag", role: "exogenous", x: 2.6, y: 4.6 },
       { id: "approval_duration", label: "Approval Duration", role: "mediator", x: 5.2, y: 1.8 },
       { id: "carrier_express", label: "Express Carrier", role: "exogenous", x: 5.2, y: 0 },
-      { id: "shipment_delay", label: "Shipment Delay", role: "outcome", x: 7.8, y: 1.8 },
+      { id: "shipment_delay", label: "Line-Side Delivery Delay", role: "outcome", x: 7.8, y: 1.8 },
     ],
     // Discovery result matches the reference pipeline exactly: PC-only recovers
     // 8 of 9 edges (precision 1.00, recall 0.889, F1 0.941), no spurious edges;
@@ -205,8 +205,8 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     avgModelR2: 0.96, // reference: outcome CV-R² 0.962
     avgCoefErrorPct: 0.6, // reference: linear-coefficient recovery 0.3–0.8% error
     seedRobustness: { nSeeds: 10, causalMean: 6.61, causalStd: 0.089, causalLo: 6.43, causalHi: 6.78, naiveLo: 8.71, naiveHi: 8.9 },
-    chain: ["Order Complexity", "Supplier A", "Material Lead Time", "Shipment Delay"],
-    strongestRel: { from: "Supplier A", to: "Material Lead Time", coef: 7.4 },
+    chain: ["Spec Complexity", "Halcyon Forge", "Material Lead Time", "Line-Side Delivery Delay"],
+    strongestRel: { from: "Halcyon Forge", to: "Material Lead Time", coef: 7.4 },
 
     objects: [
       { name: "Orders", records: 15000, attributes: 12, missingPct: 3, qualityPct: 96, updatedHrs: 2 },
@@ -222,16 +222,23 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { label: "Treatment arm", value: "MAT_A · 54%" },
     ],
     correlationGroups: [
-      { name: "Supplier", options: [ { label: "Supplier A", onTimePct: 55, delayedPct: 45 }, { label: "Supplier B", onTimePct: 82, delayedPct: 18 } ] },
+      { name: "Supplier", options: [ { label: "Halcyon Forge", onTimePct: 55, delayedPct: 45 }, { label: "Meridian Tool & Die", onTimePct: 82, delayedPct: 18 } ] },
       { name: "Carrier", options: [ { label: "Standard", onTimePct: 66, delayedPct: 34 }, { label: "Express", onTimePct: 87, delayedPct: 13 } ] },
     ],
-    entities: ["Supplier A", "Supplier B", "Supplier C", "Supplier D"],
-    categories: ["Electronics", "Fasteners", "Assemblies", "Raw Metal", "Packaging"],
-    riskSegment: "Supplier A · high-complexity orders",
+    // The sourcing network: Halcyon is the hero case (confounded — looks slow,
+    // isn't really); Meridian is the validated counterfactual alternative;
+    // Vantage and Solaris are held-back depth material — a small, newer
+    // supplier whose one bad month is noise rather than signal, and a
+    // consistently-fast supplier that's never been tested on hard orders
+    // (see the CATE segments below — its apparent edge would not survive
+    // high-complexity work). Same four names surface as case primaryEntity.
+    entities: ["Halcyon Forge", "Meridian Tool & Die", "Vantage Alloys", "Solaris Components"],
+    categories: ["Turbine Brackets", "Titanium Forgings", "Composite Panels", "Fastener Sets", "Avionics Housings"],
+    riskSegment: "Halcyon Forge · tight-tolerance orders",
 
-    // Real CATE from validate.py: effect of the binary supplier_a treatment
-    // WITHIN each order-complexity tertile (controls for mediators, so it is
-    // small — the 6.65-day figure is the full mediated path effect).
+    // Real CATE from validate.py: effect of the binary Halcyon-dependency
+    // treatment WITHIN each spec-complexity tertile (controls for mediators,
+    // so it is small — the 6.65-day figure is the full mediated path effect).
     cateSegments: [
       { label: "Low (1–4)", effect: -0.03, ciLow: -0.75, ciHigh: 0.69 },
       { label: "Mid (5–7)", effect: 0.01, ciLow: -0.74, ciHigh: 0.76 },
@@ -239,7 +246,7 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     ],
     cateAte: 0.05,
     cateNote:
-      "This is the binary treatment's direct within-tertile effect (mediators held fixed), so it is small; the headline 6.65 days is the full path effect through Material Lead Time. What matters here is the trend: the effect grows monotonically with order complexity, so targeted re-sourcing returns most in the high-complexity segment.",
+      "This is the binary treatment's direct within-tertile effect (mediators held fixed), so it is small; the headline 6.65 days is the full path effect through Material Lead Time. What matters here is the trend: the effect grows monotonically with spec complexity, so targeted re-sourcing returns most on the tightest-tolerance segment — and any supplier's apparent edge on easy work is untested on hard work until this trend is checked.",
 
     // Real reference-pipeline sensitivity output (compare_effects → sensitivity).
     sensitivity: {
@@ -255,8 +262,8 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     },
 
     levers: [
-      { id: "supplier_reliability_pct", label: "Supplier B Allocation", group: "Supplier & Procurement", kind: "slider", min: 0, max: 100, step: 5, unit: "%", baseline: 40, hint: "60% of volume currently goes to Supplier A. Shift more to Supplier B." },
-      { id: "export_flag_reduction", label: "Streamline Export Documentation", group: "Supplier & Procurement", kind: "toggle", min: 0, max: 1, step: 1, unit: "", baseline: 0, hint: "Reduces export-related approval delay ~35%." },
+      { id: "supplier_reliability_pct", label: "Meridian Tool & Die Allocation", group: "Sourcing", kind: "slider", min: 0, max: 100, step: 5, unit: "%", baseline: 40, hint: "60% of volume currently goes to Halcyon Forge. Shift more to Meridian Tool & Die." },
+      { id: "export_flag_reduction", label: "Streamline Export Documentation", group: "Sourcing", kind: "toggle", min: 0, max: 1, step: 1, unit: "", baseline: 0, hint: "Reduces export-related approval delay ~35%." },
       { id: "machine_capacity_expanded", label: "Expand Machine Capacity", group: "Machine & Capacity", kind: "toggle", min: 0, max: 1, step: 1, unit: "", baseline: 0, hint: "Adds processing units — reduces machine queue ~40%." },
       { id: "additional_workforce", label: "Additional Workforce", group: "Machine & Capacity", kind: "slider", min: 0, max: 20, step: 1, unit: "FTE", baseline: 0, hint: "Each additional worker reduces queue ~0.3 units." },
       { id: "approval_automation", label: "Automate Approval Steps", group: "Approvals & Process", kind: "toggle", min: 0, max: 1, step: 1, unit: "", baseline: 0, hint: "Reduces approval duration ~50%." },
@@ -266,7 +273,7 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     ],
 
     actions: [
-      { id: "act-1", title: "Shift ~25% procurement from Supplier A to Supplier B", detail: "Supplier A dependency is the dominant causal driver via Material Lead Time. Re-routing a quarter of volume to Supplier B cuts exposure without breaching capacity.", reductionPct: 20.5, evidence: "MEASURED", confidence: "High", effort: "Medium", timeline: "Immediate", capex: 54000, annualSavings: 479000, lever: "supplier_reliability_pct" },
+      { id: "act-1", title: "Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die", detail: "Halcyon Forge dependency is the dominant causal driver via Material Lead Time. Re-routing a quarter of volume to Meridian Tool & Die cuts exposure without breaching capacity.", reductionPct: 20.5, evidence: "MEASURED", confidence: "High", effort: "Medium", timeline: "Immediate", capex: 54000, annualSavings: 479000, lever: "supplier_reliability_pct" },
       { id: "act-2", title: "Automate export approval + reduce flag routing", detail: "Approval duration sits on the critical path. Automating export documentation routing removes most of the queueing delay.", reductionPct: 7.5, evidence: "ILLUSTRATIVE", confidence: "Medium", effort: "Low", timeline: "30 days", capex: 45000, annualSavings: 175000, lever: "approval_automation" },
       { id: "act-3", title: "Expand machine buffer capacity (≥20%)", detail: "Added buffer capacity absorbs queue spikes on the two most-loaded machine groups.", reductionPct: 3.1, evidence: "ILLUSTRATIVE", confidence: "High", effort: "High", timeline: "60 days", capex: 126000, annualSavings: 72000, lever: "machine_capacity_expanded" },
     ],
@@ -297,14 +304,14 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { icon: "doc", title: "Generate executive summary", detail: "AI-powered insights & recommendations", tags: ["AI Summary", "Insights"], prompt: "Executive summary" },
     ],
     copilotSeed: [
-      { q: "Why are delays increasing?", a: "Shipment delay is driven primarily by Supplier A dependency, which raises Material Lead Time by 7.4 days on the treated arm; that flows through to delay with a 0.9 coefficient. Order complexity (the confounder) inflates the raw correlation. The recovered causal effect of Supplier A is +6.65 days (95% CI 6.59–6.71), a 0.2% error vs the planted ground truth of 6.66." },
-      { q: "What is the top bottleneck?", a: "Material Lead Time is the binding constraint — the mediator between Supplier A and Shipment Delay. Every downstream action (approval automation, buffer capacity) moves the needle far less than re-sourcing does." },
-      { q: "Best intervention?", a: "Shift ~25% procurement from Supplier A to Supplier B: ~20.5% shipment-delay reduction, ~$479K/year expected savings at High confidence, payback ≈ 3.2 months." },
-      { q: "Explain causal chain", a: "Order Complexity → Supplier A → Material Lead Time → Shipment Delay. The Order Complexity → Supplier A edge is nonlinear (sigmoid) and only recovered by domain knowledge; the rest is discovered by bootstrapped PC with ≥88% edge stability." },
-      { q: "Compare suppliers", a: "On raw logs Supplier A orders are delayed 45% of the time vs 18% for Supplier B, and the naive delay gap is 8.78 days — but 2.13 of that is confounding from order complexity. The true causal penalty of choosing Supplier A is 6.65 days via longer material lead time." },
-      { q: "Predict impact of changes", a: "In the simulator, moving Supplier B allocation to 65% and enabling approval automation drops predicted shipment delay from 8.2 to about 5.2 days (~35%), for roughly $0 net implementation cost." },
-      { q: "What are the ROI opportunities?", a: "Ranked by ROI: (1) procurement shift ~$479K/yr at $54K capex, (2) export-approval automation ~$175K/yr at $45K, (3) machine buffer capacity ~$72K/yr at $126K. Blended payback ≈ 3.2 months." },
-      { q: "Executive summary", a: "Supplier A is the dominant causal driver of shipment delay: recovered effect 6.65 days vs a planted ground truth of 6.66 (0.2% error) — a naive dashboard would have said 8.78. ~20.5% reduction is achievable by shifting a quarter of procurement to Supplier B, worth ~$479K/year. Autonomous discovery F1 0.94 (8 of 9 edges, no spurious); VanderWeele E-value ≈ 7.3 indicates strong robustness to unmeasured confounding." },
+      { q: "Why are delays increasing?", a: "Line-side delivery delay is driven primarily by Halcyon Forge dependency, which raises Material Lead Time by 7.4 days on the treated arm; that flows through to delay with a 0.9 coefficient. Spec complexity (the confounder) inflates the raw correlation. The recovered causal effect of Halcyon Forge is +6.65 days (95% CI 6.59–6.71), a 0.2% error vs the planted ground truth of 6.66." },
+      { q: "What is the top bottleneck?", a: "Material Lead Time is the binding constraint — the mediator between Halcyon Forge and Line-Side Delivery Delay. Every downstream action (approval automation, buffer capacity) moves the needle far less than re-sourcing does." },
+      { q: "Best intervention?", a: "Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die: ~20.5% delay reduction, ~$479K/year expected savings at High confidence, payback ≈ 3.2 months." },
+      { q: "Explain causal chain", a: "Spec Complexity → Halcyon Forge → Material Lead Time → Line-Side Delivery Delay. The Spec Complexity → Halcyon Forge edge is nonlinear (sigmoid) and only recovered by domain knowledge; the rest is discovered by bootstrapped PC with ≥88% edge stability." },
+      { q: "Compare suppliers", a: "On raw logs, orders through Halcyon Forge are delayed 45% of the time vs 18% for Meridian Tool & Die, and the naive delay gap is 8.78 days — but 2.13 of that is confounding from spec complexity: Halcyon gets every tight-tolerance job. The true causal penalty of routing through Halcyon is 6.65 days via longer material lead time. (Vantage Alloys and Solaris Components round out the sourcing network — Vantage's shaky record is a small-sample artifact the placebo test rules out, and Solaris's strong average has never been tested on a high-complexity order.)" },
+      { q: "Predict impact of changes", a: "In the simulator, moving Meridian Tool & Die allocation to 65% and enabling approval automation drops predicted delivery delay from 8.2 to about 5.2 days (~35%), for roughly $0 net implementation cost." },
+      { q: "What are the ROI opportunities?", a: "Ranked by ROI: (1) sourcing shift ~$479K/yr at $54K capex, (2) export-approval automation ~$175K/yr at $45K, (3) machine buffer capacity ~$72K/yr at $126K. Blended payback ≈ 3.2 months." },
+      { q: "Executive summary", a: "Halcyon Forge dependency is the dominant causal driver of line-side delivery delay: recovered effect 6.65 days vs a planted ground truth of 6.66 (0.2% error) — a naive dashboard would have said 8.78. ~20.5% reduction is achievable by shifting a quarter of sourcing to Meridian Tool & Die, worth ~$479K/year. Autonomous discovery F1 0.94 (8 of 9 edges, no spurious); VanderWeele E-value ≈ 7.3 indicates strong robustness to unmeasured confounding." },
     ],
     methodology: [
       { phase: "Causal Discovery", detail: "Bootstrapped PC algorithm · Fisher-Z tests at α=0.05 · 20 subsamples × 2,000 rows · 60% edge-stability threshold · domain-knowledge ablation" },
@@ -315,38 +322,38 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     ],
 
     narrative: {
-      agentName: "Procurement Agent",
-      agentRole: "autonomously selects a supplier for each incoming order",
-      decisionLabel: "Selected Supplier A",
-      altLabel: "Supplier B",
-      outcomeLabel: "Shipment delayed",
+      agentName: "Sourcing Agent",
+      agentRole: "autonomously selects a forge for each incoming precision order",
+      decisionLabel: "Selected Halcyon Forge",
+      altLabel: "Meridian Tool & Die",
+      outcomeLabel: "Delivery delayed",
       agentSignals: [
         { label: "Quoted unit cost", weight: 0.36 },
         { label: "Stated capacity / availability", weight: 0.34 },
         { label: "Historical on-time rate", weight: 0.22 },
-        { label: "Order complexity", weight: 0.08 },
+        { label: "Spec complexity", weight: 0.08 },
       ],
       agentBlindSpots: [
-        "Complex orders are routed to Supplier A and are slower regardless of supplier — a confounded path",
-        "Supplier A's effect runs through Material Lead Time, not visible in the quote",
-        "The historical on-time rate is itself confounded by which orders Supplier A gets",
+        "Tight-tolerance orders are routed to Halcyon Forge and are slower regardless of supplier — a confounded path",
+        "Halcyon's effect runs through Material Lead Time, not visible in the quote",
+        "The historical on-time rate is itself confounded by which orders Halcyon gets",
       ],
       stages: [
         { id: "order", label: "Order" },
-        { id: "supplier", label: "Supplier", agent: "Procurement Agent" },
+        { id: "supplier", label: "Forge", agent: "Sourcing Agent" },
         { id: "material", label: "Material" },
         { id: "factory", label: "Factory", agent: "Production Agent" },
         { id: "transport", label: "Transport", agent: "Logistics Agent" },
-        { id: "customer", label: "Customer" },
+        { id: "customer", label: "Line-Side" },
       ],
       incident: {
-        trigger: "Supplier A confirmed for a high-complexity order",
+        trigger: "Halcyon Forge confirmed for a tight-tolerance order",
         steps: [
-          { stageId: "supplier", t: "10:42", note: "Procurement Agent selects Supplier A", sev: "warn" },
+          { stageId: "supplier", t: "10:42", note: "Sourcing Agent selects Halcyon Forge", sev: "warn" },
           { stageId: "material", t: "11:18", note: "Material lead time runs 7.4 d over baseline", sev: "warn" },
           { stageId: "factory", t: "13:05", note: "Production queue backs up", sev: "warn" },
           { stageId: "transport", t: "15:40", note: "Booked transport window missed", sev: "crit" },
-          { stageId: "customer", t: "next day", note: "Shipment SLA breached — 7.1 d late", sev: "crit" },
+          { stageId: "customer", t: "next day", note: "Line-side delivery SLA breached — 7.1 d late", sev: "crit" },
         ],
       },
     },

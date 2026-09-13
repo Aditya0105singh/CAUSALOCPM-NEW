@@ -361,7 +361,7 @@ function build(spec: DomainSpec) {
       counterfactualDelayDays: counterfactual,
       counterfactualLabel:
         spec.id === "manufacturing"
-          ? "If procurement had been re-routed to Supplier B"
+          ? "If sourcing had been re-routed to Meridian Tool & Die"
           : "If the specialist consult had happened within 12 hours",
       drivers,
       similarCaseIds: [] as string[],
@@ -427,10 +427,36 @@ function build(spec: DomainSpec) {
   // ── agentic framing: the autonomous decisions this layer audits ─────────
   // Six decisions drawn from the highest-delay cases; verdict compares the
   // agent's stated confidence to the causal audit score.
+  // Causal support = the share of the observed treatment→outcome association that
+  // survives confounding adjustment. 6.65/8.78 = 76% (mfg); 5.25/6.01 = 87% (hc).
+  // This is the number the agent's stated confidence gets compared against.
+  const causalSupportPct = Math.round((spec.dmlEffect / spec.naiveEffect) * 100);
+
+  /** The Causal Decision Gate: three checks, one verdict. */
+  function gateFor(confPct: number, cfCost: number, complexity: number) {
+    const trustGap = confPct - causalSupportPct;
+    const segIdx = complexity <= 4 ? 0 : complexity <= 7 ? 1 : 2;
+    const seg = spec.cateSegments[segIdx];
+    const segCi = round(seg.ciHigh - seg.ciLow);
+    const coverage = segIdx === 2 ? "sparse" : segCi > 1.5 ? "moderate" : "well-covered";
+    const status: "PASS" | "REVIEW" | "HOLD" =
+      trustGap >= 6 && cfCost >= 5 ? "HOLD" : trustGap >= 3 || cfCost >= 4 ? "REVIEW" : "PASS";
+    const reason =
+      status === "HOLD"
+        ? `Stated confidence runs ${trustGap} points above causal support, and the alternative saves ${cfCost} ${unit} — in a segment where the estimate is ${coverage}.`
+        : status === "REVIEW"
+          ? trustGap >= 3
+            ? `Stated confidence runs ${trustGap} points above causal support.`
+            : `The alternative decision saves ${cfCost} ${unit}.`
+          : `Confidence is within causal support and the counterfactual cost is low.`;
+    return { trustGap, causalSupportPct, counterfactualCost: cfCost, coverage, segmentCiWidth: segCi, status, reason };
+  }
+
   const auditPool = [...cases].sort((a, b) => b.actualDelayDays - a.actualDelayDays).slice(0, 6);
   const agentDecisions = auditPool.map((c, i) => {
     const conf = round(0.84 + rng.next() * 0.11, 2); // agent's stated confidence 0.84–0.95
     const dominant = c.drivers.filter((d) => Math.abs(d.contributionDays) > 0.05)[0];
+    const cfCost = round(c.actualDelayDays - c.counterfactualDelayDays, 1);
     return {
       id: `AGT-${spec.id === "manufacturing" ? "PRC" : "CCA"}-${String(4200 + i * 17).padStart(4, "0")}`,
       agent: spec.narrative.agentName,
@@ -445,6 +471,7 @@ function build(spec: DomainSpec) {
       dominantContribution: dominant?.contributionDays ?? spec.dmlEffect,
       controllableDays: c.controllableDays,
       structuralDays: c.structuralDays,
+      gate: gateFor(Math.round(conf * 100), cfCost, c.complexityScore),
       // the agent's stated confidence vs the causal support for the decision
       verdict: (conf - 0.86 > 0.03 ? "over-confident" : conf - 0.86 < -0.04 ? "under-supported" : "aligned") as
         | "over-confident"
@@ -452,6 +479,83 @@ function build(spec: DomainSpec) {
         | "aligned",
     };
   });
+
+  // ── Dashboard Truth Test — how much of each reported relationship is real ──
+  // Straight from the pipeline: the naive association vs the confounding-adjusted
+  // causal effect, per driver.
+  const dashboardTruth = effects.slice(0, 4).map((e) => {
+    const hidden = round(Math.max(0, e.naiveDays - e.effectDays));
+    return {
+      label: e.label,
+      reported: e.naiveDays,
+      causal: e.effectDays,
+      hidden,
+      hiddenPct: round((hidden / Math.max(0.01, e.naiveDays)) * 100, 1),
+    };
+  });
+
+  // ── Agent Health — the gate run across every audited decision in the log ──
+  const allGated = cases.map((c, i) => {
+    const conf = Math.round((0.82 + ((i * 37) % 100) / 100 * 0.14) * 100); // 82–96, deterministic
+    return gateFor(conf, round(c.actualDelayDays - c.counterfactualDelayDays, 1), c.complexityScore);
+  });
+  const nPass = allGated.filter((g) => g.status === "PASS").length;
+  const nReview = allGated.filter((g) => g.status === "REVIEW").length;
+  const nHold = allGated.filter((g) => g.status === "HOLD").length;
+  const pct = (n: number) => round((n / allGated.length) * 100, 1);
+  const flagged = allGated.filter((g) => g.status !== "PASS");
+  const avgAvoidableDays = round(
+    flagged.reduce((s, g) => s + g.counterfactualCost, 0) / Math.max(1, flagged.length),
+    1,
+  );
+  const pctOverConfident = pct(allGated.filter((g) => g.trustGap >= 6).length);
+  const agentHealth = {
+    agent: `${spec.narrative.agentName} v4.2`,
+    audited: allGated.length,
+    populationDecisions: treatedCases,
+    pctPass: pct(nPass),
+    pctReview: pct(nReview),
+    pctHold: pct(nHold),
+    pctOverConfident,
+    avgDashboardBiasPct: naiveEffect.biasPct,
+    mostConfoundedRelationship: `${spec.treatmentLabel} → ${spec.outcomeVariable}`,
+    avgAvoidableDays,
+    // modeled: avoidable days on the flagged share of in-scope volume
+    avoidableAnnualImpact: Math.round(
+      avgAvoidableDays * (flagged.length / allGated.length) * annualVolume * costPerDelayDay,
+    ),
+  };
+
+  // ── Causal Autonomy Score — has this agent earned more autonomy? ──────────
+  // A documented roll-up of the agent's causal track record. NOT a production
+  // control system — a prototype heuristic that shows what evidence-based
+  // autonomy allocation would look like.
+  const support = round(spec.dmlEffect / spec.naiveEffect * 100, 1); // causal support %
+  const autonomyRaw =
+    support - 0.25 * pctOverConfident - 0.4 * agentHealth.pctHold - 0.15 * agentHealth.pctReview;
+  const autonomyScore = Math.max(12, Math.min(96, Math.round(autonomyRaw)));
+  const band = (autonomyScore >= 78 ? "READY" : autonomyScore >= 55 ? "SUPERVISED" : "RESTRICTED") as
+    | "READY"
+    | "SUPERVISED"
+    | "RESTRICTED";
+  const causalAutonomyScore = {
+    agent: agentHealth.agent,
+    currentAutonomy: spec.id === "manufacturing" ? "AUTO-EXECUTE" : "AUTO-ASSIGN",
+    score: autonomyScore,
+    band,
+    recommendation:
+      band === "READY"
+        ? "Safe to raise the autonomy threshold — the agent's decisions are causally well-supported."
+        : band === "SUPERVISED"
+          ? "Keep human review at the current threshold; the confidence–evidence gap is real but bounded."
+          : "Reduce autonomy — route every decision through review until the confounding is addressed.",
+    inputs: [
+      { label: "Causal support", value: `${support}%`, note: "share of the observed effect that survives confounding adjustment" },
+      { label: "Over-confidence rate", value: `${pctOverConfident}%`, note: "decisions where stated confidence ran ≥6 pts above causal support" },
+      { label: "Hold rate", value: `${agentHealth.pctHold}%`, note: "decisions the gate would block outright" },
+      { label: "Dashboard bias in its domain", value: `${naiveEffect.biasPct}%`, note: "of the headline metric it optimises against" },
+    ],
+  };
 
   // ── Causal Audit Score — transparent 0–100 composite of real metrics.
   // Every dimension is a real number, mapped to 0–100 with a documented formula;
@@ -485,7 +589,6 @@ function build(spec: DomainSpec) {
   // Everything a scene needs, pre-assembled from real pipeline numbers so
   // the React scenes stay presentational.
   const pd = agentDecisions[0];
-  const causalSupportPct = Math.round((spec.dmlEffect / spec.naiveEffect) * 100);
   const story = {
     incidentId: spec.id === "manufacturing" ? "SC-20481" : "ADM-7731",
     caseId: pd.caseId,
@@ -564,6 +667,9 @@ function build(spec: DomainSpec) {
     story,
     agentDecisions,
     causalAuditScore,
+    dashboardTruth,
+    agentHealth,
+    causalAutonomyScore,
     scenario: {
       name: spec.scenarioName,
       outcomeVariable: spec.outcomeVariable,
@@ -591,7 +697,7 @@ function build(spec: DomainSpec) {
     executiveSummary: {
       headline:
         spec.id === "manufacturing"
-          ? "Supplier A dependency is the dominant causal driver of shipment delay — statistically validated, not just correlated."
+          ? "Halcyon Forge dependency is the dominant causal driver of line-side delivery delay — statistically validated, not just correlated."
           : "Specialist assignment is the dominant causal driver of length of stay — statistically validated, not just correlated.",
       confidence: "HIGH CONFIDENCE" as const,
       bullets: [

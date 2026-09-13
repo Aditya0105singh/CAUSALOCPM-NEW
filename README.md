@@ -20,8 +20,8 @@ self-contained synthetic scenarios:
 
 | Domain | Tenant | Outcome | Confounder recovered |
 | --- | --- | --- | --- |
-| **Manufacturing** | Northwind Components Co. | Shipment Delay (days) | Peak-Season Demand inflates supplier correlation ~19% |
-| **Healthcare** | Meridian Health System | Discharge Delay (days) | Patient acuity inflates specialist-latency correlation ~15.5% |
+| **Manufacturing** | Atlas Precision Aerostructures | Line-Side Delivery Delay (days) | Spec Complexity inflates Halcyon Forge correlation ~24% |
+| **Healthcare** | Meridian Health System | Length of Stay (days) | Patient Complexity inflates specialist-assignment correlation ~13% |
 
 _(The old `prihir_synthetic.csv` reference from the original prototype is gone — both
 datasets are freshly designed here with planted ground truth.)_
