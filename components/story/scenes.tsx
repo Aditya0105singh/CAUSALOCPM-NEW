@@ -271,7 +271,7 @@ export function WhatIfScene({ f, speed, onNext }: SceneProps) {
     <div className="mx-auto max-w-3xl">
       <SceneHead kicker="What if" title="Replay the decision — both ways at once" />
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <World tone="danger" heading={`Actual · ${w.actualLabel}`} steps={stepsA.map((s) => s.note)} shown={shown} value={actual} unit={f.story.outcomeUnit} caption={f.story.ripple.steps.at(-1)?.note ?? ""} />
+        <World tone="danger" heading={`Actual · ${w.actualLabel}`} steps={stepsA.map((s) => s.note)} shown={shown} value={actual} unit={f.story.outcomeUnit} caption={f.story.ripple.steps.at(-1)?.note ?? ""} done={done} />
         <World
           tone="forest"
           heading={`Counterfactual · ${w.cfLabel}`}
@@ -280,6 +280,7 @@ export function WhatIfScene({ f, speed, onNext }: SceneProps) {
           value={cf}
           unit={f.story.outcomeUnit}
           caption="On time"
+          done={done}
         />
       </div>
 
@@ -546,6 +547,7 @@ function World({
   value,
   unit,
   caption,
+  done,
 }: {
   tone: "danger" | "forest";
   heading: string;
@@ -554,26 +556,62 @@ function World({
   value: number;
   unit: string;
   caption: string;
+  done: boolean;
 }) {
+  const accent = tone === "danger" ? "var(--color-danger)" : "var(--color-forest)";
   return (
-    <div className={clsx("rounded-2xl border p-4", tone === "danger" ? "border-danger/25 bg-[#f1ddd6]/25" : "border-forest/25 bg-sage/25")}>
+    <motion.div
+      className={clsx("rounded-2xl border p-4", tone === "danger" ? "border-danger/25 bg-[#f1ddd6]/25" : "border-forest/25 bg-sage/25")}
+      animate={
+        done
+          ? {
+              boxShadow: [
+                `0 0 0 0 ${tone === "danger" ? "rgba(165,70,47,0.16)" : "rgba(61,90,61,0.16)"}`,
+                `0 0 0 9px ${tone === "danger" ? "rgba(165,70,47,0)" : "rgba(61,90,61,0)"}`,
+              ],
+            }
+          : {}
+      }
+      transition={{ duration: 2.4, repeat: Infinity, delay: tone === "danger" ? 0 : 0.5 }}
+    >
       <div className={clsx("text-[11px] font-semibold uppercase tracking-wide", tone === "danger" ? "text-danger" : "text-forest-deep")}>{heading}</div>
       <ul className="mt-2 space-y-1.5">
-        {steps.map((st, i) => (
-          <motion.li
-            key={i}
-            initial={{ opacity: 0, x: tone === "danger" ? -6 : 6 }}
-            animate={i < shown ? { opacity: 1, x: 0 } : { opacity: 0.15 }}
-            className="flex gap-2 text-[12px] text-ink-soft"
-          >
-            <span className={tone === "danger" ? "text-danger" : "text-forest"}>•</span> {st}
-          </motion.li>
-        ))}
+        {steps.map((st, i) => {
+          const isCursor = i === shown - 1 && !done;
+          return (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, x: tone === "danger" ? -6 : 6 }}
+              animate={i < shown ? { opacity: 1, x: 0 } : { opacity: 0.15 }}
+              className="flex items-start gap-2 text-[12px] text-ink-soft"
+            >
+              <span className="relative mt-[3px] flex h-1.5 w-1.5 shrink-0 items-center justify-center">
+                {isCursor && (
+                  <motion.span
+                    className="absolute inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ background: accent }}
+                    initial={{ scale: 1, opacity: 0.7 }}
+                    animate={{ scale: 2.6, opacity: 0 }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                )}
+                <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
+              </span>
+              {st}
+            </motion.li>
+          );
+        })}
       </ul>
-      <div className={clsx("mt-3 border-t pt-2 font-display text-2xl tabular-nums", tone === "danger" ? "border-danger/20 text-danger" : "border-forest/20 text-forest")}>
+      <motion.div
+        key={done ? "final" : "counting"}
+        initial={done ? { scale: 0.92 } : false}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 380, damping: 14 }}
+        className={clsx("mt-3 border-t pt-2 font-display text-2xl tabular-nums", tone === "danger" ? "border-danger/20 text-danger" : "border-forest/20 text-forest")}
+      >
         {value.toFixed(1)} <span className="text-sm text-muted">{unit} · {caption}</span>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
