@@ -1,9 +1,8 @@
 "use client";
-import { clsx } from "clsx";
-import { Sparkles, TrendingDown, ShieldCheck, ArrowRight, Check, X, AlertTriangle } from "lucide-react";
+import { TrendingDown, ShieldCheck, ArrowRight, Check, X, AlertTriangle } from "lucide-react";
 import type { CausalFixture } from "@/lib/engine/types";
 import { Card, Pill, SectionTitle, KeyVal } from "@/components/ui";
-import { CountUp, FadeIn, Stagger, StaggerItem, motion } from "@/components/motion";
+import { CountUp, FadeIn, motion } from "@/components/motion";
 import { ValidationExplainer } from "@/components/ValidationExplainer";
 import { AlertIllustration } from "@/components/Illustrations";
 import { fmtMoney } from "@/lib/format";
@@ -11,7 +10,6 @@ import { fmtMoney } from "@/lib/format";
 export function OverviewTab({ f }: { f: CausalFixture }) {
   const es = f.executiveSummary;
   const topAction = f.recommendedActions[0];
-  const m = f.discoveryMetrics;
   const t = f.effects[0];
   const maxImpact = Math.max(...f.topDrivers.map((d) => d.impactDays));
 
@@ -60,29 +58,13 @@ export function OverviewTab({ f }: { f: CausalFixture }) {
             <AlertIllustration domain={f.domain} />
           </div>
         </div>
+        <div className="flex items-center gap-2.5 border-t border-white/10 px-5 py-3 text-[13px] text-white/80">
+          <Pill tone="forest">
+            <ShieldCheck size={12} /> {es.confidence}
+          </Pill>
+          <span>{es.headline}</span>
+        </div>
       </motion.div>
-
-      <FadeIn delay={0.05}>
-        <Card>
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-semibold text-ink">
-              <Sparkles size={15} className="text-forest" /> AI Executive Summary
-            </div>
-            <Pill tone="forest">
-              <ShieldCheck size={12} /> {es.confidence}
-            </Pill>
-          </div>
-          <p className="font-display text-lg leading-snug text-ink">{es.headline}</p>
-          <ul className="mt-3 space-y-1.5 text-sm text-ink-soft">
-            {es.bullets.map((b, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-forest" />
-                {b}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </FadeIn>
 
       <div id="tour-explainer" className="scroll-mt-24">
         <ValidationExplainer f={f} />
@@ -119,57 +101,6 @@ export function OverviewTab({ f }: { f: CausalFixture }) {
           </Card>
         </FadeIn>
       </div>
-
-      {/* Traditional PM vs CausalOCPM */}
-      <Stagger className="grid gap-4 md:grid-cols-2">
-        <StaggerItem>
-          <Card className="h-full bg-paper-2/50">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-muted">Traditional process mining</div>
-            <div className="mt-1 font-display text-2xl text-ink">1 object type</div>
-            <p className="mt-1 text-sm text-ink-soft">
-              Case ID only — object relationships are invisible, so it reports correlations and cannot tell causation from
-              coincidence.
-            </p>
-          </Card>
-        </StaggerItem>
-        <StaggerItem>
-          <Card className="h-full border-forest/30 bg-sage/40">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-forest-deep">CausalOCPM (this system)</div>
-            <div className="mt-1 font-display text-2xl text-forest">{f.scenario.objectTypes} object types</div>
-            <p className="mt-1 text-sm text-ink-soft">
-              {f.scenario.objectNames.join(" · ")} — tracked simultaneously as OCEL 2.0, the structural foundation causal
-              discovery builds on.
-            </p>
-          </Card>
-        </StaggerItem>
-      </Stagger>
-
-      {/* Pipeline Performance Summary */}
-      <FadeIn>
-        <Card>
-          <SectionTitle hint="actual outputs of the reference pipeline's validate.py on the 15,000-row synthetic log">
-            Pipeline Performance Summary
-          </SectionTitle>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <PerfTile v={f.pipelinePerf.effectErrorPct} decimals={1} suffix="%" l="Effect recovery error" hint={`DML ${f.effects[0].effectDays} vs planted ${f.effects[0].groundTruthDays}`} good />
-            <PerfTile v={f.pipelinePerf.preF1} decimals={2} l="Discovery F1" hint="autonomous bootstrapped PC" />
-            <PerfTile v={f.pipelinePerf.confoundingRemovedPct} decimals={1} suffix="%" l="Confounding removed" hint={`${f.naiveEffect.biasDays} ${f.scenario.outcomeUnit} of the naive estimate`} />
-            <PerfTile v={f.pipelinePerf.bootstrapStability * 100} decimals={0} suffix="%" l="Bootstrap stability" hint="edges stable across 20 reruns" />
-            <PerfTile v={f.pipelinePerf.eValue} decimals={1} l="E-value" hint="hidden-confounder robustness" good />
-            <PerfTile v={f.pipelinePerf.avgModelR2} decimals={2} l="Outcome model R²" hint={`coefficients within ${f.pipelinePerf.avgCoefErrorPct}% of planted`} good />
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            The headline is <b>effect recovery</b>: Double ML landed within <b>{f.pipelinePerf.effectErrorPct}%</b> of the
-            planted causal effect ({f.effects[0].effectDays} vs {f.effects[0].groundTruthDays}), CI [{f.naiveEffect.ciLow},{" "}
-            {f.naiveEffect.ciHigh}] containing the truth, where a naive estimate ran {f.naiveEffect.inflationPct}% high.
-            Autonomous discovery scores <b>F1 {f.pipelinePerf.preF1.toFixed(2)}</b> ({m.truePositives}/
-            {f.scenario.causalLinks} edges{m.falsePositives ? `, ${m.falsePositives} spurious` : ", no spurious edges"});
-            domain knowledge recovers the {f.pipelinePerf.missingEdgesRecovered} missed edge
-            {f.pipelinePerf.missingEdgesRecovered === 1 ? "" : "s"}. Structural coefficients are recovered within{" "}
-            <b>{f.pipelinePerf.avgCoefErrorPct}%</b> of their planted values, all sign-correct.
-          </p>
-        </Card>
-      </FadeIn>
 
       {/* Competitive positioning */}
       <FadeIn>
@@ -240,31 +171,6 @@ function MiniDark({ label, value, sub }: { label: string; value: string; sub: st
   );
 }
 
-function PerfTile({
-  v,
-  decimals,
-  suffix = "",
-  l,
-  hint,
-  good = false,
-}: {
-  v: number;
-  decimals: number;
-  suffix?: string;
-  l: string;
-  hint: string;
-  good?: boolean;
-}) {
-  return (
-    <div className="rounded-lg border border-line bg-paper-2/40 p-2.5">
-      <div className={clsx("font-display text-lg leading-none", good ? "text-forest" : "text-ink")}>
-        <CountUp value={v} decimals={decimals} suffix={suffix} duration={0.8} />
-      </div>
-      <div className="mt-1 text-[10px] font-medium leading-tight text-ink-soft">{l}</div>
-      <div className="text-[9px] leading-tight text-muted">{hint}</div>
-    </div>
-  );
-}
 
 function AnimatedBar({ value, max, delay }: { value: number; max: number; delay: number }) {
   const pct = Math.max(3, Math.min(100, (Math.abs(value) / max) * 100));
