@@ -2,16 +2,16 @@
   "seed": 71831,
   "rows": 20000,
   "trueEffect": 5.78,
-  "naiveEffect": 7.605,
+  "naiveEffect": 7.594,
   "dmlEffect": 6.175,
   "dmlCiLow": 6.077,
   "dmlCiHigh": 6.272,
   "discovery": {
-    "precision": 1.0,
+    "precision": 0.889,
     "recall": 0.889,
-    "f1": 0.941,
+    "f1": 0.889,
     "tp": 8,
-    "fp": 0,
+    "fp": 1,
     "fn": 1,
     "missed": [
       [
@@ -19,12 +19,17 @@
         "spec_complexity"
       ]
     ],
-    "spurious": [],
-    "discovered_count": 8
+    "spurious": [
+      [
+        "carrier_express",
+        "export_flag"
+      ]
+    ],
+    "discovered_count": 9
   },
   "edgeStability": {
     "Approval Duration -> Line-Side Delivery Delay": 1.0,
-    "Express Carrier -> Line-Side Delivery Delay": 0.8,
+    "Express Carrier -> Line-Side Delivery Delay": 0.95,
     "Export Flag -> Approval Duration": 1.0,
     "Halcyon Forge Dependency -> Material Lead Time": 1.0,
     "Machine Queue Length -> Approval Duration": 1.0,
@@ -34,30 +39,30 @@
     "Spec Complexity -> Machine Queue Length": 1.0
   },
   "placebo": -0.009,
-  "randomCommonCause": 6.169,
+  "randomCommonCause": 6.168,
   "eValue": 5.72,
   "cate": [
     {
       "label": "Low (1.0\u20132.6)",
-      "effect": 6.371,
-      "ci_low": 6.212,
-      "ci_high": 6.53
+      "effect": 6.372,
+      "ci_low": 6.213,
+      "ci_high": 6.531
     },
     {
       "label": "Mid (2.6\u20134.8)",
-      "effect": 6.105,
-      "ci_low": 5.938,
-      "ci_high": 6.272
+      "effect": 6.107,
+      "ci_low": 5.94,
+      "ci_high": 6.274
     },
     {
       "label": "High (4.8\u201310.0)",
-      "effect": 7.506,
-      "ci_low": 7.359,
-      "ci_high": 7.653
+      "effect": 7.507,
+      "ci_low": 7.36,
+      "ci_high": 7.654
     }
   ],
   "structuralRecovery": {
-    "cv_r2": 0.734,
+    "cv_r2": 0.735,
     "avg_coef_error_pct": 3.15
   },
   "sensitivitySweep": {
@@ -70,23 +75,23 @@
       0.3
     ],
     "estimates": [
-      5.61,
-      5.37,
+      5.62,
+      5.38,
       5.01,
-      4.82,
+      4.81,
       4.63,
       4.6
     ]
   },
   "tenSeed": {
-    "causal_mean": 6.104,
-    "causal_std": 0.039,
-    "causal_lo": 6.055,
-    "causal_hi": 6.18,
-    "naive_lo": 7.433,
-    "naive_hi": 7.564
+    "causal_mean": 6.102,
+    "causal_std": 0.038,
+    "causal_lo": 6.056,
+    "causal_hi": 6.176,
+    "naive_lo": 7.435,
+    "naive_hi": 7.559
   },
-  "outcomeStd": 4.92,
-  "outcomeMean": 9.298,
+  "outcomeStd": 4.922,
+  "outcomeMean": 9.211,
   "treatedPct": 32.8
 }

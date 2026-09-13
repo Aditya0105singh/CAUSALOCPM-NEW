@@ -175,7 +175,7 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
     // 20,000-row synthetic log (seed 71831), captured 2026-09-13. See
     // docs/reference-run/atlas-manufacturing/validate-report.txt.
     trueEffect: 5.78, // 6.8 × 0.85 mediated path (planted)
-    naiveEffect: 7.61, // real group-mean difference (validate.py: 7.605)
+    naiveEffect: 7.59, // real group-mean difference (validate.py: 7.594)
     dmlEffect: 6.18, // Double ML point estimate (validate.py: 6.175, error 6.8%)
     dmlCiLow: 6.08, // validate.py 95% CI [6.077, 6.272]
     dmlCiHigh: 6.27,
@@ -191,11 +191,15 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { id: "shipment_delay", label: "Line-Side Delivery Delay", role: "outcome", x: 7.8, y: 1.8 },
     ],
     // Discovery result matches the fresh run exactly: bootstrapped PC recovers
-    // 8 of 9 edges (precision 1.00, recall 0.889, F1 0.941), no spurious edges;
-    // only the order_complexity → supplier_a edge is missed — it's a THRESHOLD
+    // 8 of 9 edges (precision 0.889, recall 0.889, F1 0.889) plus ONE spurious
+    // edge. The missed edge — order_complexity → supplier_a — is a THRESHOLD
     // effect (flat below the tight-tolerance cutoff, then a step up), not a
     // smooth trend, so it barely moves a linear (Fisher-Z) test even though
-    // the dependency is real and strong.
+    // the dependency is real and strong. The spurious edge (export_flag —
+    // carrier_express) is a genuine, 100%-stable statistical correlation
+    // between two exogenous fields that happen to route through the same
+    // desk — real, strong, and non-causal, which is exactly why bootstrap
+    // stability alone can't be the only check; domain knowledge removes it.
     edges: [
       { source: "order_complexity", target: "supplier_a", coef: 0.58, discovered: false, bootstrapFreq: 0.3 },
       { source: "order_complexity", target: "machine_queue_length", coef: 0.72, discovered: true, bootstrapFreq: 1.0 },
@@ -205,9 +209,16 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { source: "machine_queue_length", target: "approval_duration", coef: 1.15, discovered: true, bootstrapFreq: 1.0 },
       { source: "export_flag", target: "approval_duration", coef: 1.85, discovered: true, bootstrapFreq: 1.0 },
       { source: "approval_duration", target: "shipment_delay", coef: 0.58, discovered: true, bootstrapFreq: 1.0 },
-      { source: "carrier_express", target: "shipment_delay", coef: -0.58, discovered: true, bootstrapFreq: 0.8 },
+      { source: "carrier_express", target: "shipment_delay", coef: -1.05, discovered: true, bootstrapFreq: 0.95 },
     ],
-    spuriousEdges: [],
+    spuriousEdges: [
+      {
+        source: "export_flag",
+        target: "carrier_express",
+        bootstrapFreq: 1.0,
+        why: "export paperwork and premium-carrier booking are handled by the same logistics desk, so export orders are incidentally more likely to end up on an express carrier — a real, 100%-stable correlation with no causal link to delay. Removed because it isn't on the delay pathway, not because it's unstable.",
+      },
+    ],
     signUncertainEdges: [],
     avgModelR2: 0.73, // real 5-fold CV-R² of the outcome model (validate.py: 0.734)
     avgCoefErrorPct: 3.2, // real avg structural-coefficient recovery error (validate.py: 3.15%)
@@ -318,10 +329,10 @@ export const DOMAINS: Record<DomainSpec["id"], DomainSpec> = {
       { q: "What is the top bottleneck?", a: "Material Lead Time is the binding constraint — the mediator between Halcyon Forge and Line-Side Delivery Delay. Every downstream action (approval automation, buffer capacity) moves the needle far less than re-sourcing does." },
       { q: "Best intervention?", a: "Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die: ~17% delay reduction, ~$410K/year expected savings at High confidence, payback ≈ 1.6 months." },
       { q: "Explain causal chain", a: "Spec Complexity → Halcyon Forge → Material Lead Time → Line-Side Delivery Delay. The Spec Complexity → Halcyon Forge edge is a threshold effect (flat, then a step at the tight-tolerance cutoff) and only recovered by domain knowledge; the rest is discovered by bootstrapped PC with ≥80% edge stability." },
-      { q: "Compare suppliers", a: "On raw logs, orders through Halcyon Forge run 7.61 days later on average than the rest of the network — but 1.43 of that is confounding from spec complexity: Halcyon is the only qualified forge above the tight-tolerance cutoff. The true causal penalty of routing through Halcyon is 6.18 days via longer material lead time. (Vantage Alloys and Solaris Components round out the sourcing network — Vantage's shaky record is a small-sample artifact the placebo test rules out, and Solaris's strong average has never been tested on a high-complexity order.)" },
+      { q: "Compare suppliers", a: "On raw logs, orders through Halcyon Forge run 7.59 days later on average than the rest of the network — but 1.42 of that is confounding from spec complexity: Halcyon is the only qualified forge above the tight-tolerance cutoff. The true causal penalty of routing through Halcyon is 6.18 days via longer material lead time. (Vantage Alloys and Solaris Components round out the sourcing network — Vantage's shaky record is a small-sample artifact the placebo test rules out, and Solaris's strong average has never been tested on a high-complexity order.)" },
       { q: "Predict impact of changes", a: "In the simulator, moving Meridian Tool & Die allocation to 65% and enabling approval automation drops predicted delivery delay from 9.3 to about 6.0 days (~35%), for roughly $0 net implementation cost." },
       { q: "What are the ROI opportunities?", a: "Ranked by ROI: (1) sourcing shift ~$410K/yr at $54K capex, (2) export-approval automation ~$175K/yr at $45K, (3) machine buffer capacity ~$72K/yr at $126K." },
-      { q: "Executive summary", a: "Halcyon Forge dependency is the dominant causal driver of line-side delivery delay: recovered effect 6.18 days vs a planted ground truth of 5.78 (6.8% error) — a naive dashboard would have said 7.61. ~17% reduction is achievable by shifting a quarter of sourcing to Meridian Tool & Die, worth ~$410K/year. Autonomous discovery F1 0.94 (8 of 9 edges, no spurious); VanderWeele E-value ≈ 5.7 indicates strong robustness to unmeasured confounding." },
+      { q: "Executive summary", a: "Halcyon Forge dependency is the dominant causal driver of line-side delivery delay: recovered effect 6.18 days vs a planted ground truth of 5.78 (6.8% error) — a naive dashboard would have said 7.59. ~17% reduction is achievable by shifting a quarter of sourcing to Meridian Tool & Die, worth ~$410K/year. Autonomous discovery F1 0.89 (8 of 9 edges, 1 spurious re-oriented by domain knowledge); VanderWeele E-value ≈ 5.7 indicates strong robustness to unmeasured confounding." },
     ],
     methodology: [
       { phase: "Causal Discovery", detail: "Bootstrapped PC algorithm · Fisher-Z tests at α=0.05 · 20 subsamples × 2,000 rows · 60% edge-stability threshold · domain-knowledge ablation" },

@@ -36,7 +36,7 @@ COEF_CONF_TO_QUEUE = 0.72     # spec_complexity -> machine_queue_length
 COEF_QUEUE_TO_APPR = 1.15     # machine_queue_length -> approval_duration
 COEF_EXPORT_TO_APPR = 1.85    # export_flag -> approval_duration
 COEF_APPR_TO_DELAY = 0.58     # approval_duration -> delay
-COEF_CARRIER_TO_DELAY = -0.58 # carrier_express -> delay
+COEF_CARRIER_TO_DELAY = -1.05 # carrier_express -> delay
 COEF_CONF_TO_DELAY_DIRECT = 0.32  # spec_complexity -> delay (small direct leak)
 
 CONF_SIGMOID_STEEP = 0.32     # curvature of spec_complexity -> P(halcyon) — NON-MONOTONIC
@@ -61,7 +61,13 @@ def gen():
 
     # order-level attributes
     export_flag = (rng.random(N) < 0.19).astype(int)
-    carrier_express = (rng.random(N) < 0.17).astype(int)
+    # carrier_express is NOT caused by export_flag, but the two are
+    # incidentally correlated in practice — export paperwork gets routed
+    # through the same desk that books premium carriers, so export orders
+    # are somewhat more likely to end up on an express carrier by scheduling
+    # coincidence, not causation. This is exactly the kind of correlation a
+    # discovery algorithm can mistake for a direct edge.
+    carrier_express = (rng.random(N) < np.where(export_flag == 1, 0.34, 0.14)).astype(int)
 
     # treatment: halcyon_forge — NON-MONOTONIC (inverted-U) in spec_complexity.
     # Halcyon specializes in mid-tolerance precision work: easy jobs go

@@ -1,7 +1,7 @@
 {
   "domain": "manufacturing",
   "generatedAt": "2024-06-30T09:00:00.000Z",
-  "spuriousEdgeReason": "",
+  "spuriousEdgeReason": "export paperwork and premium-carrier booking are handled by the same logistics desk, so export orders are incidentally more likely to end up on an express carrier — a real, 100%-stable correlation with no causal link to delay. Removed because it isn't on the delay pathway, not because it's unstable.",
   "narrative": {
     "agentName": "Sourcing Agent",
     "agentRole": "autonomously selects a forge for each incoming precision order",
@@ -204,15 +204,19 @@
         "Line-Side Delivery Delay"
       ],
       "effectDays": 6.18,
-      "naiveDays": 7.61,
+      "naiveDays": 7.59,
       "trueDays": 5.78,
       "confounderLabel": "Spec Complexity",
-      "confoundingDays": 1.43,
-      "confoundingPct": 18.8,
+      "confoundingDays": 1.41,
+      "confoundingPct": 18.6,
       "drivers": [
         {
           "label": "Halcyon Forge Dependency",
           "days": 6.18
+        },
+        {
+          "label": "Express Carrier",
+          "days": 3.34
         },
         {
           "label": "Material Lead Time",
@@ -221,10 +225,6 @@
         {
           "label": "Approval Duration",
           "days": 1.86
-        },
-        {
-          "label": "Express Carrier",
-          "days": 1.84
         },
         {
           "label": "Spec Complexity",
@@ -255,7 +255,7 @@
         },
         {
           "label": "Confounding accounted for",
-          "detail": "naive 7.61 → causal 6.18 days · 18.8% was confounding",
+          "detail": "naive 7.59 → causal 6.18 days · 18.6% was confounding",
           "pass": true
         },
         {
@@ -285,7 +285,7 @@
         },
         {
           "k": "Discovery F1",
-          "v": "0.94"
+          "v": "0.89"
         },
         {
           "k": "Bootstrap stability",
@@ -319,8 +319,8 @@
       "counterfactualDays": 11.4,
       "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 6.23,
-      "controllableDays": 9.56,
-      "structuralDays": 1.86,
+      "controllableDays": 10.68,
+      "structuralDays": 1.88,
       "gate": {
         "trustGap": 6,
         "causalSupportPct": 81,
@@ -344,8 +344,8 @@
       "counterfactualDays": 7.6,
       "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 10.59,
-      "controllableDays": 13.9,
-      "structuralDays": 0.77,
+      "controllableDays": 14.94,
+      "structuralDays": 0.78,
       "gate": {
         "trustGap": 6,
         "causalSupportPct": 81,
@@ -369,8 +369,8 @@
       "counterfactualDays": 11.6,
       "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 3.74,
-      "controllableDays": 7.84,
-      "structuralDays": 1.82,
+      "controllableDays": 9.03,
+      "structuralDays": 1.84,
       "gate": {
         "trustGap": 8,
         "causalSupportPct": 81,
@@ -394,8 +394,8 @@
       "counterfactualDays": 5.8,
       "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 9.79,
-      "controllableDays": 12.71,
-      "structuralDays": 2.36,
+      "controllableDays": 13.59,
+      "structuralDays": 2.39,
       "gate": {
         "trustGap": 9,
         "causalSupportPct": 81,
@@ -419,8 +419,8 @@
       "counterfactualDays": 8.6,
       "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 5.27,
-      "controllableDays": 7.84,
-      "structuralDays": 1.03,
+      "controllableDays": 8.76,
+      "structuralDays": 1.04,
       "gate": {
         "trustGap": 6,
         "causalSupportPct": 81,
@@ -444,8 +444,8 @@
       "counterfactualDays": 6.8,
       "dominantDriver": "Halcyon Forge Dependency",
       "dominantContribution": 7.64,
-      "controllableDays": 12.02,
-      "structuralDays": 2.35,
+      "controllableDays": 13.57,
+      "structuralDays": 2.38,
       "gate": {
         "trustGap": 8,
         "causalSupportPct": 81,
@@ -461,10 +461,17 @@
   "dashboardTruth": [
     {
       "label": "Halcyon Forge Dependency",
-      "reported": 7.61,
+      "reported": 7.59,
       "causal": 6.18,
-      "hidden": 1.43,
-      "hiddenPct": 18.8
+      "hidden": 1.41,
+      "hiddenPct": 18.6
+    },
+    {
+      "label": "Express Carrier",
+      "reported": 3.76,
+      "causal": 3.34,
+      "hidden": 0.42,
+      "hiddenPct": 11.2
     },
     {
       "label": "Material Lead Time",
@@ -479,13 +486,6 @@
       "causal": 1.86,
       "hidden": 0.07,
       "hiddenPct": 3.6
-    },
-    {
-      "label": "Express Carrier",
-      "reported": 2.08,
-      "causal": 1.84,
-      "hidden": 0.24,
-      "hiddenPct": 11.5
     }
   ],
   "agentHealth": {
@@ -496,7 +496,7 @@
     "pctReview": 75,
     "pctHold": 22.5,
     "pctOverConfident": 67.5,
-    "avgDashboardBiasPct": 18.8,
+    "avgDashboardBiasPct": 18.6,
     "mostConfoundedRelationship": "Halcyon Forge Dependency → Line-Side Delivery Delay",
     "avgAvoidableDays": 4.4,
     "avoidableAnnualImpact": 1111968
@@ -510,7 +510,7 @@
     "inputs": [
       {
         "label": "Causal support",
-        "value": "81.2%",
+        "value": "81.4%",
         "note": "share of the observed effect that survives confounding adjustment"
       },
       {
@@ -525,7 +525,7 @@
       },
       {
         "label": "Dashboard bias in its domain",
-        "value": "18.8%",
+        "value": "18.6%",
         "note": "of the headline metric it optimises against"
       }
     ]
@@ -551,8 +551,8 @@
       },
       {
         "key": "Discovery quality",
-        "score": 86,
-        "why": "autonomous discovery F1 0.94"
+        "score": 82,
+        "why": "autonomous discovery F1 0.89"
       },
       {
         "key": "Confounding robustness",
@@ -610,8 +610,8 @@
     "headline": "Halcyon Forge dependency is the dominant causal driver of line-side delivery delay — statistically validated, not just correlated.",
     "confidence": "HIGH CONFIDENCE",
     "bullets": [
-      "Recovered causal effect 6.18 days via Double ML vs a planted ground truth of 5.78 — recovery error 6.9%. A naive dashboard would have reported 7.61; confounding accounts for 1.43 of that.",
-      "Autonomous bootstrapped-PC discovery: F1 0.94 (8 of 9 planted edges, no spurious edges). Domain knowledge then recovers the 1 missed edge — never inventing a relationship.",
+      "Recovered causal effect 6.18 days via Double ML vs a planted ground truth of 5.78 — recovery error 6.9%. A naive dashboard would have reported 7.59; confounding accounts for 1.41 of that.",
+      "Autonomous bootstrapped-PC discovery: F1 0.89 (8 of 9 planted edges, 1 spurious). Domain knowledge then recovers the 1 missed edge and re-orients the spurious one — never inventing a relationship.",
       "Recommended action: Shift ~25% sourcing from Halcyon Forge to Meridian Tool & Die → ~$410K/yr expected savings, payback 4.1 months",
       "Robust to hidden confounding: VanderWeele E-value ≈ 5.7, placebo test -0.01 ≈ 0, stable across 10 regenerated datasets"
     ],
@@ -633,14 +633,14 @@
     "reliabilityPct": 86
   },
   "discoveryMetrics": {
-    "precision": 1,
+    "precision": 0.89,
     "recall": 0.89,
-    "f1": 0.94,
+    "f1": 0.89,
     "stability": 0.86,
     "bootstrapRuns": 20,
-    "shd": 1,
+    "shd": 2,
     "truePositives": 8,
-    "falsePositives": 0,
+    "falsePositives": 1,
     "falseNegatives": 1,
     "edgeStability": [
       {
@@ -693,18 +693,24 @@
       },
       {
         "edge": "Express Carrier → Line-Side Delivery Delay",
-        "frequency": 0.8,
+        "frequency": 0.95,
         "discovered": true,
         "pruned": false
+      },
+      {
+        "edge": "Export Flag → Express Carrier",
+        "frequency": 1,
+        "discovered": false,
+        "pruned": true
       }
     ]
   },
   "pipelinePerf": {
-    "prePrecision": 1,
+    "prePrecision": 0.89,
     "preRecall": 0.89,
-    "preF1": 0.94,
+    "preF1": 0.89,
     "effectErrorPct": 6.9,
-    "confoundingRemovedPct": 18.8,
+    "confoundingRemovedPct": 18.6,
     "bootstrapStability": 0.86,
     "eValue": 5.7,
     "avgModelR2": 0.73,
@@ -712,7 +718,7 @@
     "signCertain": 9,
     "signTotal": 9,
     "missingEdgesRecovered": 1,
-    "spuriousRemoved": 0,
+    "spuriousRemoved": 1,
     "validatedLinks": 9
   },
   "data": {
@@ -1131,11 +1137,20 @@
       {
         "source": "carrier_express",
         "target": "shipment_delay",
-        "coef": -0.58,
+        "coef": -1.05,
         "strength": "weak",
         "discovered": true,
-        "bootstrapFreq": 0.8,
+        "bootstrapFreq": 0.95,
         "pruned": false
+      },
+      {
+        "source": "export_flag",
+        "target": "carrier_express",
+        "coef": 0,
+        "strength": "weak",
+        "discovered": true,
+        "bootstrapFreq": 1,
+        "pruned": true
       }
     ]
   },
@@ -1147,8 +1162,18 @@
       "ciLow": 6.08,
       "ciHigh": 6.27,
       "groundTruthDays": 5.78,
-      "naiveDays": 7.61,
+      "naiveDays": 7.59,
       "method": "Double ML + backdoor adjustment (mediated path)"
+    },
+    {
+      "driver": "carrier_express",
+      "label": "Express Carrier",
+      "effectDays": 3.34,
+      "ciLow": 3.25,
+      "ciHigh": 3.43,
+      "groundTruthDays": 3.36,
+      "naiveDays": 3.76,
+      "method": "Structural coefficient · Double ML"
     },
     {
       "driver": "material_lead_time",
@@ -1171,16 +1196,6 @@
       "method": "Structural coefficient · Double ML"
     },
     {
-      "driver": "carrier_express",
-      "label": "Express Carrier",
-      "effectDays": 1.84,
-      "ciLow": 1.75,
-      "ciHigh": 1.93,
-      "groundTruthDays": 1.86,
-      "naiveDays": 2.08,
-      "method": "Structural coefficient · Double ML"
-    },
-    {
       "driver": "order_complexity",
       "label": "Spec Complexity",
       "effectDays": 1.08,
@@ -1192,11 +1207,11 @@
     }
   ],
   "naiveEffect": {
-    "naiveDays": 7.61,
+    "naiveDays": 7.59,
     "causalDays": 6.18,
-    "biasDays": 1.43,
-    "biasPct": 18.8,
-    "inflationPct": 23.1,
+    "biasDays": 1.41,
+    "biasPct": 18.6,
+    "inflationPct": 22.8,
     "ciLow": 6.08,
     "ciHigh": 6.27,
     "method": "Double ML · cross-fitted gradient boosting · sandwich SEs"
@@ -1244,8 +1259,8 @@
     },
     {
       "edge": "Express Carrier → Line-Side Delivery Delay",
-      "estimated": -0.55,
-      "groundTruth": -0.58
+      "estimated": -1.01,
+      "groundTruth": -1.05
     }
   ],
   "cate": {
@@ -1336,16 +1351,16 @@
       "impactDays": 6.18
     },
     {
+      "label": "Express Carrier",
+      "impactDays": 3.34
+    },
+    {
       "label": "Material Lead Time",
       "impactDays": 2.72
     },
     {
       "label": "Approval Duration",
       "impactDays": 1.86
-    },
-    {
-      "label": "Express Carrier",
-      "impactDays": 1.84
     },
     {
       "label": "Spec Complexity",
@@ -1568,8 +1583,8 @@
     "casesAnalysed": 20000,
     "groundTruthEffect": 5.78,
     "dmlEffect": 6.18,
-    "confoundingRemoved": 1.43,
-    "naiveDays": 7.61,
+    "confoundingRemoved": 1.41,
+    "naiveDays": 7.59,
     "achievableReductionPct": 17,
     "baselineDays": 9.3,
     "targetDays": 7.72,
@@ -1635,10 +1650,10 @@
   "crossDomain": [
     {
       "domain": "Precision Manufacturing",
-      "precision": 1,
+      "precision": 0.89,
       "recall": 0.89,
-      "f1": 0.94,
-      "naive": 7.61,
+      "f1": 0.89,
+      "naive": 7.59,
       "causal": 6.18,
       "planted": 5.78,
       "eValue": 5.7
@@ -1785,7 +1800,7 @@
       "category": "Fastener Sets",
       "value": 22394,
       "actualDelayDays": 8.2,
-      "predictedDelayDays": -4.7,
+      "predictedDelayDays": -5.6,
       "counterfactualDelayDays": 1.3,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -1795,18 +1810,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -2.29,
+          "label": "Approval Duration",
+          "contributionDays": -2.32,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -1.31,
+          "label": "Material Lead Time",
+          "contributionDays": -1.91,
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -1.03,
+          "label": "Express Carrier",
+          "contributionDays": -1.26,
           "kind": "controllable"
         }
       ],
@@ -1817,8 +1832,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 23,
-      "controllableDays": -12.25,
-      "structuralDays": -2.29,
+      "controllableDays": -13.08,
+      "structuralDays": -2.32,
       "complexityScore": 1,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -1830,7 +1845,7 @@
       "category": "Turbine Brackets",
       "value": 40453,
       "actualDelayDays": 10.7,
-      "predictedDelayDays": 20.3,
+      "predictedDelayDays": 21.5,
       "counterfactualDelayDays": 7.6,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -1840,18 +1855,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 2.77,
+          "label": "Express Carrier",
+          "contributionDays": 3.41,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.76,
+          "label": "Approval Duration",
+          "contributionDays": 1.78,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.2,
+          "label": "Material Lead Time",
+          "contributionDays": 1.76,
           "kind": "controllable"
         }
       ],
@@ -1862,8 +1877,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 57,
-      "controllableDays": 8.42,
-      "structuralDays": 1.76,
+      "controllableDays": 9.62,
+      "structuralDays": 1.78,
       "complexityScore": 9,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -1875,7 +1890,7 @@
       "category": "Avionics Housings",
       "value": 62582,
       "actualDelayDays": 8.5,
-      "predictedDelayDays": 1.9,
+      "predictedDelayDays": 1,
       "counterfactualDelayDays": 5.3,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -1885,18 +1900,18 @@
           "kind": "controllable"
         },
         {
+          "label": "Express Carrier",
+          "contributionDays": -2.27,
+          "kind": "controllable"
+        },
+        {
           "label": "Material Lead Time",
-          "contributionDays": -1.85,
+          "contributionDays": -1.39,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": -0.95,
-          "kind": "controllable"
-        },
-        {
-          "label": "Express Carrier",
-          "contributionDays": -0.6,
+          "contributionDays": -0.61,
           "kind": "structural"
         }
       ],
@@ -1907,8 +1922,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 25,
-      "controllableDays": -7.35,
-      "structuralDays": -0.6,
+      "controllableDays": -8.21,
+      "structuralDays": -0.61,
       "complexityScore": 6,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -1920,7 +1935,7 @@
       "category": "Fastener Sets",
       "value": 7895,
       "actualDelayDays": 12,
-      "predictedDelayDays": 24.2,
+      "predictedDelayDays": 24.9,
       "counterfactualDelayDays": 4.5,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -1930,18 +1945,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 2.13,
+          "label": "Approval Duration",
+          "contributionDays": 2.15,
           "kind": "structural"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 1.17,
+          "label": "Express Carrier",
+          "contributionDays": 1.44,
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 0.91,
+          "label": "Material Lead Time",
+          "contributionDays": 1.33,
           "kind": "controllable"
         }
       ],
@@ -1952,8 +1967,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 85,
-      "controllableDays": 12.74,
-      "structuralDays": 2.13,
+      "controllableDays": 13.43,
+      "structuralDays": 2.15,
       "complexityScore": 6,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -1965,7 +1980,7 @@
       "category": "Fastener Sets",
       "value": 55419,
       "actualDelayDays": 11.1,
-      "predictedDelayDays": 24.2,
+      "predictedDelayDays": 25.6,
       "counterfactualDelayDays": 5.7,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -1975,19 +1990,19 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 2.83,
+          "label": "Express Carrier",
+          "contributionDays": 3.47,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.74,
-          "kind": "structural"
+          "label": "Material Lead Time",
+          "contributionDays": 2.38,
+          "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 1.63,
-          "kind": "controllable"
+          "contributionDays": 1.76,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -1997,8 +2012,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 68,
-      "controllableDays": 12.14,
-      "structuralDays": 1.74,
+      "controllableDays": 13.53,
+      "structuralDays": 1.76,
       "complexityScore": 6,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2010,7 +2025,7 @@
       "category": "Fastener Sets",
       "value": 56171,
       "actualDelayDays": 11.9,
-      "predictedDelayDays": 20.9,
+      "predictedDelayDays": 22.6,
       "counterfactualDelayDays": 8.9,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2021,17 +2036,17 @@
         },
         {
           "label": "Material Lead Time",
-          "contributionDays": 2.39,
-          "kind": "controllable"
-        },
-        {
-          "label": "Approval Duration",
-          "contributionDays": 2.39,
+          "contributionDays": 3.49,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": 2.22,
+          "contributionDays": 2.93,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
+          "contributionDays": 2.24,
           "kind": "structural"
         }
       ],
@@ -2042,8 +2057,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 83,
-      "controllableDays": 9.08,
-      "structuralDays": 2.22,
+      "controllableDays": 10.72,
+      "structuralDays": 2.24,
       "complexityScore": 8,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2055,7 +2070,7 @@
       "category": "Avionics Housings",
       "value": 38229,
       "actualDelayDays": 7.2,
-      "predictedDelayDays": -2.5,
+      "predictedDelayDays": -4,
       "counterfactualDelayDays": 2.2,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2065,18 +2080,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -2.37,
-          "kind": "controllable"
-        },
-        {
           "label": "Material Lead Time",
-          "contributionDays": -1.65,
+          "contributionDays": -3.46,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": -0.89,
+          "contributionDays": -2.03,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
+          "contributionDays": -0.9,
           "kind": "structural"
         }
       ],
@@ -2087,8 +2102,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 15,
-      "controllableDays": -11.12,
-      "structuralDays": -0.89,
+      "controllableDays": -12.59,
+      "structuralDays": -0.9,
       "complexityScore": 6,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2100,27 +2115,27 @@
       "category": "Fastener Sets",
       "value": 17429,
       "actualDelayDays": 8.9,
-      "predictedDelayDays": 3.3,
-      "counterfactualDelayDays": 7.5,
+      "predictedDelayDays": 2.3,
+      "counterfactualDelayDays": 7.4,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
+        {
+          "label": "Material Lead Time",
+          "contributionDays": -2.18,
+          "kind": "controllable"
+        },
         {
           "label": "Halcyon Forge Dependency",
           "contributionDays": -2.07,
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -1.49,
-          "kind": "controllable"
-        },
-        {
-          "label": "Material Lead Time",
-          "contributionDays": -1.32,
-          "kind": "controllable"
-        },
-        {
           "label": "Express Carrier",
+          "contributionDays": -1.62,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
           "contributionDays": -0.64,
           "kind": "structural"
         }
@@ -2132,11 +2147,11 @@
       ],
       "populationAvg": 9.3,
       "percentile": 35,
-      "controllableDays": -4.88,
+      "controllableDays": -5.87,
       "structuralDays": -0.64,
       "complexityScore": 9,
       "treated": true,
-      "dominantDriver": "Halcyon Forge Dependency"
+      "dominantDriver": "Material Lead Time"
     },
     {
       "id": "ORD_0008",
@@ -2145,7 +2160,7 @@
       "category": "Turbine Brackets",
       "value": 83817,
       "actualDelayDays": 6.7,
-      "predictedDelayDays": 1.7,
+      "predictedDelayDays": 0.9,
       "counterfactualDelayDays": 4.1,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2155,18 +2170,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -1.62,
+          "label": "Express Carrier",
+          "contributionDays": -2,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -1.31,
+          "label": "Approval Duration",
+          "contributionDays": -1.32,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -0.86,
+          "label": "Material Lead Time",
+          "contributionDays": -1.26,
           "kind": "controllable"
         }
       ],
@@ -2177,8 +2192,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 10,
-      "controllableDays": -6.25,
-      "structuralDays": -1.31,
+      "controllableDays": -7.03,
+      "structuralDays": -1.32,
       "complexityScore": 7,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2190,7 +2205,7 @@
       "category": "Turbine Brackets",
       "value": 59141,
       "actualDelayDays": 9,
-      "predictedDelayDays": -2.2,
+      "predictedDelayDays": -3.4,
       "counterfactualDelayDays": 4.1,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2200,19 +2215,19 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -2.02,
+          "label": "Material Lead Time",
+          "contributionDays": -2.95,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": -1.32,
-          "kind": "structural"
+          "contributionDays": -1.39,
+          "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -1.13,
-          "kind": "controllable"
+          "label": "Approval Duration",
+          "contributionDays": -1.33,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -2222,8 +2237,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 40,
-      "controllableDays": -10.22,
-      "structuralDays": -1.32,
+      "controllableDays": -11.41,
+      "structuralDays": -1.33,
       "complexityScore": 1,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2235,7 +2250,7 @@
       "category": "Composite Panels",
       "value": 47436,
       "actualDelayDays": 8.8,
-      "predictedDelayDays": -2.6,
+      "predictedDelayDays": -4,
       "counterfactualDelayDays": 4,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2245,18 +2260,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -2.25,
+          "label": "Material Lead Time",
+          "contributionDays": -3.29,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -1.79,
+          "label": "Approval Duration",
+          "contributionDays": -1.81,
           "kind": "structural"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -1.23,
+          "label": "Express Carrier",
+          "contributionDays": -1.52,
           "kind": "controllable"
         }
       ],
@@ -2267,8 +2282,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 33,
-      "controllableDays": -10.4,
-      "structuralDays": -1.79,
+      "controllableDays": -11.73,
+      "structuralDays": -1.81,
       "complexityScore": 2,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2280,7 +2295,7 @@
       "category": "Composite Panels",
       "value": 49178,
       "actualDelayDays": 7.4,
-      "predictedDelayDays": -2.4,
+      "predictedDelayDays": -4.3,
       "counterfactualDelayDays": 4.5,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2290,18 +2305,18 @@
           "kind": "controllable"
         },
         {
+          "label": "Express Carrier",
+          "contributionDays": -4,
+          "kind": "controllable"
+        },
+        {
           "label": "Material Lead Time",
-          "contributionDays": -3.26,
+          "contributionDays": -3.51,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": -2.4,
-          "kind": "controllable"
-        },
-        {
-          "label": "Express Carrier",
-          "contributionDays": -1.21,
+          "contributionDays": -1.22,
           "kind": "structural"
         }
       ],
@@ -2312,8 +2327,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 18,
-      "controllableDays": -9.86,
-      "structuralDays": -1.21,
+      "controllableDays": -11.71,
+      "structuralDays": -1.22,
       "complexityScore": 3,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2325,7 +2340,7 @@
       "category": "Fastener Sets",
       "value": 82872,
       "actualDelayDays": 10.7,
-      "predictedDelayDays": 20.5,
+      "predictedDelayDays": 21.5,
       "counterfactualDelayDays": 5.5,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2335,19 +2350,19 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.59,
+          "label": "Material Lead Time",
+          "contributionDays": 2.33,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": 1.25,
-          "kind": "structural"
+          "contributionDays": 1.34,
+          "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 1.09,
-          "kind": "controllable"
+          "label": "Approval Duration",
+          "contributionDays": 1.27,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -2357,8 +2372,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 60,
-      "controllableDays": 10.17,
-      "structuralDays": 1.25,
+      "controllableDays": 11.16,
+      "structuralDays": 1.27,
       "complexityScore": 4,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2370,7 +2385,7 @@
       "category": "Composite Panels",
       "value": 45146,
       "actualDelayDays": 11.8,
-      "predictedDelayDays": 20.5,
+      "predictedDelayDays": 21.9,
       "counterfactualDelayDays": 7,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2380,18 +2395,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 2.32,
-          "kind": "controllable"
-        },
-        {
           "label": "Material Lead Time",
-          "contributionDays": 1.63,
+          "contributionDays": 3.39,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": 0.83,
+          "contributionDays": 2,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
+          "contributionDays": 0.84,
           "kind": "structural"
         }
       ],
@@ -2402,8 +2417,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 78,
-      "controllableDays": 10.75,
-      "structuralDays": 0.83,
+      "controllableDays": 12.19,
+      "structuralDays": 0.84,
       "complexityScore": 8,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2415,7 +2430,7 @@
       "category": "Avionics Housings",
       "value": 4416,
       "actualDelayDays": 9.8,
-      "predictedDelayDays": 21.1,
+      "predictedDelayDays": 22.4,
       "counterfactualDelayDays": 5.9,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2425,19 +2440,19 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 2.25,
+          "label": "Express Carrier",
+          "contributionDays": 2.76,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.75,
-          "kind": "structural"
+          "label": "Material Lead Time",
+          "contributionDays": 2.51,
+          "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 1.71,
-          "kind": "controllable"
+          "contributionDays": 1.76,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -2447,8 +2462,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 48,
-      "controllableDays": 9.51,
-      "structuralDays": 1.75,
+      "controllableDays": 10.82,
+      "structuralDays": 1.76,
       "complexityScore": 9,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2460,7 +2475,7 @@
       "category": "Turbine Brackets",
       "value": 40079,
       "actualDelayDays": 8.5,
-      "predictedDelayDays": -2,
+      "predictedDelayDays": -2.8,
       "counterfactualDelayDays": 3.5,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2470,19 +2485,19 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -1.76,
+          "label": "Express Carrier",
+          "contributionDays": -2.16,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -0.88,
-          "kind": "structural"
+          "label": "Material Lead Time",
+          "contributionDays": -1.27,
+          "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": -0.87,
-          "kind": "controllable"
+          "contributionDays": -0.89,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -2492,8 +2507,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 28,
-      "controllableDays": -9.73,
-      "structuralDays": -0.88,
+      "controllableDays": -10.53,
+      "structuralDays": -0.89,
       "complexityScore": 5,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2505,7 +2520,7 @@
       "category": "Fastener Sets",
       "value": 86578,
       "actualDelayDays": 12.3,
-      "predictedDelayDays": 18.3,
+      "predictedDelayDays": 19.2,
       "counterfactualDelayDays": 8.6,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2515,18 +2530,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.46,
-          "kind": "controllable"
-        },
-        {
           "label": "Material Lead Time",
-          "contributionDays": 1.11,
+          "contributionDays": 2.13,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": 1.03,
+          "contributionDays": 1.36,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
+          "contributionDays": 1.04,
           "kind": "structural"
         }
       ],
@@ -2537,8 +2552,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 90,
-      "controllableDays": 7.84,
-      "structuralDays": 1.03,
+      "controllableDays": 8.76,
+      "structuralDays": 1.04,
       "complexityScore": 4,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2550,7 +2565,7 @@
       "category": "Titanium Forgings",
       "value": 33463,
       "actualDelayDays": 15.8,
-      "predictedDelayDays": 20.5,
+      "predictedDelayDays": 21.7,
       "counterfactualDelayDays": 11.4,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2560,19 +2575,19 @@
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.86,
-          "kind": "structural"
+          "label": "Material Lead Time",
+          "contributionDays": 2.26,
+          "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 1.78,
+          "label": "Express Carrier",
+          "contributionDays": 2.19,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 1.55,
-          "kind": "controllable"
+          "contributionDays": 1.88,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -2582,8 +2597,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 100,
-      "controllableDays": 9.56,
-      "structuralDays": 1.86,
+      "controllableDays": 10.68,
+      "structuralDays": 1.88,
       "complexityScore": 8,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2595,7 +2610,7 @@
       "category": "Avionics Housings",
       "value": 49366,
       "actualDelayDays": 10.5,
-      "predictedDelayDays": 20.4,
+      "predictedDelayDays": 21.2,
       "counterfactualDelayDays": 6.2,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2605,18 +2620,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.8,
+          "label": "Approval Duration",
+          "contributionDays": 1.82,
           "kind": "structural"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 1.44,
+          "label": "Express Carrier",
+          "contributionDays": 1.77,
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.04,
+          "label": "Material Lead Time",
+          "contributionDays": 1.52,
           "kind": "controllable"
         }
       ],
@@ -2627,8 +2642,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 55,
-      "controllableDays": 8.65,
-      "structuralDays": 1.8,
+      "controllableDays": 9.46,
+      "structuralDays": 1.82,
       "complexityScore": 7,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2640,7 +2655,7 @@
       "category": "Composite Panels",
       "value": 27594,
       "actualDelayDays": 11.6,
-      "predictedDelayDays": 23.6,
+      "predictedDelayDays": 25,
       "counterfactualDelayDays": 5.9,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2650,18 +2665,18 @@
           "kind": "controllable"
         },
         {
+          "label": "Express Carrier",
+          "contributionDays": 3.72,
+          "kind": "controllable"
+        },
+        {
           "label": "Material Lead Time",
-          "contributionDays": 3.03,
+          "contributionDays": 2.15,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 1.47,
-          "kind": "controllable"
-        },
-        {
-          "label": "Express Carrier",
-          "contributionDays": 1.07,
+          "contributionDays": 1.08,
           "kind": "structural"
         }
       ],
@@ -2672,8 +2687,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 73,
-      "controllableDays": 12.68,
-      "structuralDays": 1.07,
+      "controllableDays": 14.05,
+      "structuralDays": 1.08,
       "complexityScore": 3,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2685,7 +2700,7 @@
       "category": "Titanium Forgings",
       "value": 4166,
       "actualDelayDays": 10.7,
-      "predictedDelayDays": 16.8,
+      "predictedDelayDays": 17.8,
       "counterfactualDelayDays": 8.5,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2695,18 +2710,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.73,
+          "label": "Material Lead Time",
+          "contributionDays": 2.53,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.38,
+          "label": "Approval Duration",
+          "contributionDays": 1.39,
           "kind": "structural"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 1.05,
+          "label": "Express Carrier",
+          "contributionDays": 1.28,
           "kind": "controllable"
         }
       ],
@@ -2717,8 +2732,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 63,
-      "controllableDays": 5.99,
-      "structuralDays": 1.38,
+      "controllableDays": 7.02,
+      "structuralDays": 1.39,
       "complexityScore": 3,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2730,7 +2745,7 @@
       "category": "Titanium Forgings",
       "value": 40231,
       "actualDelayDays": 8,
-      "predictedDelayDays": 1.4,
+      "predictedDelayDays": 0.7,
       "counterfactualDelayDays": 5.7,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2740,18 +2755,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -2,
+          "label": "Approval Duration",
+          "contributionDays": -2.02,
           "kind": "structural"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -1.46,
+          "label": "Express Carrier",
+          "contributionDays": -1.8,
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -0.88,
+          "label": "Material Lead Time",
+          "contributionDays": -1.28,
           "kind": "controllable"
         }
       ],
@@ -2762,8 +2777,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 20,
-      "controllableDays": -5.67,
-      "structuralDays": -2,
+      "controllableDays": -6.41,
+      "structuralDays": -2.02,
       "complexityScore": 5,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2775,7 +2790,7 @@
       "category": "Avionics Housings",
       "value": 59191,
       "actualDelayDays": 10.2,
-      "predictedDelayDays": 17,
+      "predictedDelayDays": 17.8,
       "counterfactualDelayDays": 7.9,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2785,18 +2800,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 2.23,
+          "label": "Express Carrier",
+          "contributionDays": 2.74,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.69,
+          "label": "Approval Duration",
+          "contributionDays": 1.71,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 0.56,
+          "label": "Material Lead Time",
+          "contributionDays": 0.82,
           "kind": "controllable"
         }
       ],
@@ -2807,8 +2822,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 50,
-      "controllableDays": 6.06,
-      "structuralDays": 1.69,
+      "controllableDays": 6.83,
+      "structuralDays": 1.71,
       "complexityScore": 8,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2820,7 +2835,7 @@
       "category": "Avionics Housings",
       "value": 64088,
       "actualDelayDays": 2,
-      "predictedDelayDays": -3.7,
+      "predictedDelayDays": -4.8,
       "counterfactualDelayDays": 0.3,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2830,18 +2845,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -2.31,
+          "label": "Express Carrier",
+          "contributionDays": -2.84,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -1.83,
+          "label": "Approval Duration",
+          "contributionDays": -1.85,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -1.08,
+          "label": "Material Lead Time",
+          "contributionDays": -1.58,
           "kind": "controllable"
         }
       ],
@@ -2852,8 +2867,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 3,
-      "controllableDays": -10.87,
-      "structuralDays": -1.83,
+      "controllableDays": -11.9,
+      "structuralDays": -1.85,
       "complexityScore": 1,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2865,7 +2880,7 @@
       "category": "Avionics Housings",
       "value": 39687,
       "actualDelayDays": 9.6,
-      "predictedDelayDays": 18.5,
+      "predictedDelayDays": 19.8,
       "counterfactualDelayDays": 7.1,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2875,18 +2890,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 2.33,
-          "kind": "structural"
-        },
-        {
-          "label": "Approval Duration",
-          "contributionDays": 1.98,
+          "label": "Material Lead Time",
+          "contributionDays": 2.89,
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 1.74,
+          "label": "Approval Duration",
+          "contributionDays": 2.35,
+          "kind": "structural"
+        },
+        {
+          "label": "Express Carrier",
+          "contributionDays": 2.14,
           "kind": "controllable"
         }
       ],
@@ -2897,8 +2912,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 43,
-      "controllableDays": 7.3,
-      "structuralDays": 2.33,
+      "controllableDays": 8.61,
+      "structuralDays": 2.35,
       "complexityScore": 10,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2910,7 +2925,7 @@
       "category": "Avionics Housings",
       "value": 12848,
       "actualDelayDays": 8.9,
-      "predictedDelayDays": -5.5,
+      "predictedDelayDays": -6.7,
       "counterfactualDelayDays": 1.7,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2921,17 +2936,17 @@
         },
         {
           "label": "Material Lead Time",
-          "contributionDays": -1.81,
-          "kind": "controllable"
-        },
-        {
-          "label": "Approval Duration",
-          "contributionDays": -1.75,
+          "contributionDays": -2.55,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": -0.61,
+          "contributionDays": -2.22,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
+          "contributionDays": -0.62,
           "kind": "structural"
         }
       ],
@@ -2942,8 +2957,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 38,
-      "controllableDays": -13.82,
-      "structuralDays": -0.61,
+      "controllableDays": -15.03,
+      "structuralDays": -0.62,
       "complexityScore": 1,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -2955,7 +2970,7 @@
       "category": "Fastener Sets",
       "value": 28281,
       "actualDelayDays": 10.3,
-      "predictedDelayDays": 23,
+      "predictedDelayDays": 24.2,
       "counterfactualDelayDays": 5,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -2965,18 +2980,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 3.51,
+          "label": "Express Carrier",
+          "contributionDays": 4.3,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.6,
+          "label": "Approval Duration",
+          "contributionDays": 1.62,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 0.74,
+          "label": "Material Lead Time",
+          "contributionDays": 1.08,
           "kind": "controllable"
         }
       ],
@@ -2987,8 +3002,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 53,
-      "controllableDays": 11.86,
-      "structuralDays": 1.6,
+      "controllableDays": 12.99,
+      "structuralDays": 1.62,
       "complexityScore": 3,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3000,7 +3015,7 @@
       "category": "Fastener Sets",
       "value": 77869,
       "actualDelayDays": 6.9,
-      "predictedDelayDays": -3.6,
+      "predictedDelayDays": -4.9,
       "counterfactualDelayDays": 2.4,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3010,18 +3025,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -3.05,
+          "label": "Express Carrier",
+          "contributionDays": -3.75,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -1.92,
+          "label": "Approval Duration",
+          "contributionDays": -1.94,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": -1.21,
+          "label": "Material Lead Time",
+          "contributionDays": -1.76,
           "kind": "controllable"
         }
       ],
@@ -3032,8 +3047,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 13,
-      "controllableDays": -10.68,
-      "structuralDays": -1.92,
+      "controllableDays": -11.93,
+      "structuralDays": -1.94,
       "complexityScore": 5,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3045,7 +3060,7 @@
       "category": "Titanium Forgings",
       "value": 51671,
       "actualDelayDays": 11.8,
-      "predictedDelayDays": 18.5,
+      "predictedDelayDays": 19.4,
       "counterfactualDelayDays": 8.3,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3055,18 +3070,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.49,
-          "kind": "controllable"
-        },
-        {
           "label": "Material Lead Time",
-          "contributionDays": 1.09,
+          "contributionDays": 2.17,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": 0.78,
+          "contributionDays": 1.34,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
+          "contributionDays": 0.79,
           "kind": "structural"
         }
       ],
@@ -3077,8 +3092,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 80,
-      "controllableDays": 7.63,
-      "structuralDays": 0.78,
+      "controllableDays": 8.56,
+      "structuralDays": 0.79,
       "complexityScore": 10,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3090,7 +3105,7 @@
       "category": "Fastener Sets",
       "value": 89615,
       "actualDelayDays": 15,
-      "predictedDelayDays": 23.9,
+      "predictedDelayDays": 24.9,
       "counterfactualDelayDays": 7.6,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3100,18 +3115,18 @@
           "kind": "controllable"
         },
         {
+          "label": "Express Carrier",
+          "contributionDays": 2.58,
+          "kind": "controllable"
+        },
+        {
           "label": "Material Lead Time",
-          "contributionDays": 2.1,
+          "contributionDays": 1.77,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 1.21,
-          "kind": "controllable"
-        },
-        {
-          "label": "Express Carrier",
-          "contributionDays": 0.77,
+          "contributionDays": 0.78,
           "kind": "structural"
         }
       ],
@@ -3122,8 +3137,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 98,
-      "controllableDays": 13.9,
-      "structuralDays": 0.77,
+      "controllableDays": 14.94,
+      "structuralDays": 0.78,
       "complexityScore": 10,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3135,7 +3150,7 @@
       "category": "Turbine Brackets",
       "value": 46694,
       "actualDelayDays": 6.6,
-      "predictedDelayDays": -3.1,
+      "predictedDelayDays": -4.3,
       "counterfactualDelayDays": 1.3,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3145,18 +3160,18 @@
           "kind": "controllable"
         },
         {
+          "label": "Express Carrier",
+          "contributionDays": -2.39,
+          "kind": "controllable"
+        },
+        {
           "label": "Material Lead Time",
-          "contributionDays": -1.94,
+          "contributionDays": -2.27,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": -1.55,
-          "kind": "controllable"
-        },
-        {
-          "label": "Express Carrier",
-          "contributionDays": -1.08,
+          "contributionDays": -1.09,
           "kind": "structural"
         }
       ],
@@ -3167,8 +3182,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 8,
-      "controllableDays": -11.06,
-      "structuralDays": -1.08,
+      "controllableDays": -12.23,
+      "structuralDays": -1.09,
       "complexityScore": 2,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3180,7 +3195,7 @@
       "category": "Composite Panels",
       "value": 50044,
       "actualDelayDays": 10.8,
-      "predictedDelayDays": 21.8,
+      "predictedDelayDays": 22.9,
       "counterfactualDelayDays": 5.4,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3190,19 +3205,19 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 3.19,
+          "label": "Express Carrier",
+          "contributionDays": 3.91,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 0.86,
-          "kind": "structural"
+          "label": "Material Lead Time",
+          "contributionDays": 0.95,
+          "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 0.65,
-          "kind": "controllable"
+          "contributionDays": 0.87,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -3212,8 +3227,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 65,
-      "controllableDays": 11.52,
-      "structuralDays": 0.86,
+      "controllableDays": 12.54,
+      "structuralDays": 0.87,
       "complexityScore": 4,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3225,7 +3240,7 @@
       "category": "Turbine Brackets",
       "value": 59089,
       "actualDelayDays": 11.1,
-      "predictedDelayDays": 21.9,
+      "predictedDelayDays": 23,
       "counterfactualDelayDays": 5.9,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3235,18 +3250,18 @@
           "kind": "controllable"
         },
         {
+          "label": "Express Carrier",
+          "contributionDays": 2.29,
+          "kind": "controllable"
+        },
+        {
           "label": "Material Lead Time",
-          "contributionDays": 1.86,
+          "contributionDays": 2.07,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 1.42,
-          "kind": "controllable"
-        },
-        {
-          "label": "Express Carrier",
-          "contributionDays": 1.11,
+          "contributionDays": 1.13,
           "kind": "structural"
         }
       ],
@@ -3257,8 +3272,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 70,
-      "controllableDays": 10.72,
-      "structuralDays": 1.11,
+      "controllableDays": 11.8,
+      "structuralDays": 1.13,
       "complexityScore": 4,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3270,7 +3285,7 @@
       "category": "Avionics Housings",
       "value": 15975,
       "actualDelayDays": 11.7,
-      "predictedDelayDays": 18.4,
+      "predictedDelayDays": 19.1,
       "counterfactualDelayDays": 7.7,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3281,17 +3296,17 @@
         },
         {
           "label": "Express Carrier",
-          "contributionDays": 1.63,
-          "kind": "structural"
-        },
-        {
-          "label": "Material Lead Time",
-          "contributionDays": 1.44,
+          "contributionDays": 1.77,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 0.76,
+          "contributionDays": 1.64,
+          "kind": "structural"
+        },
+        {
+          "label": "Material Lead Time",
+          "contributionDays": 1.11,
           "kind": "controllable"
         }
       ],
@@ -3302,8 +3317,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 75,
-      "controllableDays": 7.89,
-      "structuralDays": 1.63,
+      "controllableDays": 8.57,
+      "structuralDays": 1.64,
       "complexityScore": 7,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3315,7 +3330,7 @@
       "category": "Turbine Brackets",
       "value": 21742,
       "actualDelayDays": 5.4,
-      "predictedDelayDays": -2.6,
+      "predictedDelayDays": -3.5,
       "counterfactualDelayDays": 0.8,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3325,18 +3340,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": -2.01,
-          "kind": "structural"
-        },
-        {
-          "label": "Approval Duration",
-          "contributionDays": -1.61,
+          "label": "Material Lead Time",
+          "contributionDays": -2.36,
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": -0.89,
+          "label": "Approval Duration",
+          "contributionDays": -2.03,
+          "kind": "structural"
+        },
+        {
+          "label": "Express Carrier",
+          "contributionDays": -1.09,
           "kind": "controllable"
         }
       ],
@@ -3347,8 +3362,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 5,
-      "controllableDays": -9.1,
-      "structuralDays": -2.01,
+      "controllableDays": -10.05,
+      "structuralDays": -2.03,
       "complexityScore": 1,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3360,7 +3375,7 @@
       "category": "Fastener Sets",
       "value": 19789,
       "actualDelayDays": 14.2,
-      "predictedDelayDays": 19,
+      "predictedDelayDays": 20.2,
       "counterfactualDelayDays": 11.6,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3370,18 +3385,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 3.03,
+          "label": "Express Carrier",
+          "contributionDays": 3.72,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.82,
+          "label": "Approval Duration",
+          "contributionDays": 1.84,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.07,
+          "label": "Material Lead Time",
+          "contributionDays": 1.57,
           "kind": "controllable"
         }
       ],
@@ -3392,8 +3407,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 95,
-      "controllableDays": 7.84,
-      "structuralDays": 1.82,
+      "controllableDays": 9.03,
+      "structuralDays": 1.84,
       "complexityScore": 8,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3405,7 +3420,7 @@
       "category": "Composite Panels",
       "value": 19183,
       "actualDelayDays": 9.7,
-      "predictedDelayDays": 22.1,
+      "predictedDelayDays": 23.2,
       "counterfactualDelayDays": 4.8,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3415,18 +3430,18 @@
           "kind": "controllable"
         },
         {
-          "label": "Material Lead Time",
-          "contributionDays": 2.6,
+          "label": "Express Carrier",
+          "contributionDays": 3.19,
           "kind": "controllable"
         },
         {
-          "label": "Express Carrier",
-          "contributionDays": 1.87,
+          "label": "Approval Duration",
+          "contributionDays": 1.89,
           "kind": "structural"
         },
         {
-          "label": "Approval Duration",
-          "contributionDays": 1.12,
+          "label": "Material Lead Time",
+          "contributionDays": 1.64,
           "kind": "controllable"
         }
       ],
@@ -3437,8 +3452,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 45,
-      "controllableDays": 10.75,
-      "structuralDays": 1.87,
+      "controllableDays": 11.86,
+      "structuralDays": 1.89,
       "complexityScore": 8,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3450,7 +3465,7 @@
       "category": "Composite Panels",
       "value": 26544,
       "actualDelayDays": 12.1,
-      "predictedDelayDays": 24.6,
+      "predictedDelayDays": 26.2,
       "counterfactualDelayDays": 6.8,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3460,19 +3475,19 @@
           "kind": "controllable"
         },
         {
+          "label": "Material Lead Time",
+          "contributionDays": 3.41,
+          "kind": "controllable"
+        },
+        {
           "label": "Express Carrier",
-          "contributionDays": 2.35,
-          "kind": "structural"
+          "contributionDays": 2.52,
+          "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 2.33,
-          "kind": "controllable"
-        },
-        {
-          "label": "Material Lead Time",
-          "contributionDays": 2.05,
-          "kind": "controllable"
+          "contributionDays": 2.38,
+          "kind": "structural"
         }
       ],
       "similarCaseIds": [
@@ -3482,8 +3497,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 88,
-      "controllableDays": 12.02,
-      "structuralDays": 2.35,
+      "controllableDays": 13.57,
+      "structuralDays": 2.38,
       "complexityScore": 9,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3495,7 +3510,7 @@
       "category": "Composite Panels",
       "value": 58201,
       "actualDelayDays": 12.7,
-      "predictedDelayDays": 24.5,
+      "predictedDelayDays": 25.4,
       "counterfactualDelayDays": 5.8,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3506,17 +3521,17 @@
         },
         {
           "label": "Express Carrier",
-          "contributionDays": 2.36,
-          "kind": "structural"
-        },
-        {
-          "label": "Material Lead Time",
-          "contributionDays": 2.01,
+          "contributionDays": 2.47,
           "kind": "controllable"
         },
         {
           "label": "Approval Duration",
-          "contributionDays": 0.91,
+          "contributionDays": 2.39,
+          "kind": "structural"
+        },
+        {
+          "label": "Material Lead Time",
+          "contributionDays": 1.33,
           "kind": "controllable"
         }
       ],
@@ -3527,8 +3542,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 93,
-      "controllableDays": 12.71,
-      "structuralDays": 2.36,
+      "controllableDays": 13.59,
+      "structuralDays": 2.39,
       "complexityScore": 6,
       "treated": false,
       "dominantDriver": "Halcyon Forge Dependency"
@@ -3540,7 +3555,7 @@
       "category": "Titanium Forgings",
       "value": 26026,
       "actualDelayDays": 8.7,
-      "predictedDelayDays": -3.7,
+      "predictedDelayDays": -5.1,
       "counterfactualDelayDays": 3.5,
       "counterfactualLabel": "If sourcing had been re-routed to Meridian Tool & Die",
       "drivers": [
@@ -3551,17 +3566,17 @@
         },
         {
           "label": "Material Lead Time",
-          "contributionDays": -2.04,
-          "kind": "controllable"
-        },
-        {
-          "label": "Approval Duration",
-          "contributionDays": -1.92,
+          "contributionDays": -2.8,
           "kind": "controllable"
         },
         {
           "label": "Express Carrier",
-          "contributionDays": -0.87,
+          "contributionDays": -2.5,
+          "kind": "controllable"
+        },
+        {
+          "label": "Approval Duration",
+          "contributionDays": -0.88,
           "kind": "structural"
         }
       ],
@@ -3572,8 +3587,8 @@
       ],
       "populationAvg": 9.3,
       "percentile": 30,
-      "controllableDays": -11.44,
-      "structuralDays": -0.87,
+      "controllableDays": -12.78,
+      "structuralDays": -0.88,
       "complexityScore": 2,
       "treated": true,
       "dominantDriver": "Halcyon Forge Dependency"

@@ -1606,10 +1606,10 @@
   "crossDomain": [
     {
       "domain": "Precision Manufacturing",
-      "precision": 1,
+      "precision": 0.89,
       "recall": 0.89,
-      "f1": 0.94,
-      "naive": 7.61,
+      "f1": 0.89,
+      "naive": 7.59,
       "causal": 6.18,
       "planted": 5.78,
       "eValue": 5.7
