@@ -9,18 +9,32 @@ import { MiniStatusStrip } from "./StoryChain";
 
 const SPEEDS = [1, 2, 4];
 
-// what the persistent status strip shows at each scene, so the incident's
-// state carries across screens instead of resetting on every scene change.
-// null = hide the strip entirely (scene 1 already has its own full ripple).
-const STRIP_CAPTIONS = [
-  "Before the decision",
-  null,
-  "Investigating the decision that caused this",
-  "Replaying both outcomes",
-  "Same incident — testing an intervention",
-  "Fix applied — network recovering",
-  "Verifying the fix holds up",
-] as const;
+// what the persistent status strip says at each scene — a one-sentence,
+// numbers-in-the-sentence recap of what's been learned so far, so someone
+// reading the screen without hearing the presenter can still follow the
+// argument. null = hide the strip (scene 1 already has its own full ripple).
+function captionFor(i: number, f: CausalFixture): string | null {
+  const s = f.story;
+  const unit = s.outcomeUnit;
+  switch (i) {
+    case 0:
+      return `About to decide: ${f.narrative.decisionLabel} instead of ${f.narrative.altLabel}`;
+    case 1:
+      return null;
+    case 2:
+      return `So far: a dashboard blames ${f.scenario.treatmentLabel} for ${s.cause.naiveDays} ${unit} — checking how much of that is real`;
+    case 3:
+      return `So far: only ${s.confidenceGap.causalPct}% of that ${s.cause.naiveDays}-day gap is real — testing what the other choice would have done`;
+    case 4:
+      return `So far: the real effect is ${s.cause.effectDays} ${unit}, not ${s.cause.naiveDays} — see what changing the cause does`;
+    case 5:
+      return `Fix applied — modeled to save ~${s.action.reductionPct}%, worth ~$${Math.round(s.action.annualSavings / 1000)}K/yr`;
+    case 6:
+      return "Checking whether this conclusion holds up under stress";
+    default:
+      return null;
+  }
+}
 
 export function Investigation({ f, onOpenConsole }: { f: CausalFixture; onOpenConsole: () => void }) {
   const [i, setI] = useState(0);
@@ -127,13 +141,13 @@ export function Investigation({ f, onOpenConsole }: { f: CausalFixture; onOpenCo
         </div>
 
         {/* persistent incident status — carries the story's state across scenes */}
-        {STRIP_CAPTIONS[i] && (
+        {captionFor(i, f) && (
           <MiniStatusStrip
             stages={f.narrative.stages}
             sev={i === 0 ? {} : incidentSev}
             activeId={i === 0 ? decisionStageId : undefined}
             resolved={i >= 5}
-            caption={STRIP_CAPTIONS[i] ?? undefined}
+            caption={captionFor(i, f) ?? undefined}
           />
         )}
 

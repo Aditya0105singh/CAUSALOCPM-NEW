@@ -12,6 +12,37 @@ import { StoryChain, type Stage } from "./StoryChain";
 
 export type SceneProps = { f: CausalFixture; speed: number; onNext: () => void; onRestart: () => void; last: boolean };
 
+/**
+ * Inline glossary term — a dotted-underline word that reveals a
+ * plain-English definition on hover or tap, so a reader following along
+ * without the presenter's narration isn't blocked by jargon.
+ */
+function Term({ children, def }: { children: React.ReactNode; def: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      className="relative inline-block cursor-help border-b border-dotted border-muted/70"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen((v) => !v);
+      }}
+    >
+      {children}
+      {open && (
+        <motion.span
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="pointer-events-none absolute left-1/2 top-full z-30 mt-1.5 w-52 -translate-x-1/2 rounded-lg border border-line bg-card px-2.5 py-2 text-left text-[11px] font-normal normal-case leading-snug text-ink-soft shadow-[0_10px_28px_rgba(20,30,20,0.18)]"
+        >
+          {def}
+        </motion.span>
+      )}
+    </span>
+  );
+}
+
 /** reveal steps 0..n-1 one at a time, `every` ms apart (scaled by speed); restarts when `key` changes */
 function useReveal(n: number, every: number, speed: number, key: unknown) {
   const [i, setI] = useState(0);
@@ -176,7 +207,20 @@ export function CauseScene({ f, speed, onNext }: SceneProps) {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <Metric show={reveal >= 1} label="A dashboard reports" value={c.naiveDays.toFixed(2)} unit={f.story.outcomeUnit} tone="muted" />
-        <Metric show={reveal >= 2} label={`Of that, ${c.confounderLabel.toLowerCase()}`} value={`−${c.confoundingDays.toFixed(2)}`} unit={`${f.story.outcomeUnit} (${c.confoundingPct}%)`} tone="amber" />
+        <Metric
+          show={reveal >= 2}
+          label={
+            <>
+              Of that,{" "}
+              <Term def={`A hidden shared cause — ${c.confounderLabel.toLowerCase()} makes both the decision and the outcome move together, without one causing the other.`}>
+                {c.confounderLabel.toLowerCase()}
+              </Term>
+            </>
+          }
+          value={`−${c.confoundingDays.toFixed(2)}`}
+          unit={`${f.story.outcomeUnit} (${c.confoundingPct}%)`}
+          tone="amber"
+        />
         <Metric show={reveal >= 3} label="True causal effect" value={c.effectDays.toFixed(2)} unit={f.story.outcomeUnit} tone="forest" />
       </div>
 
@@ -191,7 +235,12 @@ export function CauseScene({ f, speed, onNext }: SceneProps) {
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line-soft pt-3 text-[13px]">
             <span className="text-muted">Agent&rsquo;s stated confidence <b className="text-ink">{f.story.confidenceGap.agentPct}%</b></span>
-            <span className="text-muted">Causal support <b className="text-amber">{f.story.confidenceGap.causalPct}%</b></span>
+            <span className="text-muted">
+              <Term def="How much of the agent's confidence is actually backed by a real cause-and-effect relationship, once the hidden shared cause is removed.">
+                Causal support
+              </Term>{" "}
+              <b className="text-amber">{f.story.confidenceGap.causalPct}%</b>
+            </span>
             <span className="rounded-full bg-[#f4ead9] px-2 py-0.5 text-[11px] font-semibold text-amber">
               {f.story.confidenceGap.agentPct - f.story.confidenceGap.causalPct}-point confidence gap
             </span>
@@ -461,7 +510,7 @@ function Metric({
   tone = "ink",
 }: {
   show: boolean;
-  label: string;
+  label: React.ReactNode;
   value: React.ReactNode;
   unit?: string;
   tone?: "ink" | "muted" | "forest" | "amber";
