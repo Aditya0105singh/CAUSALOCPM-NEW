@@ -9,6 +9,9 @@ pathways from event logs, discover the true causal drivers of outcomes, estimate
 effects free of confounding, and simulate "what if we had done differently?".
 
 **Explain · Predict · Simulate.**
+
+🌐 **Live demo:** [causalocpm-new.vercel.app](https://causalocpm-new.vercel.app)
+
 Shortlisted — AI Innovation Idea Hack, MIT Manipal.
 
 <p align="center">
@@ -19,6 +22,7 @@ Shortlisted — AI Innovation Idea Hack, MIT Manipal.
 </p>
 
 <p align="center">
+  <a href="https://causalocpm-new.vercel.app"><b>Live demo</b></a> ·
   <a href="#the-problem">Problem</a> ·
   <a href="#what-causalocpm-does">What it does</a> ·
   <a href="#a-worked-example">Worked example</a> ·
