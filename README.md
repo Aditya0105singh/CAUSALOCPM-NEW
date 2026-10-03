@@ -11,6 +11,13 @@ effects free of confounding, and simulate "what if we had done differently?".
 **Live pitch:** Explain · Predict · Simulate.
 Shortlisted — AI Innovation Idea Hack, MIT Manipal.
 
+<p align="center">
+  <a href="docs/causalocpm-demo.mp4">
+    <img src="docs/demo.gif" width="720" alt="CausalOCPM 50-second demo — click for the full video with narration">
+  </a>
+  <br><sub>50-second walkthrough · <a href="docs/causalocpm-demo.mp4"><b>watch with narration</b></a></sub>
+</p>
+
 ---
 
 ## What's in the box
