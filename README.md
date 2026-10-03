@@ -12,9 +12,9 @@ effects free of confounding, and simulate "what if we had done differently?".
 Shortlisted — AI Innovation Idea Hack, MIT Manipal.
 
 <p align="center">
-  <video src="docs/causalocpm-demo.mp4" poster="docs/demo.gif" width="720" controls muted loop playsinline>
-    <a href="docs/causalocpm-demo.mp4"><img src="docs/demo.gif" width="720" alt="CausalOCPM 50-second demo"></a>
-  </video>
+  <a href="docs/causalocpm-demo.mp4">
+    <img src="docs/demo.gif" width="720" alt="CausalOCPM 50-second demo">
+  </a>
   <br><sub>50-second walkthrough · <a href="docs/causalocpm-demo.mp4"><b>watch with narration</b></a></sub>
 </p>
 
@@ -23,6 +23,7 @@ Shortlisted — AI Innovation Idea Hack, MIT Manipal.
   <a href="#what-causalocpm-does">What it does</a> ·
   <a href="#a-worked-example">Worked example</a> ·
   <a href="#the-console">Console</a> ·
+  <a href="#architecture">Architecture</a> ·
   <a href="#the-pipeline">Pipeline</a> ·
   <a href="#evidence-and-validation">Evidence</a> ·
   <a href="#run-locally">Run</a> ·
@@ -118,6 +119,55 @@ evidence completeness, effect recovery, causal confidence, discovery quality, co
 robustness, counterfactual stability and explainability.
 
 ---
+
+## Architecture
+
+CausalOCPM is a five-phase causal pipeline that feeds a Next.js console. The heavy
+statistics run offline (a TypeScript builder, with a Python reference pipeline for
+validation); the app reads validated JSON fixtures, so the console is fast and needs no
+backend to run.
+
+```mermaid
+flowchart TD
+    Data[(OCEL 2.0 event logs)]
+
+    subgraph Pipeline["Offline causal pipeline"]
+        direction TB
+        P1["Phase 1 · Object Interaction Graph"]
+        P2["Phase 2 · Bootstrapped PC Causal Discovery<br/>+ domain-knowledge rules"]
+        P3["Phase 3 · Structural Causal Model"]
+        P4["Phase 4 · Double ML effect, CATE<br/>and sensitivity checks"]
+        P5["Phase 5 · SCM-grounded SHAP attribution"]
+    end
+
+    Zod{{"Zod contract validation<br/>lib/engine/types.ts"}}
+    Fixtures[("lib/data/*.json<br/>manufacturing · healthcare")]
+
+    subgraph App["Next.js 15 console"]
+        direction TB
+        Story["Guided investigation<br/>7 scenes"]
+        Views["Full console<br/>Overview · Audit · Discovery · Model<br/>Case Inspector · Decisions"]
+        Sim["What-if simulator<br/>lib/simulator.ts"]
+        Copilot["Copilot<br/>/api/copilot"]
+    end
+
+    Claude(["Claude API<br/>optional"])
+
+    Data --> P1
+    P1 -->|typed object graph| P2
+    P2 -->|learned causal DAG| P3
+    P3 -->|fitted SCM| P4
+    P3 -->|fitted SCM| P5
+    P4 --> Zod
+    P5 --> Zod
+    Zod --> Fixtures
+    Fixtures --> Story
+    Fixtures --> Views
+    Fixtures --> Sim
+    Fixtures --> Copilot
+    Copilot -.->|ANTHROPIC_API_KEY set| Claude
+    Copilot -.->|no key: grounded answers| Fixtures
+```
 
 ## The pipeline
 
