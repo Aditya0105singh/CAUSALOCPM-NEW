@@ -8,40 +8,114 @@ autonomous business processes. It combines **Object-Centric Process Mining** wit
 pathways from event logs, discover the true causal drivers of outcomes, estimate their
 effects free of confounding, and simulate "what if we had done differently?".
 
-**Live pitch:** Explain · Predict · Simulate.
+**Explain · Predict · Simulate.**
 Shortlisted — AI Innovation Idea Hack, MIT Manipal.
 
 <p align="center">
-  <a href="docs/causalocpm-demo.mp4">
-    <img src="docs/demo.gif" width="720" alt="CausalOCPM 50-second demo — click for the full video with narration">
-  </a>
+  <video src="docs/causalocpm-demo.mp4" poster="docs/demo.gif" width="720" controls muted loop playsinline>
+    <a href="docs/causalocpm-demo.mp4"><img src="docs/demo.gif" width="720" alt="CausalOCPM 50-second demo"></a>
+  </video>
   <br><sub>50-second walkthrough · <a href="docs/causalocpm-demo.mp4"><b>watch with narration</b></a></sub>
+</p>
+
+<p align="center">
+  <a href="#the-problem">Problem</a> ·
+  <a href="#what-causalocpm-does">What it does</a> ·
+  <a href="#a-worked-example">Worked example</a> ·
+  <a href="#the-console">Console</a> ·
+  <a href="#the-pipeline">Pipeline</a> ·
+  <a href="#evidence-and-validation">Evidence</a> ·
+  <a href="#run-locally">Run</a> ·
+  <a href="#project-layout">Layout</a> ·
+  <a href="#deploy-to-vercel">Deploy</a>
 </p>
 
 ---
 
-## What's in the box
+## The problem
 
-A premium Next.js 15 decision-intelligence console with a 7-view workspace over two
-self-contained synthetic scenarios:
+Autonomous agents now route orders, pick suppliers, assign clinicians and approve
+exceptions. When an outcome goes wrong, today's tools fall short in the same way:
 
-| Domain | Tenant | Outcome | Confounder recovered |
-| --- | --- | --- | --- |
-| **Manufacturing** | Atlas Precision Aerostructures | Line-Side Delivery Delay (days) | Spec Complexity inflates Halcyon Forge correlation ~24% |
-| **Healthcare** | Meridian Health System | Length of Stay (days) | Patient Complexity inflates specialist-assignment correlation ~13% |
+- **Dashboards show correlation, not cause.** A supplier sits next to long delays, so it
+  gets dropped — but the delays don't move, because the real driver was something else.
+- **Hidden confounders inflate the blame.** In our manufacturing data, complex orders are
+  routed to one forge *and* are slow to machine regardless of supplier. That shared cause
+  makes the forge look worse than it is.
+- **Nobody can replay the road not taken.** "Would a different choice have helped, and by
+  how much?" is a counterfactual question that event-log analytics can't answer.
 
-_(The old `prihir_synthetic.csv` reference from the original prototype is gone — both
-datasets are freshly designed here with planted ground truth.)_
+## What CausalOCPM does
 
-### Views
+It turns an object-centric event log into a causal audit of every autonomous decision:
 
-1. **Overview** — Causal Intelligence Alert band, AI executive summary, discovery-validation badges, top drivers, Traditional-PM-vs-CausalOCPM and competitive-positioning comparisons.
-2. **Data & Discovery** — a 6-step guided walkthrough (understand the event data → object interaction network → correlation view → recovered causal structure → validate discovery quality → domain-knowledge contribution), plus a collapsible raw-data preview and OCEL-style sample events.
-3. **Model Performance** — AI causal interpretation, naive-vs-Double-ML effect, an interactive **What-If Causal Simulator** with grouped intervention levers → predicted outcome, throughput, risk index, ROI payback, a causal-effect-decomposition waterfall and mediator-variable states; a target-driven recommended action plan; estimated-vs-ground-truth coefficients; CATE treatment-effect heterogeneity by segment.
-4. **Case Inspector** — executive interpretation, SHAP attribution waterfall, controllable-vs-structural contribution split, jump-to-highest-risk, percentile, counterfactual, similar cases.
-5. **Decision Intelligence** — ranked recommended actions with ROI/capex/timeline, projected-impact trend, a full **Executive Causal Analysis Report** (key findings, primary causal chain, action-plan table, methodology & confidence), action log.
-6. **Copilot** — grounded decision-intelligence assistant with capability cards (live Claude when `ANTHROPIC_API_KEY` is set, deterministic grounded fallback otherwise).
-7. **Settings** — scenario configuration and pipeline toggles.
+| Step | Question it answers | How |
+| --- | --- | --- |
+| **Explain** | What actually caused this outcome? | Object interaction graph → bootstrapped PC causal discovery → structural causal model |
+| **Estimate** | How big is the real effect, free of confounding? | Double ML with backdoor adjustment, sensitivity-tested |
+| **Attribute** | Why did *this* case end the way it did? | SCM-grounded SHAP, split into controllable vs. structural factors |
+| **Simulate** | What if we had decided differently? | Counterfactual replay and an interactive what-if simulator |
+| **Decide** | What should we do, and is it worth it? | Ranked actions with savings, capex, ROI and payback |
+
+---
+
+## A worked example
+
+**Atlas Precision Aerostructures** — an agent sources forgings and keeps picking *Halcyon
+Forge*. Line-side deliveries run late.
+
+| | Days of delay attributed to Halcyon Forge |
+| --- | --- |
+| What a dashboard reports (naive) | **7.59** |
+| What CausalOCPM recovers (Double ML) | **6.18** · 95% CI [6.08, 6.27] |
+| Planted ground truth | 5.78 |
+| Confounding removed | 1.41 days — Spec Complexity inflates the naive figure by ~23% |
+
+The causal path is `Halcyon Forge dependency → Material Lead Time → Line-Side Delivery
+Delay`; Spec Complexity is the confounder that sits behind both the sourcing choice and
+the delay. Replaying order SC-20481 with the counterfactual choice (Meridian Tool & Die)
+turns a **15.8-day** SLA breach into an **11.4-day** on-time delivery — **4.4 days saved**.
+The recommended fix — shift ~25% of sourcing to Meridian — models a ~17% delay reduction,
+~$410K/year in savings and a ~4.1-month payback.
+
+The same pipeline runs unchanged on a second domain:
+
+| Domain | Tenant | Outcome | Naive → recovered | Confounder |
+| --- | --- | --- | --- | --- |
+| **Manufacturing** | Atlas Precision Aerostructures | Line-Side Delivery Delay (days) | 7.59 → **6.18** | Spec Complexity |
+| **Healthcare** | Meridian Health System | Length of Stay (days) | 6.01 → **5.25** | Patient Complexity |
+
+Both datasets are synthetic with **planted ground truth** — the only way to verify causal
+inference, since real data never reveals the counterfactual.
+
+---
+
+## The console
+
+A Next.js 15 decision-intelligence console. It opens on a **guided investigation** — a
+seven-scene story that walks one flagged decision from incident to verdict — and you can
+skip to the **full console** at any time.
+
+**Guided investigation:** Incident → What happened → What caused it → What if → Change the
+cause → What to do → Can we trust it.
+
+**Full console (9 views):**
+
+| View | What you get |
+| --- | --- |
+| **Overview** | Causal-intelligence alert, AI executive summary, discovery-validation badges, top drivers, traditional-PM-vs-CausalOCPM comparison |
+| **Decision Audit** | Audit a single AI decision: what the agent weighed, what it couldn't see, and what actually caused the outcome with confounding removed |
+| **Live Supply Chain** | Digital-twin view of the network and its queue |
+| **Data & Discovery** | Six-step walkthrough from raw events to a validated causal graph, plus a raw-data preview and OCEL-style sample events |
+| **Model Performance** | Naive vs. Double ML effect, the **What-If Causal Simulator** (intervention levers → predicted outcome, throughput, risk, ROI, effect-decomposition waterfall), estimated-vs-ground-truth coefficients, CATE heterogeneity |
+| **Case Inspector** | Per-case SHAP waterfall, controllable-vs-structural split, percentile, counterfactual, similar cases |
+| **Decision Intelligence** | Ranked actions with ROI / capex / timeline, projected-impact trend, an executive causal-analysis report, action log |
+| **Copilot** | Grounded assistant — live Claude when `ANTHROPIC_API_KEY` is set, deterministic grounded answers otherwise |
+| **Settings** | Scenario configuration and pipeline toggles |
+
+A **Causal Audit Score** (0–100) summarises how far an analysis can be trusted across
+evidence completeness, effect recovery, causal confidence, discovery quality, confounding
+robustness, counterfactual stability and explainability.
 
 ---
 
@@ -51,23 +125,50 @@ datasets are freshly designed here with planted ground truth.)_
 OCEL 2.0 logs → Object Interaction Graph → Bootstrapped PC (DAG) → Mixed SCM → Double ML → SCM-grounded SHAP
 ```
 
-The offline builder (`scripts/build-causal-fixtures.ts` + `scripts/lib/domainConfig.ts`)
-encodes the **same planted causal structure as the reference CausalOCPM repo**
-(`data/generate_data.py`): a confounder (`order_complexity` / `patient_complexity`) driving
-both treatment selection and the outcome, plus a mediated true causal path
-(`supplier_a → material_lead_time → shipment_delay`, coefficient 7.4 × 0.9 = 6.66 days).
-It runs the confounding-vs-recovered-effect logic, CATE by tertile, an E-value / placebo /
-random-common-cause sensitivity sweep, and validates the output against a shared Zod
-contract (`lib/engine/types.ts`) before writing `lib/data/<domain>.json`. Runs on `prebuild`.
+1. **Object interaction graph** — how orders, machines, workers, materials and shipments co-occur.
+2. **Bootstrapped PC discovery** — constraint-based causal discovery, repeated over resampled data; only edges that are stable across runs are kept, trading recall for trustworthiness.
+3. **Domain-knowledge layer** — expert rules recover missed edges and prune spurious ones, with every change shown.
+4. **Mixed SCM** — a structural causal model fitted over the validated graph.
+5. **Double ML** — cross-fitted gradient boosting with sandwich standard errors and backdoor adjustment.
+6. **Sensitivity** — placebo test, random-common-cause test, VanderWeele E-value, hidden-confounder sweep and multi-seed robustness.
+7. **SCM-grounded SHAP** — per-case attribution consistent with the causal structure.
 
-The what-if simulator (`lib/simulator.ts`) is a direct port of the reference's
-`patch_simulator.py` causal engine — grouped intervention levers propagate through the
-structural equations to a predicted outcome, mediator states, and an effect-decomposition
-waterfall.
+The offline builder (`scripts/build-causal-fixtures.ts` + `scripts/lib/domainConfig.ts`)
+encodes the planted causal structure for each domain, runs the effect, CATE and
+sensitivity logic, and validates the result against a shared Zod contract
+(`lib/engine/types.ts`) before writing `lib/data/<domain>.json`. It runs on `prebuild`.
+The what-if simulator (`lib/simulator.ts`) propagates intervention levers through the
+structural equations to a predicted outcome, mediator states and a decomposition waterfall.
+
+---
+
+## Evidence and validation
+
+The numbers in the console are not hand-typed. The manufacturing figures come from a
+from-scratch run of the Python reference pipeline in
+`scripts/reference/atlas-manufacturing/` — real bootstrapped PC (`causal-learn`) and real
+Double ML (5-fold cross-fitted `sklearn` gradient boosting) on a 20,000-row event log.
+
+| Check (manufacturing) | Result |
+| --- | --- |
+| Double ML vs. planted effect | 6.18 vs. 5.78 days |
+| Autonomous discovery | precision 0.89 · recall 0.89 · **F1 0.89** |
+| Placebo (permuted treatment) | −0.01 ≈ 0 |
+| Random common cause | 6.17 (stable) |
+| VanderWeele E-value | 5.7 |
+| 10-seed robustness | causal 6.10 ± 0.04; naive range 7.43–7.56 |
+
+The results are deliberately honest: discovery misses one real edge (a threshold effect
+that a linear independence test barely sees) and includes one spurious but stable edge,
+rather than reporting a too-clean 1.00. Full reports, generated logs and the methodology
+live in [`docs/reference-run/`](docs/reference-run/). Presenter material:
+[`docs/JUDGE_QA.md`](docs/JUDGE_QA.md) and [`docs/PITCH_DECK.md`](docs/PITCH_DECK.md).
 
 ---
 
 ## Run locally
+
+Requires Node.js 18.18+ (Next.js 15).
 
 ```bash
 npm install
@@ -82,7 +183,28 @@ cp .env.example .env.local
 # set ANTHROPIC_API_KEY=...
 ```
 
----
+Without a key the Copilot answers from the fixtures with deterministic, grounded replies.
+
+To reproduce the manufacturing reference run (needs `numpy`, `pandas`, `scikit-learn`,
+`causal-learn`):
+
+```bash
+cd scripts/reference/atlas-manufacturing
+python generate_data.py   # writes atlas_precision_synthetic.csv
+python validate.py        # writes validate-report.txt + validate-summary.json
+```
+
+## Project layout
+
+```
+app/                    Next.js app router (page, layout, /api/copilot)
+components/             Console shell, graph, charts, waterfall, guided story, tabs/
+components/story/       The seven-scene guided investigation
+lib/                    Fixtures loader, what-if simulator, copilot logic, engine types (Zod)
+lib/data/               Generated, validated fixtures: manufacturing.json, healthcare.json
+scripts/                Fixture builder + domain specs; Python reference pipeline
+docs/                   Reference-run evidence, judge Q&A, pitch deck, demo video
+```
 
 ## Deploy to Vercel
 
@@ -90,10 +212,8 @@ Repo: <https://github.com/Aditya0105singh/CAUSALOCPM-NEW>
 
 1. Go to [vercel.com/new](https://vercel.com/new) and **Import** `Aditya0105singh/CAUSALOCPM-NEW`.
 2. Framework is auto-detected as **Next.js** — leave every build setting at its default.
-3. (Optional) add `ANTHROPIC_API_KEY` under *Environment Variables* for the live Copilot; without it the Copilot uses grounded scripted answers.
-4. **Deploy.** `prebuild` regenerates and Zod-validates the fixtures during the Vercel build.
-
-Or from the CLI (`npm i -g vercel && vercel`).
+3. (Optional) add `ANTHROPIC_API_KEY` under *Environment Variables* for the live Copilot.
+4. **Deploy.** `prebuild` regenerates and Zod-validates the fixtures during the build.
 
 ---
 
