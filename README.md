@@ -12,9 +12,9 @@ effects free of confounding, and simulate "what if we had done differently?".
 Shortlisted — AI Innovation Idea Hack, MIT Manipal.
 
 <p align="center">
-  <video src="docs/causalocpm-demo.mp4" poster="docs/demo.gif" width="720" controls muted loop playsinline>
-    <a href="docs/causalocpm-demo.mp4"><img src="docs/demo.gif" width="720" alt="CausalOCPM 50-second demo"></a>
-  </video>
+  <a href="docs/causalocpm-demo.mp4">
+    <img src="docs/demo.gif" width="720" alt="CausalOCPM 50-second demo">
+  </a>
   <br><sub>50-second walkthrough · <a href="docs/causalocpm-demo.mp4"><b>watch with narration</b></a></sub>
 </p>
 
